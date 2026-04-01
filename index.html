@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VietVenture — Tour Du Lịch & Khoá Học Trải Nghiệm</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwindcss.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Playfair Display"', 'Georgia', 'serif'],
+            body: ['"Source Sans 3"', 'sans-serif'],
+          },
+          colors: {
+            sand: { 50: '#fdf8f0', 100: '#f9edda', 200: '#f2d9b0', 300: '#e8bf7a', 400: '#dda44e', 500: '#c4872f', 600: '#a06823', 700: '#7d4f1e', 800: '#5e3c1a', 900: '#3f2912' },
+            jungle: { 50: '#f0f7f1', 100: '#d8eddb', 200: '#b3dbb9', 300: '#7ec28a', 400: '#4fa562', 500: '#2d8a45', 600: '#1f6e34', 700: '#1a572b', 800: '#174524', 900: '#12381d' },
+            ocean: { 50: '#eef7fb', 100: '#d4ecf5', 200: '#a8d8eb', 300: '#6bbdd9', 400: '#3a9fc3', 500: '#2180a4', 600: '#1a6687', 700: '#17526c', 800: '#15435a', 900: '#12384c' },
+            coral: { 50: '#fef3f0', 100: '#fde3db', 200: '#fbc5b5', 300: '#f79d83', 400: '#f27254', 500: '#e94d2d', 600: '#cf3518', 700: '#ac2b15', 800: '#8e2617', 900: '#762318' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    .animate-fade-up { animation: fadeUp 1s ease-out both; }
+    .animate-fade-up-d1 { animation: fadeUp 1s ease-out 0.15s both; }
+    .animate-fade-up-d2 { animation: fadeUp 1s ease-out 0.3s both; }
+    .animate-fade-up-d3 { animation: fadeUp 1s ease-out 0.45s both; }
+    .animate-fade-up-d4 { animation: fadeUp 1s ease-out 0.6s both; }
+    .animate-slide-in { animation: slideIn 0.8s ease-out both; }
+    .animate-scale-in { animation: scaleIn 0.8s ease-out both; }
+    .animate-float { animation: float 4s ease-in-out infinite; }
+
+    body { font-family: 'Source Sans 3', sans-serif; }
+
+    .hero-bg {
+      background:
+        linear-gradient(160deg, rgba(18,56,29,0.82) 0%, rgba(33,128,164,0.65) 50%, rgba(221,164,78,0.4) 100%),
+        url('https://images.unsplash.com/photo-1528127269322-539152af5929?w=1600&q=80') center/cover no-repeat;
+    }
+
+    .grain::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .card-tour:hover .card-img {
+      transform: scale(1.08);
+    }
+
+    .card-tour:hover {
+      box-shadow: 0 25px 60px -12px rgba(0,0,0,0.18);
+      transform: translateY(-6px);
+    }
+
+    .card-tour {
+      transition: all 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .card-img {
+      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .tag {
+      letter-spacing: 0.12em;
+    }
+
+    .divider-leaf {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .divider-leaf::before,
+    .divider-leaf::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #b3dbb9, transparent);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2d8a45, #1f6e34);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(45,138,69,0.3);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #1f6e34, #1a572b);
+      box-shadow: 0 6px 25px rgba(45,138,69,0.45);
+      transform: translateY(-2px);
+    }
+
+    .btn-coral {
+      background: linear-gradient(135deg, #e94d2d, #cf3518);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(233,77,45,0.3);
+    }
+    .btn-coral:hover {
+      background: linear-gradient(135deg, #cf3518, #ac2b15);
+      box-shadow: 0 6px 25px rgba(233,77,45,0.45);
+      transform: translateY(-2px);
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .course-badge {
+      background: linear-gradient(135deg, #dda44e, #c4872f);
+    }
+  </style>
+</head>
+<body class="bg-sand-50 text-gray-800 overflow-x-hidden">
+
+  <!-- ===================== NAVIGATION ===================== -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-sand-200/60">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-jungle-500 flex items-center justify-center">
+          <span class="text-white font-display font-bold text-lg">V</span>
+        </div>
+        <span class="font-display text-2xl font-bold text-jungle-800">Viet<span class="text-coral-500">Venture</span></span>
+      </a>
+      <div class="hidden md:flex items-center gap-8 font-body text-sm font-semibold uppercase tracking-widest text-gray-600">
+        <a href="#tours" class="hover:text-jungle-600 transition-colors">Tour</a>
+        <a href="#courses" class="hover:text-jungle-600 transition-colors">Khoá Học</a>
+        <a href="#about" class="hover:text-jungle-600 transition-colors">Về Chúng Tôi</a>
+        <a href="#testimonials" class="hover:text-jungle-600 transition-colors">Đánh Giá</a>
+        <a href="#contact" class="btn-primary text-white px-6 py-2.5 rounded-full text-xs no-underline">Liên Hệ Ngay</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===================== HERO ===================== -->
+  <header class="hero-bg grain relative min-h-screen flex items-center">
+    <div class="relative z-10 max-w-7xl mx-auto px-6 py-32 md:py-0 grid md:grid-cols-2 gap-12 items-center">
+      <div>
+        <p class="tag text-sand-300 text-xs font-bold uppercase mb-4 animate-fade-up">✦ Khám phá — Trải nghiệm — Trưởng thành</p>
+        <h1 class="font-display text-5xl md:text-7xl font-900 text-white leading-[1.05] mb-6 animate-fade-up-d1">
+          Hành Trình<br/>
+          <span class="italic text-sand-300">Khác Biệt</span><br/>
+          Bắt Đầu Tại Đây
+        </h1>
+        <p class="text-sand-100/90 text-lg md:text-xl leading-relaxed max-w-lg mb-10 animate-fade-up-d2">
+          Từ những chuyến tour khám phá văn hoá bản địa đến các khoá học kỹ năng sống thực tế — chúng tôi mang đến trải nghiệm mà bạn sẽ nhớ mãi.
+        </p>
+        <div class="flex flex-wrap gap-4 animate-fade-up-d3">
+          <a href="#tours" class="btn-primary text-white font-bold px-8 py-4 rounded-full text-sm uppercase tracking-wider inline-block">Xem Tour →</a>
+          <a href="#courses" class="border-2 border-white/30 text-white font-bold px-8 py-4 rounded-full text-sm uppercase tracking-wider hover:bg-white/10 transition-all inline-block">Khoá Học</a>
+        </div>
+      </div>
+      <div class="hidden md:grid grid-cols-2 gap-4 animate-fade-up-d4">
+        <div class="stat-card rounded-2xl p-6 text-center text-white animate-float">
+          <p class="font-display text-4xl font-bold text-sand-300">5,200+</p>
+          <p class="text-sm text-sand-100 mt-1">Khách hàng hài lòng</p>
+        </div>
+        <div class="stat-card rounded-2xl p-6 text-center text-white mt-8" style="animation: float 4s ease-in-out 1s infinite;">
+          <p class="font-display text-4xl font-bold text-sand-300">48</p>
+          <p class="text-sm text-sand-100 mt-1">Tour độc quyền</p>
+        </div>
+        <div class="stat-card rounded-2xl p-6 text-center text-white" style="animation: float 4s ease-in-out 0.5s infinite;">
+          <p class="font-display text-4xl font-bold text-sand-300">12</p>
+          <p class="text-sm text-sand-100 mt-1">Khoá học chuyên sâu</p>
+        </div>
+        <div class="stat-card rounded-2xl p-6 text-center text-white mt-8" style="animation: float 4s ease-in-out 1.5s infinite;">
+          <p class="font-display text-4xl font-bold text-sand-300">4.9★</p>
+          <p class="text-sm text-sand-100 mt-1">Đánh giá trung bình</p>
+        </div>
+      </div>
+    </div>
+    <!-- Curved Bottom -->
+    <div class="absolute bottom-0 left-0 right-0">
+      <svg viewBox="0 0 1440 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 100V60C360 0 1080 0 1440 60V100H0Z" fill="#fdf8f0"/>
+      </svg>
+    </div>
+  </header>
+
+  <!-- ===================== TOUR SECTION ===================== -->
+  <section id="tours" class="py-24 md:py-32">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-20">
+        <p class="tag text-jungle-500 text-xs font-bold uppercase mb-3">✦ Điểm đến hấp dẫn</p>
+        <h2 class="font-display text-4xl md:text-6xl font-bold text-jungle-900 mb-4">Tour Du Lịch <span class="italic text-coral-500">Nổi Bật</span></h2>
+        <p class="text-gray-500 text-lg max-w-2xl mx-auto">Mỗi hành trình là một câu chuyện — hãy chọn câu chuyện của bạn và bắt đầu khám phá ngay hôm nay.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8">
+
+        <!-- Tour 1 -->
+        <div class="card-tour bg-white rounded-3xl overflow-hidden shadow-lg shadow-gray-200/50">
+          <div class="relative overflow-hidden h-64">
+            <img src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=600&q=80" alt="Sapa" class="card-img w-full h-full object-cover" />
+            <div class="absolute top-4 left-4">
+              <span class="bg-jungle-500 text-white text-xs font-bold uppercase px-3 py-1.5 rounded-full tracking-wider">Bestseller</span>
+            </div>
+            <div class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2">
+              <span class="font-display font-bold text-jungle-700 text-lg">3N2Đ</span>
+            </div>
+          </div>
+          <div class="p-6">
+            <div class="flex items-center gap-2 text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">
+              <span>📍 Sapa, Lào Cai</span>
+              <span>·</span>
+              <span>Trekking</span>
+            </div>
+            <h3 class="font-display text-2xl font-bold text-gray-900 mb-2">Sapa — Bản Làng Trong Mây</h3>
+            <p class="text-gray-500 text-sm leading-relaxed mb-5">Trekking qua ruộng bậc thang Mường Hoa, homestay cùng người H'Mông, thưởng thức ẩm thực vùng cao và ngắm hoàng hôn trên đỉnh Fansipan.</p>
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="text-xs text-gray-400 line-through">4.900.000đ</p>
+                <p class="font-display text-2xl font-bold text-coral-500">3.690.000đ</p>
+                <p class="text-xs text-gray-400">/ người</p>
+              </div>
+              <a href="#contact" class="btn-primary text-white text-xs font-bold uppercase px-5 py-2.5 rounded-full tracking-wider inline-block">Đặt ngay</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tour 2 -->
+        <div class="card-tour bg-white rounded-3xl overflow-hidden shadow-lg shadow-gray-200/50">
+          <div class="relative overflow-hidden h-64">
+            <img src="https://images.unsplash.com/photo-1573790387438-4da905039392?w=600&q=80" alt="Phú Quốc" class="card-img w-full h-full object-cover" />
+            <div class="absolute top-4 left-4">
+              <span class="bg-ocean-500 text-white text-xs font-bold uppercase px-3 py-1.5 rounded-full tracking-wider">Hot Deal</span>
+            </div>
+            <div class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2">
+              <span class="font-display font-bold text-ocean-700 text-lg">4N3Đ</span>
+            </div>
+          </div>
+          <div class="p-6">
+            <div class="flex items-center gap-2 text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">
+              <span>📍 Phú Quốc</span>
+              <span>·</span>
+              <span>Biển đảo</span>
+            </div>
+            <h3 class="font-display text-2xl font-bold text-gray-900 mb-2">Phú Quốc — Đảo Ngọc Xanh</h3>
+            <p class="text-gray-500 text-sm leading-relaxed mb-5">Lặn ngắm san hô Hòn Thơm, câu cá hoàng hôn, khám phá làng chài Hàm Ninh và thưởng thức hải sản tươi sống tại chợ đêm Dinh Cậu.</p>
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="text-xs text-gray-400 line-through">6.500.000đ</p>
+                <p class="font-display text-2xl font-bold text-ocean-500">4.990.000đ</p>
+                <p class="text-xs text-gray-400">/ người</p>
+              </div>
+              <a href="#contact" class="btn-primary text-white text-xs font-bold uppercase px-5 py-2.5 rounded-full tracking-wider inline-block">Đặt ngay</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tour 3 -->
+        <div class="card-tour bg-white rounded-3xl overflow-hidden shadow-lg shadow-gray-200/50">
+          <div class="relative overflow-hidden h-64">
+            <img src="https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=600&q=80" alt="Hội An" class="card-img w-full h-full object-cover" />
+            <div class="absolute top-4 left-4">
+              <span class="bg-sand-500 text-white text-xs font-bold uppercase px-3 py-1.5 rounded-full tracking-wider">Mới</span>
+            </div>
+            <div class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2">
+              <span class="font-display font-bold text-sand-700 text-lg">3N2Đ</span>
+            </div>
+          </div>
+          <div class="p-6">
+            <div class="flex items-center gap-2 text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">
+              <span>📍 Đà Nẵng — Hội An</span>
+              <span>·</span>
+              <span>Văn hoá</span>
+            </div>
+            <h3 class="font-display text-2xl font-bold text-gray-900 mb-2">Hội An — Phố Cổ Đèn Lồng</h3>
+            <p class="text-gray-500 text-sm leading-relaxed mb-5">Đạp xe qua phố cổ, học làm đèn lồng truyền thống, thả hoa đăng trên sông Hoài và thưởng thức cao lầu chính gốc bên bờ sông Thu Bồn.</p>
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="text-xs text-gray-400 line-through">4.200.000đ</p>
+                <p class="font-display text-2xl font-bold text-sand-600">3.290.000đ</p>
+                <p class="text-xs text-gray-400">/ người</p>
+              </div>
+              <a href="#contact" class="btn-primary text-white text-xs font-bold uppercase px-5 py-2.5 rounded-full tracking-wider inline-block">Đặt ngay</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Extra Tours Row -->
+      <div class="grid md:grid-cols-2 gap-8 mt-8">
+        <!-- Tour 4 -->
+        <div class="card-tour bg-white rounded-3xl overflow-hidden shadow-lg shadow-gray-200/50 flex flex-col md:flex-row">
+          <div class="relative overflow-hidden md:w-72 h-56 md:h-auto shrink-0">
+            <img src="https://images.unsplash.com/photo-1464817739973-0128fe77aaa1?w=600&q=80" alt="Hạ Long" class="card-img w-full h-full object-cover" />
+          </div>
+          <div class="p-6 flex flex-col justify-between">
+            <div>
+              <span class="bg-ocean-100 text-ocean-700 text-xs font-bold uppercase px-3 py-1 rounded-full tracking-wider">Sang trọng</span>
+              <h3 class="font-display text-2xl font-bold text-gray-900 mt-3 mb-2">Hạ Long Bay — Du Thuyền 5 Sao</h3>
+              <p class="text-gray-500 text-sm leading-relaxed mb-4">2 ngày 1 đêm trên du thuyền hạng sang, chèo kayak giữa vịnh, tham quan hang Sửng Sốt, tiệc hải sản trên boong tàu dưới ánh trăng.</p>
+            </div>
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="font-display text-2xl font-bold text-ocean-600">5.890.000đ <span class="text-sm font-body text-gray-400 font-normal">/ người</span></p>
+              </div>
+              <a href="#contact" class="btn-primary text-white text-xs font-bold uppercase px-5 py-2.5 rounded-full tracking-wider inline-block">Đặt ngay</a>
+            </div>
+          </div>
+        </div>
+        <!-- Tour 5 -->
+        <div class="card-tour bg-white rounded-3xl overflow-hidden shadow-lg shadow-gray-200/50 flex flex-col md:flex-row">
+          <div class="relative overflow-hidden md:w-72 h-56 md:h-auto shrink-0">
+            <img src="https://images.unsplash.com/photo-1600398235498-ce1b93f7c265?w=600&q=80" alt="Đà Lạt" class="card-img w-full h-full object-cover" />
+          </div>
+          <div class="p-6 flex flex-col justify-between">
+            <div>
+              <span class="bg-jungle-100 text-jungle-700 text-xs font-bold uppercase px-3 py-1 rounded-full tracking-wider">Gia đình</span>
+              <h3 class="font-display text-2xl font-bold text-gray-900 mt-3 mb-2">Đà Lạt — Thành Phố Ngàn Hoa</h3>
+              <p class="text-gray-500 text-sm leading-relaxed mb-4">Cắm trại bên hồ Tuyền Lâm, tham quan vườn dâu, đạp xe Langbiang, thưởng thức cà phê chồn chính gốc và ngắm sương mù buổi sáng.</p>
+            </div>
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="font-display text-2xl font-bold text-jungle-600">2.990.000đ <span class="text-sm font-body text-gray-400 font-normal">/ người</span></p>
+              </div>
+              <a href="#contact" class="btn-primary text-white text-xs font-bold uppercase px-5 py-2.5 rounded-full tracking-wider inline-block">Đặt ngay</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== DIVIDER ===================== -->
+  <div class="max-w-4xl mx-auto px-6">
+    <p class="divider-leaf text-jungle-400 text-2xl text-center">🌿</p>
+  </div>
+
+  <!-- ===================== COURSES SECTION ===================== -->
+  <section id="courses" class="py-24 md:py-32">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-20">
+        <p class="tag text-coral-500 text-xs font-bold uppercase mb-3">✦ Nâng cấp bản thân</p>
+        <h2 class="font-display text-4xl md:text-6xl font-bold text-gray-900 mb-4">Khoá Học <span class="italic text-ocean-500">Trải Nghiệm</span></h2>
+        <p class="text-gray-500 text-lg max-w-2xl mx-auto">Học từ thực tế, kết nối cộng đồng, và phát triển kỹ năng sống — ngay giữa thiên nhiên Việt Nam.</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        <!-- Course 1 -->
+        <div class="card-tour group relative bg-white rounded-3xl overflow-hidden shadow-lg shadow-gray-200/50">
+          <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-coral-400 to-sand-400"></div>
+          <div class="p-8">
+            <div class="flex items-center justify-between mb-5">
+              <span class="course-badge text-white text-xs font-bold uppercase px-3 py-1.5 rounded-full tracking-wider">Bestseller</span>
+              <span class="text-gray-400 text-sm font-semibold">8 buổi</span>
+            </div>
+            <div class="w-14 h-14 bg-coral-50 rounded-2xl flex items-center justify-center text-3xl mb-5">📸</div>
+            <h3 class="font-display text-2xl font-bold text-gray-900 mb-3">Nhiếp Ảnh Du Lịch Chuyên Nghiệp</h3>
+            <p class="text-gray-500 text-sm leading-relaxed mb-6">Học chụp ảnh phong cảnh, chân dung, và street photography từ nhiếp ảnh gia National Geographic. Thực hành tại Hội An, Sapa và Hạ Long.</p>
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span class="bg-sand-100 text-sand-700 text-xs font-semibold px-3 py-1 rounded-full">Composition</span>
+              <span class="bg-sand-100 text-sand-700 text-xs font-semibold px-3 py-1 rounded-full">Lightroom</span>
+              <span class="bg-sand-100 text-sand-700 text-xs font-semibold px-3 py-1 rounded-full">Storytelling</span>
+            </div>
+            <div class="flex items-end justify-between pt-5 border-t border-gray-100">
+              <div>
+                <p class="text-xs text-gray-400 line-through">8.900.000đ</p>
+                <p class="font-display text-2xl font-bold text-coral-500">6.490.000đ</p>
+              </div>
+              <a href="#contact" class="btn-coral text-white text-xs font-bold uppercase px-5 py-2.5 rounded-full tracking-wider inline-block">Đăng ký</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Course 2 -->
+        <div class="card-tour group relative bg-white rounded-3xl overflow-hidden shadow-lg shadow-gray-200/50">
+          <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-ocean-400 to-jungle-400"></div>
+          <div class="p-8">
+            <div class="flex items-center justify-between mb-5">
+              <span class="bg-ocean-500 text-white text-xs font-bold uppercase px-3 py-1.5 rounded-full tracking-wider">Mới mở</span>
+              <span class="text-gray-400 text-sm font-semibold">12 buổi</span>
+            </div>
+            <div class="w-14 h-14 bg-ocean-50 rounded-2xl flex items-center justify-center text-3xl mb-5">🤿</div>
+            <h3 class="font-display text-2xl font-bold text-gray-900 mb-3">Lặn Biển PADI — Open Water</h3>
+            <p class="text-gray-500 text-sm leading-relaxed mb-6">Khoá lặn chứng chỉ quốc tế PADI tại Nha Trang. Từ lý thuyết cơ bản đến lặn sâu 18m, tìm hiểu hệ sinh thái san hô và sinh vật biển.</p>
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span class="bg-ocean-100 text-ocean-700 text-xs font-semibold px-3 py-1 rounded-full">PADI Cert</span>
+              <span class="bg-ocean-100 text-ocean-700 text-xs font-semibold px-3 py-1 rounded-full">An toàn</span>
+              <span class="bg-ocean-100 text-ocean-700 text-xs font-semibold px-3 py-1 rounded-full">Thực hành</span>
+            </div>
+            <div class="flex items-end justify-between pt-5 border-t border-gray-100">
+              <div>
+                <p class="text-xs text-gray-400 line-through">12.000.000đ</p>
+                <p class="font-display text-2xl font-bold text-ocean-500">9.500.000đ</p>
+              </div>
+              <a href="#contact" class="btn-coral text-white text-xs font-bold uppercase px-5 py-2.5 rounded-full tracking-wider inline-block">Đăng ký</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Course 3 -->
+        <div class="card-tour group relative bg-white rounded-3xl overflow-hidden shadow-lg shadow-gray-200/50">
+          <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-jungle-400 to-sand-400"></div>
+          <div class="p-8">
+            <div class="flex items-center justify-between mb-5">
+              <span class="bg-jungle-500 text-white text-xs font-bold uppercase px-3 py-1.5 rounded-full tracking-wider">Giới hạn</span>
+              <span class="text-gray-400 text-sm font-semibold">6 buổi</span>
+            </div>
+            <div class="w-14 h-14 bg-jungle-50 rounded-2xl flex items-center justify-center text-3xl mb-5">🧘</div>
+            <h3 class="font-display text-2xl font-bold text-gray-900 mb-3">Yoga & Thiền Trong Rừng</h3>
+            <p class="text-gray-500 text-sm leading-relaxed mb-6">Retreat 3 ngày tại Bà Nà Hills: tập yoga lúc bình minh, thiền Vipassana, đi bộ mindfulness trong rừng nguyên sinh, và workshop dinh dưỡng lành mạnh.</p>
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span class="bg-jungle-100 text-jungle-700 text-xs font-semibold px-3 py-1 rounded-full">Mindfulness</span>
+              <span class="bg-jungle-100 text-jungle-700 text-xs font-semibold px-3 py-1 rounded-full">Wellness</span>
+              <span class="bg-jungle-100 text-jungle-700 text-xs font-semibold px-3 py-1 rounded-full">Detox</span>
+            </div>
+            <div class="flex items-end justify-between pt-5 border-t border-gray-100">
+              <div>
+                <p class="text-xs text-gray-400 line-through">5.500.000đ</p>
+                <p class="font-display text-2xl font-bold text-jungle-500">3.990.000đ</p>
+              </div>
+              <a href="#contact" class="btn-coral text-white text-xs font-bold uppercase px-5 py-2.5 rounded-full tracking-wider inline-block">Đăng ký</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Course 4 -->
+        <div class="card-tour group relative bg-white rounded-3xl overflow-hidden shadow-lg shadow-gray-200/50">
+          <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-sand-400 to-coral-400"></div>
+          <div class="p-8">
+            <div class="flex items-center justify-between mb-5">
+              <span class="bg-sand-500 text-white text-xs font-bold uppercase px-3 py-1.5 rounded-full tracking-wider">Popular</span>
+              <span class="text-gray-400 text-sm font-semibold">10 buổi</span>
+            </div>
+            <div class="w-14 h-14 bg-sand-50 rounded-2xl flex items-center justify-center text-3xl mb-5">🍜</div>
+            <h3 class="font-display text-2xl font-bold text-gray-900 mb-3">Ẩm Thực Việt Nam Nâng Cao</h3>
+            <p class="text-gray-500 text-sm leading-relaxed mb-6">Học nấu phở Bắc, bún bò Huế, mì Quảng chính gốc cùng đầu bếp Michelin. Bao gồm đi chợ, chọn nguyên liệu và kỹ thuật plating chuyên nghiệp.</p>
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span class="bg-sand-100 text-sand-700 text-xs font-semibold px-3 py-1 rounded-full">Cooking</span>
+              <span class="bg-sand-100 text-sand-700 text-xs font-semibold px-3 py-1 rounded-full">Plating</span>
+              <span class="bg-sand-100 text-sand-700 text-xs font-semibold px-3 py-1 rounded-full">Gia vị</span>
+            </div>
+            <div class="flex items-end justify-between pt-5 border-t border-gray-100">
+              <div>
+                <p class="text-xs text-gray-400 line-through">7.200.000đ</p>
+                <p class="font-display text-2xl font-bold text-sand-600">5.490.000đ</p>
+              </div>
+              <a href="#contact" class="btn-coral text-white text-xs font-bold uppercase px-5 py-2.5 rounded-full tracking-wider inline-block">Đăng ký</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Course 5 -->
+        <div class="card-tour group relative bg-white rounded-3xl overflow-hidden shadow-lg shadow-gray-200/50">
+          <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-coral-400 to-ocean-400"></div>
+          <div class="p-8">
+            <div class="flex items-center justify-between mb-5">
+              <span class="bg-coral-500 text-white text-xs font-bold uppercase px-3 py-1.5 rounded-full tracking-wider">Intensive</span>
+              <span class="text-gray-400 text-sm font-semibold">5 ngày</span>
+            </div>
+            <div class="w-14 h-14 bg-coral-50 rounded-2xl flex items-center justify-center text-3xl mb-5">🏕️</div>
+            <h3 class="font-display text-2xl font-bold text-gray-900 mb-3">Survival Skills — Sinh Tồn Rừng</h3>
+            <p class="text-gray-500 text-sm leading-relaxed mb-6">5 ngày trong rừng Cát Tiên: học dựng lều, tìm nguồn nước, nhóm lửa, nhận dạng cây thuốc, và kỹ thuật định hướng bằng sao trời — không điện thoại.</p>
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span class="bg-coral-100 text-coral-700 text-xs font-semibold px-3 py-1 rounded-full">Outdoor</span>
+              <span class="bg-coral-100 text-coral-700 text-xs font-semibold px-3 py-1 rounded-full">Teamwork</span>
+              <span class="bg-coral-100 text-coral-700 text-xs font-semibold px-3 py-1 rounded-full">Adventure</span>
+            </div>
+            <div class="flex items-end justify-between pt-5 border-t border-gray-100">
+              <div>
+                <p class="text-xs text-gray-400 line-through">9.000.000đ</p>
+                <p class="font-display text-2xl font-bold text-coral-500">7.200.000đ</p>
+              </div>
+              <a href="#contact" class="btn-coral text-white text-xs font-bold uppercase px-5 py-2.5 rounded-full tracking-wider inline-block">Đăng ký</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Course 6 -->
+        <div class="card-tour group relative bg-white rounded-3xl overflow-hidden shadow-lg shadow-gray-200/50">
+          <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-ocean-400 to-sand-400"></div>
+          <div class="p-8">
+            <div class="flex items-center justify-between mb-5">
+              <span class="bg-ocean-500 text-white text-xs font-bold uppercase px-3 py-1.5 rounded-full tracking-wider">Online</span>
+              <span class="text-gray-400 text-sm font-semibold">16 buổi</span>
+            </div>
+            <div class="w-14 h-14 bg-ocean-50 rounded-2xl flex items-center justify-center text-3xl mb-5">✍️</div>
+            <h3 class="font-display text-2xl font-bold text-gray-900 mb-3">Travel Blogging & Content</h3>
+            <p class="text-gray-500 text-sm leading-relaxed mb-6">Xây dựng blog du lịch từ zero: viết content hấp dẫn, SEO, chụp ảnh cho social media, quay vlog Reels/TikTok, và kiếm tiền từ du lịch.</p>
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span class="bg-ocean-100 text-ocean-700 text-xs font-semibold px-3 py-1 rounded-full">SEO</span>
+              <span class="bg-ocean-100 text-ocean-700 text-xs font-semibold px-3 py-1 rounded-full">Video</span>
+              <span class="bg-ocean-100 text-ocean-700 text-xs font-semibold px-3 py-1 rounded-full">Monetize</span>
+            </div>
+            <div class="flex items-end justify-between pt-5 border-t border-gray-100">
+              <div>
+                <p class="text-xs text-gray-400 line-through">4.500.000đ</p>
+                <p class="font-display text-2xl font-bold text-ocean-500">2.990.000đ</p>
+              </div>
+              <a href="#contact" class="btn-coral text-white text-xs font-bold uppercase px-5 py-2.5 rounded-full tracking-wider inline-block">Đăng ký</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ABOUT SECTION ===================== -->
+  <section id="about" class="relative py-24 md:py-32 bg-jungle-900 text-white grain overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute top-20 left-10 w-96 h-96 bg-jungle-400 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-20 right-10 w-80 h-80 bg-sand-400 rounded-full blur-3xl"></div>
+    </div>
+    <div class="relative z-10 max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
+      <div>
+        <p class="tag text-jungle-300 text-xs font-bold uppercase mb-3">✦ Về chúng tôi</p>
+        <h2 class="font-display text-4xl md:text-5xl font-bold mb-6">Không Chỉ Là Tour,<br/><span class="italic text-sand-300">Đó Là Cuộc Sống</span></h2>
+        <p class="text-jungle-200 text-lg leading-relaxed mb-6">VietVenture ra đời năm 2018 với sứ mệnh mang đến những trải nghiệm du lịch có chiều sâu — nơi mỗi chuyến đi là một bài học, mỗi điểm đến là một người thầy.</p>
+        <p class="text-jungle-200 text-lg leading-relaxed mb-8">Đội ngũ của chúng tôi gồm 25+ hướng dẫn viên bản địa, 10 giảng viên chuyên môn và một cộng đồng 5.000+ thành viên yêu du lịch khắp Việt Nam.</p>
+        <div class="grid grid-cols-3 gap-6">
+          <div class="text-center">
+            <p class="font-display text-3xl font-bold text-sand-300">7+</p>
+            <p class="text-jungle-300 text-sm mt-1">Năm kinh nghiệm</p>
+          </div>
+          <div class="text-center">
+            <p class="font-display text-3xl font-bold text-sand-300">63</p>
+            <p class="text-jungle-300 text-sm mt-1">Tỉnh thành phủ sóng</p>
+          </div>
+          <div class="text-center">
+            <p class="font-display text-3xl font-bold text-sand-300">98%</p>
+            <p class="text-jungle-300 text-sm mt-1">Khách quay lại</p>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="rounded-2xl overflow-hidden h-64 shadow-2xl">
+          <img src="https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=400&q=80" alt="Hướng dẫn viên" class="w-full h-full object-cover" />
+        </div>
+        <div class="rounded-2xl overflow-hidden h-64 mt-8 shadow-2xl">
+          <img src="https://images.unsplash.com/photo-1551632811-561732d1e306?w=400&q=80" alt="Trekking" class="w-full h-full object-cover" />
+        </div>
+        <div class="rounded-2xl overflow-hidden h-64 -mt-4 shadow-2xl">
+          <img src="https://images.unsplash.com/photo-1528543606781-2f6e6857f318?w=400&q=80" alt="Cooking class" class="w-full h-full object-cover" />
+        </div>
+        <div class="rounded-2xl overflow-hidden h-64 mt-4 shadow-2xl">
+          <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80" alt="Mountain" class="w-full h-full object-cover" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TESTIMONIALS ===================== -->
+  <section id="testimonials" class="py-24 md:py-32 bg-sand-50">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <p class="tag text-sand-500 text-xs font-bold uppercase mb-3">✦ Khách hàng nói gì</p>
+        <h2 class="font-display text-4xl md:text-5xl font-bold text-gray-900">Câu Chuyện <span class="italic text-jungle-500">Thật</span></h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+
+        <div class="bg-white rounded-3xl p-8 shadow-lg shadow-gray-200/50 relative">
+          <div class="absolute -top-4 left-8 bg-sand-400 text-white w-10 h-10 rounded-full flex items-center justify-center font-display text-2xl font-bold">"</div>
+          <p class="text-gray-600 leading-relaxed mb-6 mt-4">Chuyến Sapa thật sự thay đổi cách tôi nhìn nhận cuộc sống. Hướng dẫn viên Minh tuyệt vời — vừa am hiểu văn hoá vừa rất tận tâm. Đã book thêm tour Hạ Long luôn!</p>
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-jungle-100 flex items-center justify-center font-display font-bold text-jungle-600">TL</div>
+            <div>
+              <p class="font-bold text-gray-900">Thuỷ Linh</p>
+              <p class="text-sm text-gray-400">Nhân viên văn phòng, Hà Nội</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-3xl p-8 shadow-lg shadow-gray-200/50 relative">
+          <div class="absolute -top-4 left-8 bg-ocean-400 text-white w-10 h-10 rounded-full flex items-center justify-center font-display text-2xl font-bold">"</div>
+          <p class="text-gray-600 leading-relaxed mb-6 mt-4">Khoá nhiếp ảnh du lịch quá xứng đáng! Tôi đã học được cách chụp ảnh street food ngon lành, và bây giờ Instagram tôi tăng hơn 3.000 followers. Highly recommend!</p>
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-ocean-100 flex items-center justify-center font-display font-bold text-ocean-600">KD</div>
+            <div>
+              <p class="font-bold text-gray-900">Khoa Đoàn</p>
+              <p class="text-sm text-gray-400">Freelancer, TP.HCM</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-3xl p-8 shadow-lg shadow-gray-200/50 relative">
+          <div class="absolute -top-4 left-8 bg-coral-400 text-white w-10 h-10 rounded-full flex items-center justify-center font-display text-2xl font-bold">"</div>
+          <p class="text-gray-600 leading-relaxed mb-6 mt-4">Cho con trai 15 tuổi đi khoá Survival Skills. Bé về nhà biết tự nấu cơm, dọn dẹp, và kể chuyện rừng suốt 2 tuần. Best investment cho con từ trước tới giờ!</p>
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-coral-100 flex items-center justify-center font-display font-bold text-coral-600">HN</div>
+            <div>
+              <p class="font-bold text-gray-900">Hương Nguyễn</p>
+              <p class="text-sm text-gray-400">Phụ huynh, Đà Nẵng</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== WHY CHOOSE US ===================== -->
+  <section class="py-24 md:py-28 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="font-display text-4xl md:text-5xl font-bold text-gray-900">Tại Sao Chọn <span class="italic text-coral-500">VietVenture</span>?</h2>
+      </div>
+      <div class="grid md:grid-cols-4 gap-8">
+        <div class="text-center">
+          <div class="w-16 h-16 mx-auto bg-jungle-50 rounded-2xl flex items-center justify-center text-3xl mb-5">🛡️</div>
+          <h4 class="font-display text-xl font-bold text-gray-900 mb-2">An Toàn Tuyệt Đối</h4>
+          <p class="text-gray-500 text-sm leading-relaxed">Bảo hiểm du lịch toàn diện, đội ngũ cứu hộ chuyên nghiệp và trang bị hiện đại cho mọi chuyến đi.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-16 h-16 mx-auto bg-ocean-50 rounded-2xl flex items-center justify-center text-3xl mb-5">🎯</div>
+          <h4 class="font-display text-xl font-bold text-gray-900 mb-2">Trải Nghiệm Độc Quyền</h4>
+          <p class="text-gray-500 text-sm leading-relaxed">Lộ trình riêng, không đi theo đoàn đông đúc. Mỗi nhóm tối đa 12 người để đảm bảo chất lượng.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-16 h-16 mx-auto bg-sand-50 rounded-2xl flex items-center justify-center text-3xl mb-5">💚</div>
+          <h4 class="font-display text-xl font-bold text-gray-900 mb-2">Du Lịch Bền Vững</h4>
+          <p class="text-gray-500 text-sm leading-relaxed">10% doanh thu tái đầu tư cho cộng đồng bản địa. Cam kết zero plastic và bảo vệ môi trường.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-16 h-16 mx-auto bg-coral-50 rounded-2xl flex items-center justify-center text-3xl mb-5">🔄</div>
+          <h4 class="font-display text-xl font-bold text-gray-900 mb-2">Hoàn Tiền Linh Hoạt</h4>
+          <p class="text-gray-500 text-sm leading-relaxed">Huỷ miễn phí trước 7 ngày. Đổi lịch không giới hạn. Trả góp 0% qua Momo và ZaloPay.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CTA BANNER ===================== -->
+  <section class="relative py-20 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-coral-500 via-sand-500 to-ocean-500"></div>
+    <div class="absolute inset-0 opacity-20">
+      <div class="absolute top-0 left-1/4 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+      <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-white rounded-full blur-3xl"></div>
+    </div>
+    <div class="relative z-10 max-w-4xl mx-auto px-6 text-center text-white">
+      <h2 class="font-display text-4xl md:text-5xl font-bold mb-4">Sẵn Sàng Cho Hành Trình Tiếp Theo?</h2>
+      <p class="text-white/90 text-lg mb-8 max-w-xl mx-auto">Đăng ký ngay hôm nay để nhận ưu đãi Early Bird giảm đến 30% cho tất cả tour và khoá học tháng này.</p>
+      <a href="#contact" class="inline-block bg-white text-coral-600 font-bold px-10 py-4 rounded-full text-sm uppercase tracking-wider hover:bg-sand-50 transition-colors shadow-xl">Nhận Ưu Đãi Ngay →</a>
+    </div>
+  </section>
+
+  <!-- ===================== CONTACT ===================== -->
+  <section id="contact" class="py-24 md:py-32 bg-sand-50">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid md:grid-cols-2 gap-16">
+        <div>
+          <p class="tag text-jungle-500 text-xs font-bold uppercase mb-3">✦ Liên hệ</p>
+          <h2 class="font-display text-4xl md:text-5xl font-bold text-gray-900 mb-6">Hãy Kể Cho Chúng Tôi<br/><span class="italic text-ocean-500">Ước Mơ Của Bạn</span></h2>
+          <p class="text-gray-500 text-lg leading-relaxed mb-10">Gọi ngay hoặc để lại thông tin — chúng tôi sẽ liên hệ trong 30 phút để tư vấn miễn phí.</p>
+          <div class="space-y-6">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-jungle-100 rounded-xl flex items-center justify-center text-xl">📞</div>
+              <div>
+                <p class="text-sm text-gray-400">Hotline (8h–22h)</p>
+                <p class="font-bold text-gray-900 text-lg">1900 6868 99</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-ocean-100 rounded-xl flex items-center justify-center text-xl">✉️</div>
+              <div>
+                <p class="text-sm text-gray-400">Email</p>
+                <p class="font-bold text-gray-900 text-lg">hello@vietventure.vn</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-sand-100 rounded-xl flex items-center justify-center text-xl">📍</div>
+              <div>
+                <p class="text-sm text-gray-400">Văn phòng</p>
+                <p class="font-bold text-gray-900 text-lg">42 Trần Phú, Ba Đình, Hà Nội</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-coral-100 rounded-xl flex items-center justify-center text-xl">💬</div>
+              <div>
+                <p class="text-sm text-gray-400">Zalo / Messenger</p>
+                <p class="font-bold text-gray-900 text-lg">@VietVenture</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-3xl p-8 md:p-10 shadow-xl shadow-gray-200/50">
+          <form action="#" method="POST">
+            <div class="space-y-5">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Họ và tên *</label>
+                <input type="text" placeholder="Nguyễn Văn A" class="w-full px-5 py-3.5 rounded-xl border border-gray-200 focus:border-jungle-400 focus:ring-2 focus:ring-jungle-100 outline-none transition-all text-gray-800" />
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Số điện thoại *</label>
+                  <input type="tel" placeholder="0912 345 678" class="w-full px-5 py-3.5 rounded-xl border border-gray-200 focus:border-jungle-400 focus:ring-2 focus:ring-jungle-100 outline-none transition-all text-gray-800" />
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                  <input type="email" placeholder="email@example.com" class="w-full px-5 py-3.5 rounded-xl border border-gray-200 focus:border-jungle-400 focus:ring-2 focus:ring-jungle-100 outline-none transition-all text-gray-800" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Bạn quan tâm đến</label>
+                <select class="w-full px-5 py-3.5 rounded-xl border border-gray-200 focus:border-jungle-400 focus:ring-2 focus:ring-jungle-100 outline-none transition-all text-gray-800 bg-white">
+                  <option>Tour du lịch</option>
+                  <option>Khoá học trải nghiệm</option>
+                  <option>Cả tour lẫn khoá học</option>
+                  <option>Tổ chức team building</option>
+                  <option>Khác</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Lời nhắn</label>
+                <textarea rows="4" placeholder="Cho chúng tôi biết bạn muốn gì nhé..." class="w-full px-5 py-3.5 rounded-xl border border-gray-200 focus:border-jungle-400 focus:ring-2 focus:ring-jungle-100 outline-none transition-all text-gray-800 resize-none"></textarea>
+              </div>
+              <button type="submit" class="btn-primary w-full text-white font-bold py-4 rounded-xl text-sm uppercase tracking-wider">Gửi Yêu Cầu Tư Vấn →</button>
+              <p class="text-xs text-gray-400 text-center">Cam kết bảo mật thông tin. Không spam.</p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="bg-jungle-900 text-jungle-200 py-16">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid md:grid-cols-4 gap-12 mb-12">
+        <div>
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-full bg-jungle-500 flex items-center justify-center">
+              <span class="text-white font-display font-bold text-lg">V</span>
+            </div>
+            <span class="font-display text-2xl font-bold text-white">Viet<span class="text-coral-400">Venture</span></span>
+          </div>
+          <p class="text-jungle-300 text-sm leading-relaxed">Mang đến trải nghiệm du lịch và học tập có chiều sâu, khác biệt tại Việt Nam từ 2018.</p>
+        </div>
+        <div>
+          <h4 class="font-display font-bold text-white text-lg mb-4">Tour Nổi Bật</h4>
+          <div class="space-y-2 text-sm">
+            <p><a href="#" class="hover:text-sand-300 transition-colors">Sapa Trekking</a></p>
+            <p><a href="#" class="hover:text-sand-300 transition-colors">Phú Quốc Island</a></p>
+            <p><a href="#" class="hover:text-sand-300 transition-colors">Hội An Phố Cổ</a></p>
+            <p><a href="#" class="hover:text-sand-300 transition-colors">Hạ Long Cruise</a></p>
+            <p><a href="#" class="hover:text-sand-300 transition-colors">Đà Lạt Retreat</a></p>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-display font-bold text-white text-lg mb-4">Khoá Học</h4>
+          <div class="space-y-2 text-sm">
+            <p><a href="#" class="hover:text-sand-300 transition-colors">Nhiếp Ảnh Du Lịch</a></p>
+            <p><a href="#" class="hover:text-sand-300 transition-colors">Lặn Biển PADI</a></p>
+            <p><a href="#" class="hover:text-sand-300 transition-colors">Yoga & Thiền</a></p>
+            <p><a href="#" class="hover:text-sand-300 transition-colors">Ẩm Thực Nâng Cao</a></p>
+            <p><a href="#" class="hover:text-sand-300 transition-colors">Travel Blogging</a></p>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-display font-bold text-white text-lg mb-4">Chính Sách</h4>
+          <div class="space-y-2 text-sm">
+            <p><a href="#" class="hover:text-sand-300 transition-colors">Điều khoản sử dụng</a></p>
+            <p><a href="#" class="hover:text-sand-300 transition-colors">Chính sách hoàn tiền</a></p>
+            <p><a href="#" class="hover:text-sand-300 transition-colors">Bảo mật thông tin</a></p>
+            <p><a href="#" class="hover:text-sand-300 transition-colors">FAQ</a></p>
+            <p><a href="#" class="hover:text-sand-300 transition-colors">Tuyển dụng</a></p>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-jungle-700 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-jungle-400 text-sm">&copy; 2026 VietVenture. Đã đăng ký bản quyền.</p>
+        <div class="flex gap-4">
+          <a href="#" class="w-10 h-10 rounded-full bg-jungle-800 flex items-center justify-center hover:bg-jungle-700 transition-colors text-sm">FB</a>
+          <a href="#" class="w-10 h-10 rounded-full bg-jungle-800 flex items-center justify-center hover:bg-jungle-700 transition-colors text-sm">IG</a>
+          <a href="#" class="w-10 h-10 rounded-full bg-jungle-800 flex items-center justify-center hover:bg-jungle-700 transition-colors text-sm">YT</a>
+          <a href="#" class="w-10 h-10 rounded-full bg-jungle-800 flex items-center justify-center hover:bg-jungle-700 transition-colors text-sm">TT</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
