@@ -199,8 +199,7 @@
   .mobile-menu.open { transform: translateX(0); }
 
   .mobile-menu-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid rgba(0,35,149,0.08);
+    padding: 0.85rem 1.25rem;
     display: flex; align-items: center; justify-content: space-between;
   }
   .mobile-close {
@@ -786,9 +785,10 @@
 
   /* ===== RESPONSIVE ===== */
   @media (max-width: 900px) {
-    .hero-inner { padding: 6rem 1.5rem 4rem; }
+    .hero-inner { padding: 5rem 1.5rem 2.5rem; }
     .hero-cards-row { grid-template-columns: 1fr 1fr; }
     .hero-nav { display: none; }
+    .hero-actions { flex-wrap: nowrap; }
     .about-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
     .study-steps { flex-direction: column; align-items: center; }
     .study-step-arrow { display: none; }
@@ -948,7 +948,7 @@
     </p>
     <div class="hero-actions">
       <a href="#courses" class="btn-primary">
-        <span data-i18n="t13">Khám phá khóa học</span>
+        <span data-i18n="t13">Khám phá</span>
       </a>
       <a href="#contact" class="btn-secondary">
         <span data-i18n="t14">Tư vấn miễn phí →</span>
