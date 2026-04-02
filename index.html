@@ -359,7 +359,7 @@
   }
   .section-sub {
     font-size: 0.97rem; color: var(--text-mid); line-height: 1.8;
-    max-width: 560px; font-weight: 300;
+    max-width: 560px; font-weight: 300; margin-bottom: 2.5rem;
   }
   .text-center .section-sub { margin-left: auto; margin-right: auto; }
   .text-center { text-align: center; }
@@ -371,24 +371,6 @@
     font-style: italic; color: var(--fr-blue);
   }
 
-  .about-stats {
-    display: flex; align-items: center; justify-content: center;
-    gap: 2.5rem; margin: 3rem 0;
-    padding: 2rem 2.5rem;
-    background: var(--off-white); border-radius: 20px;
-    border: 1px solid rgba(0,0,0,0.04);
-  }
-  .about-stat { text-align: center; flex: 1; }
-  .about-stat-num {
-    font-family: 'DM Serif Display', serif;
-    font-size: 2.2rem; font-weight: 400; line-height: 1;
-  }
-  .about-stat-label {
-    font-size: 0.78rem; color: var(--text-light); margin-top: 6px; font-weight: 500;
-  }
-  .about-stat-divider {
-    width: 1px; height: 40px; background: rgba(0,0,0,0.08); flex-shrink: 0;
-  }
 
   .about-grid {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;
@@ -668,8 +650,6 @@
     .hero-inner { padding: 6rem 1.5rem 4rem; }
     .hero-cards-row { grid-template-columns: 1fr 1fr; }
     .hero-nav { display: none; }
-    .about-stats { flex-wrap: wrap; gap: 1.5rem; }
-    .about-stat-divider { display: none; }
     .about-grid { grid-template-columns: 1fr 1fr; }
     .camp-cards { grid-template-columns: 1fr; }
     .footer-inner { grid-template-columns: 1fr 1fr; gap: 2rem; }
@@ -869,28 +849,6 @@
       </p>
     </div>
 
-    <!-- Stats row -->
-    <div class="about-stats fade-in">
-      <div class="about-stat">
-        <div class="about-stat-num" style="color:var(--fr-blue)">500+</div>
-        <div class="about-stat-label" data-i18n="t26">Học viên</div>
-      </div>
-      <div class="about-stat-divider"></div>
-      <div class="about-stat">
-        <div class="about-stat-num" style="color:var(--vn-red)">5+</div>
-        <div class="about-stat-label" data-i18n="t27">Năm kinh nghiệm</div>
-      </div>
-      <div class="about-stat-divider"></div>
-      <div class="about-stat">
-        <div class="about-stat-num" style="color:var(--gold)">98%</div>
-        <div class="about-stat-label" data-i18n="t28">Hài lòng</div>
-      </div>
-      <div class="about-stat-divider"></div>
-      <div class="about-stat">
-        <div class="about-stat-num" style="color:#6a0dad">10+</div>
-        <div class="about-stat-label" data-i18n="t33">10+ trường ĐH Pháp</div>
-      </div>
-    </div>
 
     <!-- Feature cards -->
     <div class="about-grid fade-in">
