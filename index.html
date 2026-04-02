@@ -353,8 +353,8 @@
   }
 
   .section-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.7rem, 2.8vw, 2.5rem); font-weight: 700;
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.7rem, 2.8vw, 2.5rem); font-weight: 400;
     color: var(--text-dark); line-height: 1.25; margin-bottom: 1rem;
   }
   .section-sub {
@@ -364,58 +364,100 @@
   .text-center .section-sub { margin-left: auto; margin-right: auto; }
   .text-center { text-align: center; }
 
+  /* ===== ABOUT ===== */
+  .about-section { background: var(--white); }
+  .about-brand {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic; color: var(--fr-blue);
+  }
+
+  .about-stats {
+    display: flex; align-items: center; justify-content: center;
+    gap: 2.5rem; margin: 3rem 0;
+    padding: 2rem 2.5rem;
+    background: var(--off-white); border-radius: 20px;
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+  .about-stat { text-align: center; flex: 1; }
+  .about-stat-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.2rem; font-weight: 400; line-height: 1;
+  }
+  .about-stat-label {
+    font-size: 0.78rem; color: var(--text-light); margin-top: 6px; font-weight: 500;
+  }
+  .about-stat-divider {
+    width: 1px; height: 40px; background: rgba(0,0,0,0.08); flex-shrink: 0;
+  }
+
+  .about-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;
+  }
+  .about-card {
+    border-radius: 20px; padding: 1.75rem 1.3rem; text-align: center;
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.3s; background: white;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+  .about-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.08); }
+  .about-card-icon {
+    width: 56px; height: 56px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; margin: 0 auto 1rem;
+    background: var(--off-white);
+  }
+  .about-card h4 { font-size: 0.92rem; font-weight: 700; color: var(--text-dark); margin-bottom: 0.35rem; }
+  .about-card p { font-size: 0.78rem; color: var(--text-mid); line-height: 1.55; }
+
   /* ===== SERVICES ===== */
   .services { background: var(--off-white); }
 
   .services-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.25rem; margin-top: 3rem;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem; margin-top: 3rem;
   }
 
   .service-card {
-    background: white; border-radius: 16px; padding: 1.75rem 1.5rem;
+    background: white; border-radius: 20px; padding: 1.75rem 1.5rem;
     border: 1px solid rgba(0,0,0,0.05);
-    transition: all 0.3s; position: relative; overflow: hidden;
+    transition: all 0.3s;
     box-shadow: 0 2px 12px rgba(0,0,0,0.04);
   }
-  .service-card::before {
-    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
-    background: var(--card-color, var(--fr-blue));
-  }
-  .service-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(0,0,0,0.09); }
+  .service-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.09); }
 
   .service-icon {
-    width: 48px; height: 48px; border-radius: 12px;
+    width: 48px; height: 48px; border-radius: 14px;
     display: flex; align-items: center; justify-content: center;
     font-size: 1.4rem; margin-bottom: 1.1rem;
-    background: color-mix(in srgb, var(--card-color, var(--fr-blue)) 10%, transparent);
+    background: var(--off-white);
   }
   .service-card h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;
+    font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem;
     color: var(--text-dark);
   }
   .service-card p { font-size: 0.85rem; color: var(--text-mid); line-height: 1.7; }
   .service-tag {
     display: inline-block; margin-top: 0.9rem;
-    font-size: 0.72rem; font-weight: 600; color: var(--card-color, var(--fr-blue));
-    border: 1.5px solid; border-color: var(--card-color, var(--fr-blue));
-    padding: 3px 10px; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 700;
+    color: var(--text-mid);
+    background: var(--off-white);
+    padding: 4px 12px; border-radius: 8px;
   }
 
   /* ===== COURSES ===== */
   .courses-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-    gap: 1.6rem; margin-top: 3rem;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem; margin-top: 3rem;
   }
 
   .course-card {
-    border-radius: 16px; overflow: hidden;
+    border-radius: 20px; overflow: hidden;
     border: 1px solid rgba(0,0,0,0.06);
-    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.05);
     transition: all 0.3s; background: white;
+    display: flex; flex-direction: column;
   }
-  .course-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(0,0,0,0.11); }
+  .course-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0,0,0,0.1); }
 
   .course-header { padding: 1.75rem 1.6rem 1.4rem; position: relative; }
   .course-flag { position: absolute; top: 1.1rem; right: 1.1rem; font-size: 1.5rem; }
@@ -424,76 +466,78 @@
     letter-spacing: 0.08em; margin-bottom: 0.5rem;
   }
   .course-card h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.2rem; font-weight: 700; margin-bottom: 0.45rem;
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.25rem; font-weight: 400; margin-bottom: 0.5rem;
     color: var(--text-dark);
   }
   .course-card p { font-size: 0.83rem; color: var(--text-mid); line-height: 1.65; }
-  .course-body { padding: 0 1.6rem 1.6rem; }
-  .course-features { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .course-body { padding: 1.25rem 1.6rem 1.6rem; flex: 1; }
+  .course-features { list-style: none; display: flex; flex-direction: column; gap: 8px; }
   .course-features li {
-    font-size: 0.8rem; color: var(--text-mid);
-    display: flex; align-items: center; gap: 8px;
+    font-size: 0.82rem; color: var(--text-mid);
+    display: flex; align-items: center; gap: 10px;
   }
   .course-features li::before {
-    content: '✓'; font-weight: 700; font-size: 0.7rem;
+    content: '✓'; font-weight: 700; font-size: 0.65rem;
     color: white; background: var(--course-color, var(--fr-blue));
-    width: 15px; height: 15px; border-radius: 50%;
+    width: 18px; height: 18px; border-radius: 6px;
     display: inline-flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
   .course-footer {
     border-top: 1px solid var(--light-gray);
-    padding: 0.9rem 1.6rem;
+    padding: 1rem 1.6rem;
     display: flex; align-items: center; justify-content: space-between;
   }
   .course-price {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.15rem; font-weight: 700; color: var(--text-dark);
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem; font-weight: 400; color: var(--text-dark);
   }
   .course-price span { font-size: 0.7rem; font-weight: 400; color: var(--text-light); font-family: 'Quicksand', sans-serif; }
   .course-btn {
-    font-size: 0.78rem; font-weight: 600;
-    color: var(--course-color, var(--fr-blue));
-    border: 1.5px solid; border-color: var(--course-color, var(--fr-blue));
-    padding: 6px 14px; border-radius: 20px;
-    cursor: pointer; background: none; transition: all 0.2s;
+    font-size: 0.8rem; font-weight: 700;
+    color: white;
+    background: var(--course-color, var(--fr-blue));
+    border: none;
+    padding: 6px 12px; border-radius: 8px;
+    cursor: pointer; transition: all 0.25s;
     text-decoration: none; display: inline-block;
   }
-  .course-btn:hover { background: var(--course-color, var(--fr-blue)); color: white; }
+  .course-btn:hover { opacity: 0.85; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 
   /* ===== CAMP ===== */
   .camp { background: var(--off-white); }
-  .camp-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem; margin-top: 3rem; }
+  .camp-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; }
 
   .camp-card {
-    border-radius: 20px; overflow: hidden;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.1);
-    transition: transform 0.3s;
+    border-radius: 24px; overflow: hidden; position: relative;
+    min-height: 420px; display: flex; flex-direction: column; justify-content: flex-end;
+    background-size: cover; background-position: center;
+    transition: transform 0.4s;
   }
-  .camp-card:hover { transform: scale(1.015); }
+  .camp-card:hover { transform: translateY(-4px); }
+  .camp-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.7) 100%);
+    border-radius: 24px;
+  }
 
-  .camp-banner {
-    height: 180px; display: flex; align-items: center; justify-content: center;
-    font-size: 3rem; position: relative; overflow: hidden;
+  .camp-content {
+    position: relative; z-index: 1;
+    padding: 2rem; color: white;
   }
-  .camp-banner-fr {
-    background: linear-gradient(135deg, var(--fr-blue) 33%, white 33%, white 66%, var(--fr-red) 66%);
-  }
-  .camp-banner-vn { background: var(--vn-red); }
-  .vn-star { position: absolute; font-size: 3.5rem; color: var(--vn-yellow); opacity: 0.9; }
-
-  .camp-content { background: white; padding: 1.6rem; }
   .camp-content h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem; font-weight: 400; margin-bottom: 0.6rem; color: white;
   }
-  .camp-content p { font-size: 0.86rem; color: var(--text-mid); line-height: 1.7; margin-bottom: 0.9rem; }
-  .camp-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .camp-content p { font-size: 0.86rem; color: rgba(255,255,255,0.8); line-height: 1.7; margin-bottom: 1rem; }
+  .camp-tags { display: flex; flex-wrap: wrap; gap: 8px; }
   .camp-tag {
-    font-size: 0.7rem; font-weight: 600;
-    background: var(--light-gray); color: var(--text-mid);
-    padding: 4px 10px; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 600;
+    background: rgba(255,255,255,0.15); color: white;
+    backdrop-filter: blur(8px);
+    padding: 5px 12px; border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.2);
   }
 
   /* ===== TRAVEL ===== */
@@ -623,8 +667,10 @@
   @media (max-width: 900px) {
     .hero-inner { padding: 6rem 1.5rem 4rem; }
     .hero-cards-row { grid-template-columns: 1fr 1fr; }
-    .hero-stats { gap: 1.5rem; }
     .hero-nav { display: none; }
+    .about-stats { flex-wrap: wrap; gap: 1.5rem; }
+    .about-stat-divider { display: none; }
+    .about-grid { grid-template-columns: 1fr 1fr; }
     .camp-cards { grid-template-columns: 1fr; }
     .footer-inner { grid-template-columns: 1fr 1fr; gap: 2rem; }
   }
@@ -810,59 +856,63 @@
 </section>
 
 <!-- ===== ABOUT ===== -->
-<section id="about">
+<section id="about" class="about-section">
   <div class="section-inner">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3.5rem;align-items:center;">
-      <div class="fade-in">
-        <div class="section-label">
-          <span data-i18n="t2">Về chúng tôi</span>
-        </div>
-        <h2 class="section-title">
-          <span data-i18n="t23"></span><br>
-          <em style="font-style:italic;color:var(--fr-blue)">Oui France</em>
-        </h2>
-        <p style="color:var(--text-mid);line-height:1.8;font-size:0.93rem;margin-bottom:1.1rem;font-weight:300;">
-          <span data-i18n="t24">Chúng tôi là đơn vị tiên phong kết nối cộng đồng Pháp – Việt thông qua giáo dục ngôn ngữ chất lượng cao và những hành trình du lịch văn hóa đặc sắc.</span>
-        </p>
-        <p style="color:var(--text-mid);line-height:1.8;font-size:0.93rem;font-weight:300;">
-          <span data-i18n="t25">Với đội ngũ giáo viên bản ngữ và chuyên gia du lịch giàu kinh nghiệm, Oui France mang đến trải nghiệm học tập và khám phá đích thực.</span>
-        </p>
-        <div style="display:flex;gap:2rem;margin-top:1.75rem;flex-wrap:wrap;">
-          <div>
-            <div style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;color:var(--fr-blue)">500+</div>
-            <div style="font-size:0.8rem;color:var(--text-light)" data-i18n="t26">Học viên</div>
-          </div>
-          <div>
-            <div style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;color:var(--vn-red)">5+</div>
-            <div style="font-size:0.8rem;color:var(--text-light)" data-i18n="t27">Năm kinh nghiệm</div>
-          </div>
-          <div>
-            <div style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;color:var(--gold)">98%</div>
-            <div style="font-size:0.8rem;color:var(--text-light)" data-i18n="t28">Hài lòng</div>
-          </div>
-        </div>
+    <!-- Top: centered intro -->
+    <div class="text-center fade-in">
+      <div class="section-label"><span data-i18n="t2">Về chúng tôi</span></div>
+      <h2 class="section-title">
+        <span data-i18n="t23">Công ty TNHH Giáo dục & Du lịch</span> <em class="about-brand">Oui France</em>
+      </h2>
+      <p class="section-sub" style="max-width:640px">
+        <span data-i18n="t24">Chúng tôi là đơn vị tiên phong kết nối cộng đồng Pháp – Việt thông qua giáo dục ngôn ngữ chất lượng cao và những hành trình du lịch văn hóa đặc sắc.</span>
+      </p>
+    </div>
+
+    <!-- Stats row -->
+    <div class="about-stats fade-in">
+      <div class="about-stat">
+        <div class="about-stat-num" style="color:var(--fr-blue)">500+</div>
+        <div class="about-stat-label" data-i18n="t26">Học viên</div>
       </div>
-      <div class="fade-in" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div style="background:linear-gradient(135deg,var(--fr-blue),#0038c0);border-radius:18px;padding:1.75rem;color:white;display:flex;flex-direction:column;gap:8px;">
-          <div style="font-size:1.75rem">🗼</div>
-          <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700">Paris, France</div>
-          <div style="font-size:0.77rem;opacity:0.75" data-i18n="t29">Trụ sở đối tác</div>
-        </div>
-        <div style="background:linear-gradient(135deg,var(--vn-red),#b01a14);border-radius:18px;padding:1.75rem;color:white;display:flex;flex-direction:column;gap:8px;margin-top:20px;">
-          <div style="font-size:1.75rem">🏮</div>
-          <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700">Hà Nội, VN</div>
-          <div style="font-size:0.77rem;opacity:0.75" data-i18n="t30">Trụ sở chính</div>
-        </div>
-        <div style="background:linear-gradient(135deg,var(--vn-yellow),#e5b800);border-radius:18px;padding:1.75rem;color:var(--text-dark);display:flex;flex-direction:column;gap:8px;">
-          <div style="font-size:1.75rem">📜</div>
-          <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700">DELF / DALF</div>
-          <div style="font-size:0.77rem;opacity:0.65" data-i18n="t31">Luyện thi chính thức</div>
-        </div>
-        <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:18px;padding:1.75rem;color:white;display:flex;flex-direction:column;gap:8px;margin-top:-20px;">
-          <div style="font-size:1.75rem">🤝</div>
-          <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700" data-i18n="t32">Đối tác tin cậy</div>
-          <div style="font-size:0.77rem;opacity:0.65" data-i18n="t33">10+ trường ĐH Pháp</div>
-        </div>
+      <div class="about-stat-divider"></div>
+      <div class="about-stat">
+        <div class="about-stat-num" style="color:var(--vn-red)">5+</div>
+        <div class="about-stat-label" data-i18n="t27">Năm kinh nghiệm</div>
+      </div>
+      <div class="about-stat-divider"></div>
+      <div class="about-stat">
+        <div class="about-stat-num" style="color:var(--gold)">98%</div>
+        <div class="about-stat-label" data-i18n="t28">Hài lòng</div>
+      </div>
+      <div class="about-stat-divider"></div>
+      <div class="about-stat">
+        <div class="about-stat-num" style="color:#6a0dad">10+</div>
+        <div class="about-stat-label" data-i18n="t33">10+ trường ĐH Pháp</div>
+      </div>
+    </div>
+
+    <!-- Feature cards -->
+    <div class="about-grid fade-in">
+      <div class="about-card">
+        <div class="about-card-icon">🎓</div>
+        <h4 data-i18n="t39">Ngôn ngữ</h4>
+        <p data-i18n="t52">Học tiếng Pháp và tiếng Việt cùng giáo viên bản ngữ, online linh hoạt toàn cầu</p>
+      </div>
+      <div class="about-card">
+        <div class="about-card-icon">⛺</div>
+        <h4 data-i18n="t42">Trại Hè Pháp – Việt</h4>
+        <p data-i18n="t43">Trại hè ngôn ngữ và văn hóa tại Pháp và Việt Nam. Trải nghiệm đích thực, giao lưu quốc tế cho trẻ 8–18 tuổi.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-card-icon">✈️</div>
+        <h4 data-i18n="t44">Du lịch Pháp ↔ Việt Nam</h4>
+        <p data-i18n="t45">Tour trọn gói khám phá nước Pháp hoặc Việt Nam. Lịch trình thiết kế riêng theo nhu cầu.</p>
+      </div>
+      <div class="about-card">
+        <div class="about-card-icon">📜</div>
+        <h4 data-i18n="t46">Tư vấn Du học Pháp</h4>
+        <p data-i18n="t47">Hỗ trợ hồ sơ, visa, học bổng và định cư tại Pháp. Kết nối trực tiếp với 10+ trường đại học đối tác.</p>
       </div>
     </div>
   </div>
@@ -944,7 +994,7 @@
         </div>
         <div class="course-footer">
           <div class="course-price">2.500.000 <span>VNĐ/<span data-i18n="t60">tháng</span></span></div>
-          <a href="#contact" class="course-btn"><span data-i18n="t61">Đăng ký ngay</span></a>
+          <a href="https://ouifrancevietnam.hoola.vn/course/huong-dan-su-dung-website-khoi-tao-tu-hoolavn" target="_blank" class="course-btn"><span data-i18n="t61">Đăng ký ngay</span></a>
         </div>
       </div>
 
@@ -966,7 +1016,7 @@
         </div>
         <div class="course-footer">
           <div class="course-price">2.200.000 <span>VNĐ/<span data-i18n="t60">tháng</span></span></div>
-          <a href="#contact" class="course-btn"><span data-i18n="t61">Đăng ký ngay</span></a>
+          <a href="https://ouifrancevietnam.hoola.vn/course/huong-dan-su-dung-website-khoi-tao-tu-hoolavn" target="_blank" class="course-btn"><span data-i18n="t61">Đăng ký ngay</span></a>
         </div>
       </div>
 
@@ -988,7 +1038,7 @@
         </div>
         <div class="course-footer">
           <div class="course-price">3.500.000 <span>VNĐ/<span data-i18n="t78">khóa</span></span></div>
-          <a href="#contact" class="course-btn"><span data-i18n="t61">Đăng ký ngay</span></a>
+          <a href="https://ouifrancevietnam.hoola.vn/course/huong-dan-su-dung-website-khoi-tao-tu-hoolavn" target="_blank" class="course-btn"><span data-i18n="t61">Đăng ký ngay</span></a>
         </div>
       </div>
     </div>
@@ -1004,10 +1054,7 @@
       <p class="section-sub"><span data-i18n="t80">Trại hè ngôn ngữ và văn hóa tại Pháp và Việt Nam – nơi trẻ em khám phá thế giới</span></p>
     </div>
     <div class="camp-cards">
-      <div class="camp-card fade-in">
-        <div class="camp-banner camp-banner-fr">
-          <div style="position:relative;z-index:1;text-align:center"><div style="font-size:2.75rem">🗼</div></div>
-        </div>
+      <div class="camp-card fade-in" style="background-image:url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800&q=80')">
         <div class="camp-content">
           <h3><span data-i18n="t81">Trại Hè Nước Pháp 🇫🇷</span></h3>
           <p><span data-i18n="t82">2–3 tuần khám phá Paris, vùng Loire và bờ biển Normandie. Học tiếng Pháp ban ngày, tham quan di sản ban tối.</span></p>
@@ -1018,10 +1065,7 @@
           </div>
         </div>
       </div>
-      <div class="camp-card fade-in">
-        <div class="camp-banner camp-banner-vn">
-          <div class="vn-star">★</div>
-        </div>
+      <div class="camp-card fade-in" style="background-image:url('https://images.unsplash.com/photo-1557750255-c76072a7aad1?w=800&q=80')">
         <div class="camp-content">
           <h3><span data-i18n="t85">Trại Hè Việt Nam 🇻🇳</span></h3>
           <p><span data-i18n="t86">Hành trình xuyên Việt: Hà Nội – Huế – Hội An – TP.HCM. Học tiếng Việt, làm đồ thủ công, thưởng thức ẩm thực và văn hóa truyền thống Việt Nam.</span></p>
