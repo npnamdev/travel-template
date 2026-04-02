@@ -179,7 +179,7 @@
   }
 
   .mobile-overlay {
-    display: none; position: fixed; inset: 0; z-index: 998;
+    display: none; position: fixed; inset: 0; z-index: 1000;
     background: rgba(0,0,0,0.4);
     opacity: 0; transition: opacity 0.35s ease;
   }
@@ -188,7 +188,7 @@
   .mobile-menu {
     position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
     background: #ffffff;
-    z-index: 999; padding: 0;
+    z-index: 1001; padding: 0;
     flex-direction: column; gap: 0;
     box-shadow: 4px 0 30px rgba(0,35,149,0.12);
     transform: translateX(-100%);
@@ -789,11 +789,13 @@
     .hero-inner { padding: 6rem 1.5rem 4rem; }
     .hero-cards-row { grid-template-columns: 1fr 1fr; }
     .hero-nav { display: none; }
-    .about-grid { grid-template-columns: 1fr 1fr; }
+    .about-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
     .study-steps { flex-direction: column; align-items: center; }
     .study-step-arrow { display: none; }
     .study-fields { grid-template-columns: 1fr 1fr; }
     .camp-cards { grid-template-columns: 1fr; }
+    .travel-routes { grid-template-columns: 1fr; }
+    .news-grid { grid-template-columns: 1fr; }
     .footer-inner { grid-template-columns: 1fr 1fr; gap: 2rem; }
   }
 
@@ -801,8 +803,9 @@
     .nav-links { display: none; }
     .lang-dropdown { display: none; }
     .hamburger { display: flex; }
-    .hero-cards-grid { grid-template-columns: 1fr 1fr; }
-    .hero-card:nth-child(2), .hero-card:nth-child(4) { margin-top: 0; }
+    .hero-cards-row { grid-template-columns: 1fr 1fr; }
+    .about-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .study-fields { grid-template-columns: 1fr; }
     .footer-inner { grid-template-columns: 1fr; }
     .cta-actions { flex-direction: column; align-items: center; }
   }
