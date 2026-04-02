@@ -1705,5 +1705,17 @@
     setLang(savedLang);
   }
 </script>
+
+<script>
+window.addEventListener("load", function () {
+  if (window.location.hash) {
+    // Reset về top
+    window.scrollTo(0, 0);
+
+    // Xóa hash luôn (optional nhưng nên có)
+    history.replaceState(null, null, window.location.pathname);
+  }
+});
+</script>
 </body>
 </html>
