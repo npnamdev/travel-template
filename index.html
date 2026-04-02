@@ -522,35 +522,90 @@
     border: 1px solid rgba(255,255,255,0.2);
   }
 
+  /* ===== STUDY ===== */
+  .study-steps {
+    display: flex; align-items: flex-start; justify-content: center;
+    gap: 1rem; margin-bottom: 3rem;
+  }
+  .study-step {
+    flex: 1; max-width: 280px; text-align: center;
+    background: white; border-radius: 20px;
+    padding: 2rem 1.5rem; border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    transition: all 0.3s;
+  }
+  .study-step:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.08); }
+  .study-step-num {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.8rem; font-weight: 700;
+    margin: 0 auto 1rem;
+  }
+  .study-step h4 { font-size: 0.95rem; font-weight: 700; color: var(--text-dark); margin-bottom: 0.4rem; }
+  .study-step p { font-size: 0.8rem; color: var(--text-mid); line-height: 1.55; }
+  .study-step-arrow {
+    color: var(--text-light); font-size: 1.2rem; padding-top: 3rem;
+    flex-shrink: 0;
+  }
+
+  .study-fields {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+  }
+  .study-field {
+    display: flex; align-items: center; gap: 12px;
+    background: white; border-radius: 14px;
+    padding: 1rem 1.1rem; border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    transition: all 0.3s;
+  }
+  .study-field:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,0.07); }
+  .study-field-icon {
+    font-size: 1.4rem; width: 42px; height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--off-white); border-radius: 12px; flex-shrink: 0;
+  }
+  .study-field strong { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); margin-bottom: 2px; }
+  .study-field span { font-size: 0.74rem; color: var(--text-light); }
+
   /* ===== TRAVEL ===== */
   .travel-routes {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-    gap: 1.4rem; margin-top: 3rem;
-  }
-  .travel-card {
-    border-radius: 16px; overflow: hidden;
-    border: 1px solid rgba(0,0,0,0.06);
-    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-    transition: all 0.3s; background: white;
-  }
-  .travel-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(0,0,0,0.11); }
-
-  .travel-route-banner {
-    height: 120px; display: flex; align-items: center; justify-content: center;
+    display: grid; grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
   }
-  .route-flag { font-size: 2.4rem; }
-  .route-arrow { font-size: 1.2rem; color: white; opacity: 0.8; }
+  .travel-card {
+    border-radius: 20px; overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    transition: all 0.3s; background: white;
+  }
+  .travel-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.08); }
+
+  .travel-img {
+    height: 180px; background-size: cover; background-position: center;
+    position: relative;
+  }
+  .travel-img::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.3) 100%);
+  }
+  .travel-route-label {
+    position: absolute; top: 1rem; left: 1rem; z-index: 1;
+    padding: 5px 12px; border-radius: 8px;
+    background: rgba(0,0,0,0.45); backdrop-filter: blur(8px);
+    color: white; font-size: 0.78rem; font-weight: 700;
+    display: flex; align-items: center; gap: 6px;
+  }
+
   .travel-card-body { padding: 1.4rem; }
   .travel-card h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem; font-weight: 700; margin-bottom: 0.45rem;
+    font-size: 1.05rem; font-weight: 700; margin-bottom: 0.45rem;
+    color: var(--text-dark);
   }
   .travel-card p { font-size: 0.83rem; color: var(--text-mid); line-height: 1.65; }
 
   .travel-detail {
-    display: flex; justify-content: space-between; margin-top: 0.9rem;
-    padding-top: 0.9rem; border-top: 1px solid var(--light-gray);
+    display: flex; justify-content: space-between; margin-top: 1rem;
+    padding-top: 1rem; border-top: 1px solid var(--light-gray);
   }
   .travel-detail-item { text-align: center; }
   .travel-detail-item .val { font-size: 0.92rem; font-weight: 700; color: var(--text-dark); display: block; }
@@ -651,6 +706,9 @@
     .hero-cards-row { grid-template-columns: 1fr 1fr; }
     .hero-nav { display: none; }
     .about-grid { grid-template-columns: 1fr 1fr; }
+    .study-steps { flex-direction: column; align-items: center; }
+    .study-step-arrow { display: none; }
+    .study-fields { grid-template-columns: 1fr 1fr; }
     .camp-cards { grid-template-columns: 1fr; }
     .footer-inner { grid-template-columns: 1fr 1fr; gap: 2rem; }
   }
@@ -1041,62 +1099,69 @@
 <!-- ===== STUDY ===== -->
 <section id="study">
   <div class="section-inner">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3.5rem;align-items:center;">
-      <div class="fade-in">
-        <div class="section-label"><span data-i18n="t5">Tư vấn du học</span></div>
-        <h2 class="section-title"><span data-i18n="t87"></span> <em style="font-style:italic;color:var(--fr-blue)" data-i18n="t10">nước Pháp</em></h2>
-        <p style="color:var(--text-mid);line-height:1.8;font-size:0.93rem;margin-bottom:1.4rem;font-weight:300;">
-          <span data-i18n="t88">Từ hồ sơ đại học đến visa định cư, chúng tôi đồng hành cùng bạn trong từng bước trên hành trình du học Pháp.</span>
-        </p>
-        <div style="display:flex;flex-direction:column;gap:0.9rem;">
-          <div style="display:flex;gap:12px;align-items:flex-start;">
-            <div style="width:34px;height:34px;border-radius:50%;background:var(--fr-blue);color:white;display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:700;flex-shrink:0">01</div>
-            <div>
-              <div style="font-weight:600;font-size:0.9rem;margin-bottom:2px"><span data-i18n="t89">Chọn trường & ngành học</span></div>
-              <div style="font-size:0.8rem;color:var(--text-mid)"><span data-i18n="t90">Tư vấn miễn phí với chuyên gia đã học tại Pháp</span></div>
-            </div>
-          </div>
-          <div style="display:flex;gap:12px;align-items:flex-start;">
-            <div style="width:34px;height:34px;border-radius:50%;background:var(--vn-red);color:white;display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:700;flex-shrink:0">02</div>
-            <div>
-              <div style="font-weight:600;font-size:0.9rem;margin-bottom:2px"><span data-i18n="t91">Chuẩn bị hồ sơ & visa</span></div>
-              <div style="font-size:0.8rem;color:var(--text-mid)"><span data-i18n="t92">Hỗ trợ Campus France, đặt lịch phỏng vấn</span></div>
-            </div>
-          </div>
-          <div style="display:flex;gap:12px;align-items:flex-start;">
-            <div style="width:34px;height:34px;border-radius:50%;background:var(--gold);color:white;display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:700;flex-shrink:0">03</div>
-            <div>
-              <div style="font-weight:600;font-size:0.9rem;margin-bottom:2px"><span data-i18n="t93">Hỗ trợ định cư</span></div>
-              <div style="font-size:0.8rem;color:var(--text-mid)"><span data-i18n="t94">Tìm nhà, mở tài khoản, hòa nhập cuộc sống Pháp</span></div>
-            </div>
-          </div>
-        </div>
-        <a href="#contact" class="btn-primary" style="margin-top:1.75rem;display:inline-flex;background:var(--fr-blue);color:white;">
-          <span data-i18n="t95">Đặt lịch tư vấn miễn phí</span>
-        </a>
+    <div class="text-center fade-in">
+      <div class="section-label"><span data-i18n="t5">Tư vấn du học</span></div>
+      <h2 class="section-title"><span data-i18n="t87">Con đường đến</span> <em class="about-brand" data-i18n="t10">nước Pháp</em></h2>
+      <p class="section-sub" style="max-width:600px"><span data-i18n="t88">Từ hồ sơ đại học đến visa định cư, chúng tôi đồng hành cùng bạn trong từng bước trên hành trình du học Pháp.</span></p>
+    </div>
+
+    <!-- 3 steps -->
+    <div class="study-steps fade-in">
+      <div class="study-step">
+        <div class="study-step-num" style="background:var(--fr-blue)">01</div>
+        <h4><span data-i18n="t89">Chọn trường & ngành học</span></h4>
+        <p><span data-i18n="t90">Tư vấn miễn phí với chuyên gia đã học tại Pháp</span></p>
       </div>
-      <div class="fade-in" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div style="background:var(--off-white);border-radius:14px;padding:1.4rem;border:1px solid rgba(0,0,0,0.05);text-align:center;">
-          <div style="font-size:1.75rem;margin-bottom:0.45rem">🏛️</div>
-          <div style="font-weight:600;font-size:0.86rem;margin-bottom:0.25rem" data-i18n="t96">Đại học</div>
-          <div style="font-size:0.76rem;color:var(--text-light)">Licence, Master, PhD</div>
-        </div>
-        <div style="background:var(--off-white);border-radius:14px;padding:1.4rem;border:1px solid rgba(0,0,0,0.05);text-align:center;margin-top:18px">
-          <div style="font-size:1.75rem;margin-bottom:0.45rem">🎨</div>
-          <div style="font-weight:600;font-size:0.86rem;margin-bottom:0.25rem" data-i18n="t97">Nghệ thuật</div>
-          <div style="font-size:0.76rem;color:var(--text-light)" data-i18n="t98">Thời trang, Mỹ thuật</div>
-        </div>
-        <div style="background:var(--off-white);border-radius:14px;padding:1.4rem;border:1px solid rgba(0,0,0,0.05);text-align:center;">
-          <div style="font-size:1.75rem;margin-bottom:0.45rem">💼</div>
-          <div style="font-weight:600;font-size:0.86rem;margin-bottom:0.25rem" data-i18n="t99">Kinh doanh</div>
-          <div style="font-size:0.76rem;color:var(--text-light)" data-i18n="t100">Business School top đầu</div>
-        </div>
-        <div style="background:var(--off-white);border-radius:14px;padding:1.4rem;border:1px solid rgba(0,0,0,0.05);text-align:center;margin-top:-18px">
-          <div style="font-size:1.75rem;margin-bottom:0.45rem">🔬</div>
-          <div style="font-weight:600;font-size:0.86rem;margin-bottom:0.25rem" data-i18n="t101">Kỹ thuật</div>
-          <div style="font-size:0.76rem;color:var(--text-light)" data-i18n="t102">Grandes Écoles uy tín</div>
+      <div class="study-step-arrow">→</div>
+      <div class="study-step">
+        <div class="study-step-num" style="background:var(--vn-red)">02</div>
+        <h4><span data-i18n="t91">Chuẩn bị hồ sơ & visa</span></h4>
+        <p><span data-i18n="t92">Hỗ trợ Campus France, đặt lịch phỏng vấn</span></p>
+      </div>
+      <div class="study-step-arrow">→</div>
+      <div class="study-step">
+        <div class="study-step-num" style="background:var(--gold)">03</div>
+        <h4><span data-i18n="t93">Hỗ trợ định cư</span></h4>
+        <p><span data-i18n="t94">Tìm nhà, mở tài khoản, hòa nhập cuộc sống Pháp</span></p>
+      </div>
+    </div>
+
+    <!-- Fields grid -->
+    <div class="study-fields fade-in">
+      <div class="study-field">
+        <span class="study-field-icon">🏛️</span>
+        <div>
+          <strong data-i18n="t96">Đại học</strong>
+          <span>Licence, Master, PhD</span>
         </div>
       </div>
+      <div class="study-field">
+        <span class="study-field-icon">🎨</span>
+        <div>
+          <strong data-i18n="t97">Nghệ thuật</strong>
+          <span data-i18n="t98">Thời trang, Mỹ thuật</span>
+        </div>
+      </div>
+      <div class="study-field">
+        <span class="study-field-icon">💼</span>
+        <div>
+          <strong data-i18n="t99">Kinh doanh</strong>
+          <span data-i18n="t100">Business School top đầu</span>
+        </div>
+      </div>
+      <div class="study-field">
+        <span class="study-field-icon">🔬</span>
+        <div>
+          <strong data-i18n="t101">Kỹ thuật</strong>
+          <span data-i18n="t102">Grandes Écoles uy tín</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center fade-in" style="margin-top:2.5rem">
+      <a href="#contact" class="btn-primary" style="background:var(--fr-blue);color:white;">
+        <span data-i18n="t95">Đặt lịch tư vấn miễn phí</span>
+      </a>
     </div>
   </div>
 </section>
@@ -1111,10 +1176,8 @@
     </div>
     <div class="travel-routes">
       <div class="travel-card fade-in">
-        <div class="travel-route-banner" style="background:linear-gradient(135deg,var(--fr-blue) 40%,var(--fr-red))">
-          <div class="route-flag">🇻🇳</div>
-          <div class="route-arrow">→</div>
-          <div class="route-flag">🇫🇷</div>
+        <div class="travel-img" style="background-image:url('https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=600&q=80')">
+          <div class="travel-route-label">🇻🇳 → 🇫🇷</div>
         </div>
         <div class="travel-card-body">
           <h3><span data-i18n="t105">Việt Nam → Pháp</span></h3>
@@ -1137,10 +1200,8 @@
       </div>
 
       <div class="travel-card fade-in">
-        <div class="travel-route-banner" style="background:linear-gradient(135deg,#b01a14,var(--vn-yellow))">
-          <div class="route-flag">🇫🇷</div>
-          <div class="route-arrow" style="color:var(--text-dark)">→</div>
-          <div class="route-flag">🇻🇳</div>
+        <div class="travel-img" style="background-image:url('https://images.unsplash.com/photo-1557750255-c76072a7aad1?w=600&q=80')">
+          <div class="travel-route-label">🇫🇷 → 🇻🇳</div>
         </div>
         <div class="travel-card-body">
           <h3><span data-i18n="t110">Pháp → Việt Nam</span></h3>
@@ -1163,10 +1224,8 @@
       </div>
 
       <div class="travel-card fade-in">
-        <div class="travel-route-banner" style="background:linear-gradient(135deg,#1a1a2e,#2c3e7a)">
-          <div class="route-flag">🌍</div>
-          <div class="route-arrow">✦</div>
-          <div class="route-flag">👨‍👩‍👧</div>
+        <div class="travel-img" style="background-image:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80')">
+          <div class="travel-route-label">🌍 Custom Tour</div>
         </div>
         <div class="travel-card-body">
           <h3><span data-i18n="t112">Tour Gia Đình & Nhóm</span></h3>
