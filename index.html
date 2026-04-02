@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Oui France – Giáo Dục & Du Lịch</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="i18n.js"></script>
 <style>
   :root {
@@ -24,7 +24,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
-    font-family: 'Be Vietnam Pro', sans-serif;
+    font-family: 'Quicksand', sans-serif;
     color: var(--text-dark);
     background: var(--white);
     overflow-x: hidden;
@@ -66,8 +66,8 @@
   }
   .nav-links a {
     display: block; padding: 0.5rem 0.85rem;
-    font-size: 0.84rem; font-weight: 500; letter-spacing: 0.02em;
-    color: var(--text-mid); text-decoration: none;
+    font-size: 0.84rem; font-weight: 600; letter-spacing: 0.02em;
+    color: var(--text-dark); text-decoration: none;
     border-radius: 8px; transition: all 0.25s;
     position: relative;
   }
@@ -223,11 +223,11 @@
     display: flex; gap: 8px; z-index: 10;
   }
   .hero-dot {
-    width: 32px; height: 4px; border-radius: 3px;
+    width: 20px; height: 3px; border-radius: 2px;
     background: rgba(255,255,255,0.3); border: none; cursor: pointer;
     transition: all 0.4s; padding: 0;
   }
-  .hero-dot.active { background: white; width: 48px; }
+  .hero-dot.active { background: white; width: 32px; }
 
   /* Slide captions */
   .hero-slide-caption {
@@ -272,51 +272,48 @@
   }
 
   .hero h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2.4rem, 4.2vw, 3.8rem);
-    font-weight: 700; line-height: 1.15;
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+    font-weight: 400; line-height: 1.2;
     color: white; margin-bottom: 1.5rem;
   }
   .hero h1 em {
     font-style: italic;
-    background: linear-gradient(90deg, #7aadff, #b8d4ff);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #93c5fd;
   }
   .hero h1 .accent-vn {
-    background: linear-gradient(90deg, var(--vn-yellow), #ffd54f);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--vn-yellow);
   }
 
   .hero-sub {
     font-size: 1.05rem; color: rgba(255,255,255,0.7); line-height: 1.85;
-    margin-bottom: 2.5rem; max-width: 560px; font-weight: 300;
+    margin-bottom: 1.5rem; max-width: 560px; font-weight: 300;
     margin-left: auto; margin-right: auto;
   }
 
-  .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; justify-content: center; }
+  .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 3rem; justify-content: center; }
 
   .btn-primary {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: var(--vn-yellow); color: var(--text-dark);
-    padding: 0.9rem 2rem; border-radius: 50px;
-    font-size: 0.9rem; font-weight: 700; text-decoration: none;
-    transition: all 0.3s; box-shadow: 0 4px 20px rgba(255,205,0,0.3);
-    letter-spacing: 0.02em;
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, var(--vn-yellow), #ffe066);
+    color: var(--text-dark);
+    padding: 0.75rem 1.8rem; border-radius: 12px;
+    font-size: 0.88rem; font-weight: 700; text-decoration: none;
+    transition: all 0.3s; letter-spacing: 0.01em;
+    box-shadow: 0 2px 12px rgba(255,205,0,0.25);
   }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,205,0,0.45); background: #ffe066; }
+  .btn-primary:hover { box-shadow: 0 6px 24px rgba(255,205,0,0.4); transform: translateY(-1px); }
 
   .btn-secondary {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(255,255,255,0.08); color: white;
-    padding: 0.9rem 2rem; border-radius: 50px;
-    font-size: 0.9rem; font-weight: 600; text-decoration: none;
-    border: 1.5px solid rgba(255,255,255,0.3);
+    display: inline-flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.1); color: white;
+    padding: 0.75rem 1.8rem; border-radius: 12px;
+    font-size: 0.88rem; font-weight: 600; text-decoration: none;
+    border: 1.5px solid rgba(255,255,255,0.25);
     transition: all 0.3s; backdrop-filter: blur(8px);
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
   }
-  .btn-secondary:hover { background: rgba(255,255,255,0.18); border-color: white; transform: translateY(-2px); }
+  .btn-secondary:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.5); transform: translateY(-1px); }
 
 
   /* Hero bottom cards row */
@@ -328,16 +325,16 @@
   @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
   .hero-card-mini {
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(0,10,40,0.55);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.12);
     border-radius: 14px; padding: 1.1rem 0.9rem;
     text-align: center; transition: all 0.3s; cursor: default;
   }
-  .hero-card-mini:hover { background: rgba(255,255,255,0.15); transform: translateY(-4px); }
+  .hero-card-mini:hover { background: rgba(0,10,40,0.7); transform: translateY(-4px); border-color: rgba(255,255,255,0.25); }
   .hero-card-mini-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
-  .hero-card-mini h4 { font-size: 0.8rem; font-weight: 600; color: white; margin-bottom: 2px; }
-  .hero-card-mini p { font-size: 0.68rem; color: rgba(255,255,255,0.5); line-height: 1.4; }
+  .hero-card-mini h4 { font-size: 0.82rem; font-weight: 600; color: white; margin-bottom: 3px; }
+  .hero-card-mini p { font-size: 0.7rem; color: rgba(255,255,255,0.65); line-height: 1.45; }
 
   /* ===== DIVIDER ===== */
 
@@ -454,7 +451,7 @@
     font-family: 'Playfair Display', serif;
     font-size: 1.15rem; font-weight: 700; color: var(--text-dark);
   }
-  .course-price span { font-size: 0.7rem; font-weight: 400; color: var(--text-light); font-family: 'Be Vietnam Pro', sans-serif; }
+  .course-price span { font-size: 0.7rem; font-weight: 400; color: var(--text-light); font-family: 'Quicksand', sans-serif; }
   .course-btn {
     font-size: 0.78rem; font-weight: 600;
     color: var(--course-color, var(--fr-blue));
@@ -743,18 +740,10 @@
 <section class="hero" id="hero">
   <!-- Image Slider -->
   <div class="hero-slider" id="heroSlider">
-    <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1920&q=80')">
-      <div class="hero-slide-caption"><span>Paris, France</span></div>
-    </div>
-    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1549144511-f099e773c147?w=1920&q=80')">
-      <div class="hero-slide-caption"><span>Lyon, France</span></div>
-    </div>
-    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1555921015-5532091f6026?w=1920&q=80')">
-      <div class="hero-slide-caption"><span>Hội An, Việt Nam</span></div>
-    </div>
-    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1920&q=80')">
-      <div class="hero-slide-caption"><span>Hà Nội, Việt Nam</span></div>
-    </div>
+    <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1920&q=80')"></div>
+    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1549144511-f099e773c147?w=1920&q=80')"></div>
+    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1555921015-5532091f6026?w=1920&q=80')"></div>
+    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1920&q=80')"></div>
   </div>
 
   <!-- Slider nav arrows -->
@@ -779,9 +768,9 @@
       <span data-i18n="t8">Cầu nối Pháp – Việt</span>
     </div>
     <h1>
-      <span data-i18n="t9">Khám phá</span>
-      <em data-i18n="t10">nước Pháp</em> &amp;
-      <span class="accent-vn" data-i18n="t11">tình yêu Việt</span>
+      <span data-i18n="t9">Học ngôn ngữ,</span>
+      <em data-i18n="t10">khám phá văn hóa</em><br>
+      <span class="accent-vn" data-i18n="t11">Pháp – Việt cùng bạn</span>
     </h1>
     <p class="hero-sub">
       <span data-i18n="t12">Học tiếng Pháp, tiếng Việt trực tuyến – trải nghiệm trại hè và du lịch kết nối hai nền văn hóa tuyệt vời.</span>
@@ -1373,17 +1362,25 @@
   const slides = document.querySelectorAll('.hero-slide');
   const dots = document.querySelectorAll('.hero-dot');
 
+  let sliderTimer;
+
   function goSlide(index) {
     slides[currentSlide].classList.remove('active');
     dots[currentSlide].classList.remove('active');
     currentSlide = index;
     slides[currentSlide].classList.add('active');
     dots[currentSlide].classList.add('active');
+    resetSliderTimer();
   }
 
-  setInterval(() => {
-    goSlide((currentSlide + 1) % slides.length);
-  }, 5000);
+  function resetSliderTimer() {
+    clearInterval(sliderTimer);
+    sliderTimer = setInterval(() => {
+      goSlide((currentSlide + 1) % slides.length);
+    }, 5000);
+  }
+
+  resetSliderTimer();
 
   /* ===== LANGUAGE DROPDOWN ===== */
   const langFlags = { vi: '🇻🇳', fr: '🇫🇷', en: '🇬🇧' };
