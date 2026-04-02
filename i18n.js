@@ -449,6 +449,24 @@ const translations = {
 };
 
 /**
+ * SEO meta per language
+ */
+const seoMeta = {
+  vi: {
+    title: "Oui France – Học tiếng Pháp, Du học & Du lịch Pháp-Việt",
+    description: "Oui France – Trung tâm dạy tiếng Pháp, tiếng Việt online, tư vấn du học Pháp, trại hè và du lịch kết nối văn hóa Pháp – Việt Nam."
+  },
+  fr: {
+    title: "Oui France – Cours de français, Études & Voyages France-Vietnam",
+    description: "Oui France – Centre de cours de français et vietnamien en ligne, conseil en études en France, camps d'été et voyages culturels France – Vietnam."
+  },
+  en: {
+    title: "Oui France – Learn French, Study Abroad & Travel France-Vietnam",
+    description: "Oui France – Online French & Vietnamese courses, study in France advisory, summer camps and cultural travel connecting France & Vietnam."
+  }
+};
+
+/**
  * Apply translations to all elements with data-i18n attribute
  */
 function applyTranslations(lang) {
@@ -464,13 +482,28 @@ function applyTranslations(lang) {
 
   document.documentElement.lang = lang;
 
+  // Update SEO meta
+  if (seoMeta[lang]) {
+    document.title = seoMeta[lang].title;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', seoMeta[lang].description);
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', seoMeta[lang].title);
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute('content', seoMeta[lang].description);
+  }
+
   // Persist language choice
   try { localStorage.setItem('oui-france-lang', lang); } catch(e) {}
 }
 
 /**
- * Get saved language or default to 'vi'
+ * Get language: URL param > localStorage > default 'vi'
  */
 function getSavedLang() {
-  try { return localStorage.getItem('oui-france-lang') || 'vi'; } catch(e) { return 'vi'; }
+  try {
+    const urlLang = new URLSearchParams(window.location.search).get('lang');
+    if (urlLang && translations[urlLang]) return urlLang;
+    return localStorage.getItem('oui-france-lang') || 'vi';
+  } catch(e) { return 'vi'; }
 }

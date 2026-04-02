@@ -3,7 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Oui France – Giáo Dục & Du Lịch</title>
+
+<!-- SEO -->
+<title>Oui France – Học tiếng Pháp, Du học & Du lịch Pháp-Việt</title>
+<meta name="description" content="Oui France – Trung tâm dạy tiếng Pháp, tiếng Việt online, tư vấn du học Pháp, trại hè và du lịch kết nối văn hóa Pháp – Việt Nam. Giáo viên bản ngữ, lịch học linh hoạt.">
+<meta name="keywords" content="học tiếng Pháp, tiếng Pháp online, du học Pháp, trại hè Pháp, du lịch Pháp, DELF, DALF, tiếng Việt cho người nước ngoài, Oui France, apprendre le français, cours de français Vietnam">
+<meta name="author" content="Oui France">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://ouifrance.vn">
+<link rel="alternate" hreflang="vi" href="https://ouifrance.vn">
+<link rel="alternate" hreflang="fr" href="https://ouifrance.vn?lang=fr">
+<link rel="alternate" hreflang="en" href="https://ouifrance.vn?lang=en">
+<link rel="alternate" hreflang="x-default" href="https://ouifrance.vn">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ouifrance.vn">
+<meta property="og:title" content="Oui France – Học tiếng Pháp, Du học & Du lịch Pháp-Việt">
+<meta property="og:description" content="Trung tâm dạy tiếng Pháp, tiếng Việt online, tư vấn du học Pháp, trại hè và du lịch kết nối văn hóa Pháp – Việt Nam.">
+<meta property="og:image" content="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200&q=80">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:site_name" content="Oui France">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Oui France – Học tiếng Pháp, Du học & Du lịch Pháp-Việt">
+<meta name="twitter:description" content="Trung tâm dạy tiếng Pháp, tiếng Việt online, tư vấn du học Pháp, trại hè và du lịch kết nối văn hóa Pháp – Việt Nam.">
+<meta name="twitter:image" content="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200&q=80">
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='0' y='0' width='10.67' height='32' rx='3' fill='%23002395'/><rect x='10.67' y='0' width='10.67' height='32' fill='%23ffffff'/><rect x='21.33' y='0' width='10.67' height='32' rx='3' fill='%23ED2939'/><text x='16' y='22' text-anchor='middle' font-size='14' font-weight='bold' fill='%23002395' font-family='sans-serif'>O</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23002395'/><text x='90' y='120' text-anchor='middle' font-size='90' font-weight='bold' fill='white' font-family='serif'>O</text></svg>">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  "name": "Oui France",
+  "description": "Trung tâm dạy tiếng Pháp, tiếng Việt online, tư vấn du học Pháp, trại hè và du lịch kết nối văn hóa Pháp – Việt Nam.",
+  "url": "https://ouifrance.vn",
+  "email": "contact@ouifrance.vn",
+  "telephone": "+84900000000",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Hà Nội",
+    "addressCountry": "VN"
+  },
+  "sameAs": [],
+  "areaServed": ["VN", "FR"],
+  "availableLanguage": ["vi", "fr", "en"]
+}
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="i18n.js"></script>
 <style>
@@ -612,80 +665,111 @@
   .travel-detail-item .lbl { font-size: 0.68rem; color: var(--text-light); }
 
   /* ===== NEWS ===== */
-  .news { background: var(--off-white); }
   .news-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.4rem; margin-top: 3rem;
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
   }
   .news-card {
-    background: white; border-radius: 14px; overflow: hidden;
+    background: white; border-radius: 20px; overflow: hidden;
     border: 1px solid rgba(0,0,0,0.05);
-    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
     transition: all 0.3s;
   }
-  .news-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.09); }
-  .news-img { height: 110px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
-  .news-body { padding: 1.1rem; }
-  .news-date { font-size: 0.7rem; color: var(--text-light); margin-bottom: 0.45rem; }
-  .news-body h4 { font-weight: 600; font-size: 0.9rem; line-height: 1.5; margin-bottom: 0.45rem; }
-  .news-body p { font-size: 0.8rem; color: var(--text-mid); line-height: 1.6; }
-  .news-more { display: inline-block; margin-top: 0.7rem; font-size: 0.76rem; font-weight: 600; color: var(--fr-blue); text-decoration: none; }
+  .news-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.08); }
+  .news-img {
+    height: 180px; background-size: cover; background-position: center;
+    position: relative;
+  }
+  .news-tag {
+    position: absolute; top: 0.75rem; left: 0.75rem;
+    padding: 4px 10px; border-radius: 6px;
+    font-size: 0.68rem; font-weight: 700;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+    color: white;
+  }
+  .news-body { padding: 1.25rem; }
+  .news-date { font-size: 0.72rem; color: var(--text-light); margin-bottom: 0.5rem; }
+  .news-body h4 { font-weight: 700; font-size: 0.92rem; line-height: 1.5; margin-bottom: 0.5rem; color: var(--text-dark); }
+  .news-body p { font-size: 0.82rem; color: var(--text-mid); line-height: 1.6; }
+  .news-more {
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-top: 0.9rem; font-size: 0.78rem; font-weight: 700;
+    color: var(--fr-blue); text-decoration: none; transition: gap 0.2s;
+  }
+  .news-more:hover { gap: 8px; }
 
   /* ===== CTA ===== */
   .cta-section {
-    background: linear-gradient(135deg, var(--fr-blue) 0%, #003580 50%, #001a5c 100%);
-    padding: 5rem 0; text-align: center; position: relative; overflow: hidden;
+    position: relative; overflow: hidden;
+    padding: 6rem 0; text-align: center;
+    background-image: url('https://images.unsplash.com/photo-1503917988258-f87a78e3c995?w=1920&q=80');
+    background-size: cover; background-position: center; background-attachment: fixed;
   }
   .cta-section::before {
     content: ''; position: absolute; inset: 0;
-    background:
-      radial-gradient(ellipse at 30% 50%, rgba(218,37,29,0.25) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 50%, rgba(255,205,0,0.12) 0%, transparent 50%);
+    background: rgba(0,15,60,0.8);
   }
   .cta-section > * { position: relative; z-index: 1; }
   .cta-section h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.8rem, 3vw, 2.7rem); color: white; font-weight: 700;
-    margin-bottom: 1rem; line-height: 1.25;
+    font-family: 'Quicksand', sans-serif;
+    font-size: clamp(1.8rem, 3vw, 2.6rem); color: white; font-weight: 700;
+    margin-bottom: 1.25rem; line-height: 1.35;
   }
-  .cta-section p { color: rgba(255,255,255,0.7); font-size: 1rem; margin-bottom: 2rem; font-weight: 300; }
+  .cta-section h2 em { font-style: normal; color: var(--vn-yellow); }
+  .cta-section p {
+    font-family: 'Quicksand', sans-serif;
+    color: rgba(255,255,255,0.65); font-size: 0.95rem;
+    margin-bottom: 2.5rem; font-weight: 400;
+    max-width: 480px; margin-left: auto; margin-right: auto;
+    line-height: 1.7;
+  }
   .cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
   .btn-white {
-    background: white; color: var(--fr-blue);
-    padding: 0.82rem 1.75rem; border-radius: 50px;
+    background: var(--vn-yellow); color: var(--text-dark);
+    padding: 0.8rem 1.6rem; border-radius: 12px;
     font-size: 0.9rem; font-weight: 700; text-decoration: none;
-    transition: all 0.25s; display: inline-flex; align-items: center; gap: 8px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 16px rgba(255,205,0,0.3);
   }
-  .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.28); }
+  .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,205,0,0.45); }
   .btn-outline-white {
-    background: transparent; color: white;
-    padding: 0.82rem 1.75rem; border-radius: 50px; border: 1.5px solid rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.08); color: white;
+    padding: 0.8rem 1.6rem; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.25);
     font-size: 0.9rem; font-weight: 600; text-decoration: none;
-    transition: all 0.25s; display: inline-flex; align-items: center; gap: 8px;
+    transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
+    backdrop-filter: blur(8px);
   }
-  .btn-outline-white:hover { background: rgba(255,255,255,0.12); border-color: white; }
+  .btn-outline-white:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.5); transform: translateY(-2px); }
+  .cta-socials {
+    display: flex; justify-content: center; gap: 0.75rem; margin-top: 2.5rem;
+  }
+  .cta-social {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; color: rgba(255,255,255,0.7); text-decoration: none;
+    transition: all 0.3s;
+  }
+  .cta-social:hover { background: rgba(255,255,255,0.2); color: white; transform: translateY(-2px); }
 
   /* ===== FOOTER ===== */
-  footer { background: #0a0f1e; color: rgba(255,255,255,0.65); padding: 3.5rem 0 2rem; }
+  footer { background: #0a0f1e; color: rgba(255,255,255,0.6); padding: 4rem 0 2rem; }
   .footer-inner {
     max-width: 1100px; margin: 0 auto; padding: 0 2rem;
-    display: grid; grid-template-columns: 1.4fr 1fr 1fr 1.1fr; gap: 2.5rem;
+    display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 3rem;
   }
-  .footer-brand .logo-text { color: #93b0ff; }
-  .footer-brand .logo-text span { color: #ff8a8a; }
-  .footer-tagline { font-size: 0.83rem; margin-top: 0.7rem; line-height: 1.65; }
+  .footer-tagline { font-size: 0.85rem; margin-top: 0.75rem; line-height: 1.7; }
   .footer-socials { display: flex; gap: 8px; margin-top: 1.2rem; }
   .footer-social-btn {
-    width: 34px; height: 34px; border-radius: 50%;
-    background: rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: center;
-    font-size: 0.82rem; color: rgba(255,255,255,0.55); text-decoration: none;
-    transition: all 0.2s;
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.5); text-decoration: none;
+    transition: all 0.25s;
   }
-  .footer-social-btn:hover { background: var(--fr-blue); color: white; }
-  footer h5 { color: white; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.9rem; letter-spacing: 0.03em; }
-  .footer-links { list-style: none; display: flex; flex-direction: column; gap: 7px; }
-  .footer-links a { font-size: 0.8rem; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
+  .footer-social-btn:hover { background: var(--fr-blue); color: white; transform: translateY(-2px); }
+  footer h5 { color: white; font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; }
+  .footer-links { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .footer-links a { font-size: 0.82rem; color: rgba(255,255,255,0.45); text-decoration: none; transition: color 0.2s; }
   .footer-links a:hover { color: white; }
   .footer-contact-item {
     display: flex; gap: 9px; margin-bottom: 9px;
@@ -1253,39 +1337,42 @@
 <!-- ===== NEWS ===== -->
 <section id="news">
   <div class="section-inner">
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;margin-bottom:0;">
-      <div class="fade-in">
-        <div class="section-label"><span data-i18n="t7">Hot news</span></div>
-        <h2 class="section-title"><span data-i18n="t117">Tin tức nổi bật</span></h2>
-      </div>
-      <a href="#" style="font-size:0.83rem;font-weight:600;color:var(--fr-blue);text-decoration:none" data-i18n="t118">Xem tất cả →</a>
+    <div class="text-center fade-in">
+      <div class="section-label"><span data-i18n="t7">Hot news</span></div>
+      <h2 class="section-title"><span data-i18n="t117">Tin tức nổi bật</span></h2>
     </div>
     <div class="news-grid">
       <div class="news-card fade-in">
-        <div class="news-img" style="background:linear-gradient(135deg,#e4eaff,#c5d0ff)">🗼</div>
+        <div class="news-img" style="background-image:url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&q=80')">
+          <span class="news-tag">Hot</span>
+        </div>
         <div class="news-body">
-          <div class="news-date">🔥 Hot · 28/06/2025</div>
+          <div class="news-date">28/06/2025</div>
           <h4><span data-i18n="t119">Khai mở đăng ký Trại Hè Pháp 2025 – Số lượng có hạn!</span></h4>
           <p><span data-i18n="t120">Trại hè Paris – Loire 2025 chính thức mở đăng ký. Chương trình 14 ngày với nhiều hoạt động mới.</span></p>
-          <a href="#" class="news-more"><span data-i18n="t121">Đọc thêm →</span></a>
+          <a href="#" class="news-more"><span data-i18n="t121">Đọc thêm</span> →</a>
         </div>
       </div>
       <div class="news-card fade-in">
-        <div class="news-img" style="background:linear-gradient(135deg,#fff0f0,#ffccc9)">🎓</div>
+        <div class="news-img" style="background-image:url('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=600&q=80')">
+          <span class="news-tag" data-i18n="t122">Kết quả</span>
+        </div>
         <div class="news-body">
-          <div class="news-date">🏆 <span data-i18n="t122">Kết quả</span> · 15/06/2025</div>
+          <div class="news-date">15/06/2025</div>
           <h4><span data-i18n="t123">100% học viên Oui France đậu DELF B2 kỳ thi tháng 6</span></h4>
           <p><span data-i18n="t124">Tỷ lệ đậu thi DELF B2 của học viên Oui France đạt 100% trong kỳ thi tháng 6/2025.</span></p>
-          <a href="#" class="news-more"><span data-i18n="t121">Đọc thêm →</span></a>
+          <a href="#" class="news-more"><span data-i18n="t121">Đọc thêm</span> →</a>
         </div>
       </div>
       <div class="news-card fade-in">
-        <div class="news-img" style="background:linear-gradient(135deg,#fffde4,#fff3a0)">✈️</div>
+        <div class="news-img" style="background-image:url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80')">
+          <span class="news-tag" data-i18n="t125">Mới</span>
+        </div>
         <div class="news-body">
-          <div class="news-date">🆕 <span data-i18n="t125">Mới</span> · 01/06/2025</div>
+          <div class="news-date">01/06/2025</div>
           <h4><span data-i18n="t126">Ra mắt tour Việt Nam mùa thu dành cho khách Pháp</span></h4>
           <p><span data-i18n="t127">Hành trình 14 ngày xuyên Việt mùa thu 2025 với điểm nhấn lễ hội Hội An đêm rằm.</span></p>
-          <a href="#" class="news-more"><span data-i18n="t121">Đọc thêm →</span></a>
+          <a href="#" class="news-more"><span data-i18n="t121">Đọc thêm</span> →</a>
         </div>
       </div>
     </div>
@@ -1297,18 +1384,12 @@
   <div class="section-inner">
     <h2>
       <span data-i18n="t128">Bắt đầu hành trình của bạn</span><br>
-      <em style="font-style:italic" data-i18n="t129">cùng Oui France hôm nay</em>
+      <em data-i18n="t129">cùng Oui France hôm nay</em>
     </h2>
     <p><span data-i18n="t130">Tư vấn miễn phí – Lộ trình học tập và du lịch được thiết kế riêng cho bạn</span></p>
     <div class="cta-actions">
-      <a href="tel:+84000000000" class="btn-white">📞 <span data-i18n="t131">Gọi ngay: 0900 000 000</span></a>
-      <a href="mailto:contact@ouifrance.vn" class="btn-outline-white">✉️ contact@ouifrance.vn</a>
-    </div>
-    <div style="margin-top:2rem;display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;">
-      <a href="#" style="color:rgba(255,255,255,0.55);text-decoration:none;font-size:0.83rem;transition:color 0.2s" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">📘 Facebook</a>
-      <a href="#" style="color:rgba(255,255,255,0.55);text-decoration:none;font-size:0.83rem;transition:color 0.2s" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">📸 Instagram</a>
-      <a href="#" style="color:rgba(255,255,255,0.55);text-decoration:none;font-size:0.83rem;transition:color 0.2s" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">💬 Zalo</a>
-      <a href="#" style="color:rgba(255,255,255,0.55);text-decoration:none;font-size:0.83rem;transition:color 0.2s" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">▶️ YouTube</a>
+      <a href="tel:+84000000000" class="btn-white"><span data-i18n="t131">Gọi ngay: 0900 000 000</span></a>
+      <a href="mailto:contact@ouifrance.vn" class="btn-outline-white">contact@ouifrance.vn</a>
     </div>
   </div>
 </section>
@@ -1317,23 +1398,28 @@
 <footer>
   <div class="footer-inner">
     <div>
-      <a href="#" class="logo">
+      <a href="#" class="logo" style="gap:8px">
         <div class="logo-flag">
           <div class="flag-stripe" style="background:#4a6fff"></div>
-          <div class="flag-stripe" style="background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.1)"></div>
+          <div class="flag-stripe" style="background:rgba(255,255,255,0.2)"></div>
           <div class="flag-stripe" style="background:#ff6b6b"></div>
           <div style="width:3px"></div>
           <div class="flag-stripe" style="background:#ff6b6b"></div>
           <div class="flag-stripe" style="background:#ff6b6b"></div>
         </div>
-        <span class="logo-text">Oui <span>France</span></span>
+        <span class="logo-text" style="color:#93b0ff">Oui <span style="color:#ff8a8a">France</span></span>
       </a>
       <p class="footer-tagline" data-i18n="t132">Cầu nối giáo dục và văn hóa giữa Việt Nam và nước Pháp.</p>
       <div class="footer-socials">
-        <a href="#" class="footer-social-btn">f</a>
-        <a href="#" class="footer-social-btn">in</a>
-        <a href="#" class="footer-social-btn">yt</a>
-        <a href="#" class="footer-social-btn">z</a>
+        <a href="#" class="footer-social-btn" aria-label="Facebook">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        </a>
+        <a href="#" class="footer-social-btn" aria-label="Zalo">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.568 14.163c-.168.246-.461.378-.756.378-.182 0-.365-.05-.533-.154l-2.59-1.592v3.14c0 .476-.385.862-.862.862H9.173c-.476 0-.862-.386-.862-.862V9.065c0-.476.386-.862.862-.862h3.654c.477 0 .862.386.862.862v3.14l2.59-1.592a.862.862 0 011.289.747v2.803z"/></svg>
+        </a>
+        <a href="#" class="footer-social-btn" aria-label="YouTube">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        </a>
       </div>
     </div>
     <div>
@@ -1341,27 +1427,16 @@
       <ul class="footer-links">
         <li><a href="#courses" data-i18n="t15">Tiếng Pháp Online</a></li>
         <li><a href="#courses" data-i18n="t17">Tiếng Việt Online</a></li>
-        <li><a href="#courses">DELF / DALF</a></li>
-        <li><a href="#camp" data-i18n="t133">Trại Hè Pháp</a></li>
-        <li><a href="#camp" data-i18n="t134">Trại Hè Việt Nam</a></li>
-        <li><a href="#travel" data-i18n="t135">Du lịch trọn gói</a></li>
-      </ul>
-    </div>
-    <div>
-      <h5 data-i18n="t136">Công ty</h5>
-      <ul class="footer-links">
-        <li><a href="#about" data-i18n="t2">Về chúng tôi</a></li>
+        <li><a href="#camp" data-i18n="t4">Trại hè</a></li>
+        <li><a href="#travel" data-i18n="t6">Du lịch</a></li>
         <li><a href="#study" data-i18n="t5">Tư vấn du học</a></li>
-        <li><a href="#news" data-i18n="t137">Tin tức</a></li>
-        <li><a href="#" data-i18n="t138">Chính sách bảo mật</a></li>
-        <li><a href="#" data-i18n="t139">Điều khoản dịch vụ</a></li>
       </ul>
     </div>
     <div>
       <h5 data-i18n="t140">Liên hệ</h5>
       <div class="footer-contact-item">
         <span class="ico">📍</span>
-        <span>Hà Nội, <span data-i18n="t141">Việt Nam</span><br>& Paris, France</span>
+        <span>Hà Nội, <span data-i18n="t141">Việt Nam</span></span>
       </div>
       <div class="footer-contact-item">
         <span class="ico">📞</span><span>0900 000 000</span>
@@ -1377,7 +1452,6 @@
   </div>
   <div class="footer-bottom">
     <span>© 2025 Oui France. <span data-i18n="t143">Bảo lưu mọi quyền.</span></span>
-    <span>🇻🇳 Made with love in Việt Nam 🇫🇷</span>
   </div>
 </footer>
 
