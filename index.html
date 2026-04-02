@@ -169,8 +169,13 @@
   .lang-option .lang-flag { font-size: 1.1rem; }
 
 
+  .mobile-nav-right {
+    display: none; align-items: center; gap: 10px;
+  }
+  .mobile-lang-dropdown { margin-left: 0; display: block; }
+
   .hamburger {
-    display: none; flex-direction: column; gap: 5px; cursor: pointer;
+    display: flex; flex-direction: column; gap: 5px; cursor: pointer;
     background: none; border: none; padding: 4px;
   }
   .hamburger span {
@@ -186,7 +191,7 @@
   .mobile-overlay.open { display: block; opacity: 1; }
 
   .mobile-menu {
-    position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
+    position: fixed; top: 0; left: 0; width: 280px; height: 100dvh;
     background: #ffffff;
     z-index: 1001; padding: 0;
     flex-direction: column; gap: 0;
@@ -199,8 +204,13 @@
   .mobile-menu.open { transform: translateX(0); }
 
   .mobile-menu-header {
-    padding: 0.85rem 1.25rem;
+    padding: 0.75rem 1.25rem;
     display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .mobile-menu-header .logo {
+    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+    white-space: nowrap;
   }
   .mobile-close {
     width: 32px; height: 32px; border-radius: 8px;
@@ -219,19 +229,6 @@
     transition: all 0.2s;
   }
   .mobile-menu a:hover { background: rgba(0,35,149,0.04); color: var(--fr-blue); padding-left: 1.75rem; }
-  .mobile-lang {
-    display: flex; gap: 8px; padding: 1.25rem 1.5rem;
-    border-top: 1px solid rgba(0,35,149,0.08);
-    margin-top: auto;
-  }
-  .mobile-lang-btn {
-    flex: 1; padding: 8px; border-radius: 8px; border: 1.5px solid rgba(0,0,0,0.1);
-    font-size: 0.85rem; font-weight: 600; cursor: pointer; background: none;
-    color: var(--text-mid); transition: all 0.2s; text-align: center;
-  }
-  .mobile-lang-btn.active {
-    border-color: var(--fr-blue); color: var(--fr-blue); background: rgba(0,35,149,0.05);
-  }
 
   /* ===== HERO ===== */
   .hero {
@@ -697,6 +694,51 @@
   }
   .news-more:hover { gap: 8px; }
 
+  /* ===== TESTIMONIALS ===== */
+  .testimonials-carousel {
+    position: relative; overflow: hidden;
+  }
+  .testimonials-track {
+    display: flex; transition: transform 0.5s ease;
+  }
+  .testimonial-card {
+    min-width: calc(33.333% - 1rem); margin: 0 0.5rem;
+    background: white; border-radius: 20px; padding: 2rem 1.75rem;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    display: flex; flex-direction: column;
+  }
+  .testimonial-quote {
+    font-size: 2rem; color: var(--fr-blue); opacity: 0.15;
+    font-family: 'DM Serif Display', serif; line-height: 1; margin-bottom: 0.5rem;
+  }
+  .testimonial-stars { color: var(--vn-yellow); font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 0.75rem; }
+  .testimonial-text {
+    font-size: 0.88rem; color: var(--text-mid); line-height: 1.8;
+    flex: 1; margin-bottom: 1.25rem;
+  }
+  .testimonial-author {
+    display: flex; align-items: center; gap: 12px;
+    padding-top: 1.25rem; border-top: 1px solid var(--light-gray);
+  }
+  .testimonial-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0;
+    border: 2px solid var(--off-white);
+  }
+  .testimonial-author strong { display: block; font-size: 0.88rem; font-weight: 700; color: var(--text-dark); }
+  .testimonial-author span { font-size: 0.75rem; color: var(--text-light); }
+
+  .testimonials-nav {
+    display: flex; justify-content: center; gap: 8px; margin-top: 2rem;
+  }
+  .testimonials-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(0,0,0,0.12); border: none; cursor: pointer;
+    transition: all 0.3s; padding: 0;
+  }
+  .testimonials-dot.active { background: var(--fr-blue); width: 24px; border-radius: 4px; }
+
   /* ===== CTA ===== */
   .cta-section {
     position: relative; overflow: hidden;
@@ -785,7 +827,7 @@
 
   /* ===== RESPONSIVE ===== */
   @media (max-width: 900px) {
-    .hero-inner { padding: 5rem 1.5rem 2.5rem; }
+    .hero-inner { padding: 4.5rem 1.5rem 2rem; }
     .hero-cards-row { grid-template-columns: 1fr 1fr; }
     .hero-nav { display: none; }
     .hero-actions { flex-wrap: nowrap; }
@@ -796,12 +838,14 @@
     .camp-cards { grid-template-columns: 1fr; }
     .travel-routes { grid-template-columns: 1fr; }
     .news-grid { grid-template-columns: 1fr; }
+    .testimonial-card { min-width: calc(100% - 1rem); }
     .footer-inner { grid-template-columns: 1fr 1fr; gap: 2rem; }
   }
 
   @media (max-width: 640px) {
     .nav-links { display: none; }
-    .lang-dropdown { display: none; }
+    .lang-dropdown:not(.mobile-lang-dropdown) { display: none; }
+    .mobile-nav-right { display: flex; }
     .hamburger { display: flex; }
     .hero-cards-row { grid-template-columns: 1fr 1fr; }
     .about-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
@@ -866,9 +910,24 @@
       </div>
     </div>
 
-    <button class="hamburger" id="hamburger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
+    <!-- Mobile: lang + hamburger -->
+    <div class="mobile-nav-right">
+      <div class="lang-dropdown mobile-lang-dropdown" id="langDropdownMobile">
+        <button class="lang-current" onclick="toggleMobileLangDropdown()">
+          <span class="lang-flag" id="langFlagMobile">🇻🇳</span>
+          <span id="langLabelMobile">VN</span>
+          <span class="lang-arrow">▼</span>
+        </button>
+        <div class="lang-options">
+          <button class="lang-option active" data-lang="vi" onclick="setLang('vi')"><span class="lang-flag">🇻🇳</span> Tiếng Việt</button>
+          <button class="lang-option" data-lang="fr" onclick="setLang('fr')"><span class="lang-flag">🇫🇷</span> Français</button>
+          <button class="lang-option" data-lang="en" onclick="setLang('en')"><span class="lang-flag">🇬🇧</span> English</button>
+        </div>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </div>
 </nav>
 
@@ -899,11 +958,6 @@
     <a href="#study" data-i18n="t5">Tư vấn du học</a>
     <a href="#travel" data-i18n="t6">Du lịch</a>
     <a href="#news" data-i18n="t7">Hot news</a>
-  </div>
-  <div class="mobile-lang">
-    <button class="mobile-lang-btn active" data-lang="vi" onclick="setLang('vi')">🇻🇳 VN</button>
-    <button class="mobile-lang-btn" data-lang="fr" onclick="setLang('fr')">🇫🇷 FR</button>
-    <button class="mobile-lang-btn" data-lang="en" onclick="setLang('en')">🇬🇧 EN</button>
   </div>
 </div>
 
@@ -951,7 +1005,7 @@
         <span data-i18n="t13">Khám phá</span>
       </a>
       <a href="#contact" class="btn-secondary">
-        <span data-i18n="t14">Tư vấn miễn phí →</span>
+        <span data-i18n="t14">Tư vấn ngay</span>
       </a>
     </div>
     <!-- Cards row -->
@@ -1382,6 +1436,61 @@
   </div>
 </section>
 
+<!-- ===== TESTIMONIALS ===== -->
+<section id="testimonials" style="background:var(--off-white)">
+  <div class="section-inner">
+    <div class="text-center fade-in">
+      <div class="section-label"><span data-i18n="t144">Khách hàng</span></div>
+      <h2 class="section-title"><span data-i18n="t145">Học viên nói gì về chúng tôi</span></h2>
+    </div>
+    <div class="testimonials-carousel fade-in">
+      <div class="testimonials-track" id="testimonialsTrack">
+        <div class="testimonial-card">
+          <div class="testimonial-quote">"</div>
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-text" data-i18n="t146">Giáo viên người Pháp rất tận tâm. Sau 6 tháng học, tôi đã đạt DELF B2 ngay lần thi đầu tiên. Lớp nhỏ nên được thực hành nói rất nhiều.</p>
+          <div class="testimonial-author">
+            <img class="testimonial-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" alt="">
+            <div>
+              <strong>Nguyễn Thanh</strong>
+              <span data-i18n="t147">Học viên tiếng Pháp · Hà Nội</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-quote">"</div>
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-text" data-i18n="t148">Trại hè ở Pháp là trải nghiệm tuyệt vời nhất của con tôi. Cháu vừa học ngôn ngữ vừa được khám phá văn hóa, về nhà tự tin hẳn lên.</p>
+          <div class="testimonial-author">
+            <img class="testimonial-avatar" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face" alt="">
+            <div>
+              <strong>Lê Hương</strong>
+              <span data-i18n="t149">Phụ huynh · TP.HCM</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-quote">"</div>
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-text" data-i18n="t150">Oui France hỗ trợ hồ sơ du học rất chuyên nghiệp. Từ chọn trường, làm visa đến tìm nhà ở Paris – mọi thứ đều suôn sẻ.</p>
+          <div class="testimonial-author">
+            <img class="testimonial-avatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face" alt="">
+            <div>
+              <strong>Phạm Tuấn</strong>
+              <span data-i18n="t151">Du học sinh · Paris</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonials-nav" id="testimonialsNav">
+        <button class="testimonials-dot active" onclick="goTestimonial(0)"></button>
+        <button class="testimonials-dot" onclick="goTestimonial(1)"></button>
+        <button class="testimonials-dot" onclick="goTestimonial(2)"></button>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ===== CTA ===== -->
 <section class="cta-section" id="contact">
   <div class="section-inner">
@@ -1459,6 +1568,10 @@
 </footer>
 
 <script>
+  /* ===== SCROLL TO TOP ON LOAD ===== */
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
+
   /* ===== NAVBAR SCROLL ===== */
   const navbar = document.getElementById('navbar');
   window.addEventListener('scroll', () => {
@@ -1520,6 +1633,25 @@
 
   resetSliderTimer();
 
+  /* ===== TESTIMONIALS CAROUSEL ===== */
+  let tCurrent = 0;
+  const tTrack = document.getElementById('testimonialsTrack');
+  const tDots = document.querySelectorAll('.testimonials-dot');
+
+  function goTestimonial(i) {
+    tCurrent = i;
+    const card = tTrack.querySelector('.testimonial-card');
+    const style = getComputedStyle(card);
+    const cardWidth = card.offsetWidth + parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+    tTrack.style.transform = `translateX(-${tCurrent * cardWidth}px)`;
+    tDots.forEach((d, idx) => d.classList.toggle('active', idx === i));
+  }
+
+  // Auto-advance testimonials
+  setInterval(() => {
+    goTestimonial((tCurrent + 1) % tDots.length);
+  }, 6000);
+
   /* ===== LANGUAGE DROPDOWN ===== */
   const langFlags = { vi: '🇻🇳', fr: '🇫🇷', en: '🇬🇧' };
   const langLabels = { vi: 'VN', fr: 'FR', en: 'EN' };
@@ -1528,28 +1660,34 @@
   function toggleLangDropdown() {
     document.getElementById('langDropdown').classList.toggle('open');
   }
+  function toggleMobileLangDropdown() {
+    document.getElementById('langDropdownMobile').classList.toggle('open');
+  }
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   document.addEventListener('click', (e) => {
-    const dd = document.getElementById('langDropdown');
-    if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+    ['langDropdown', 'langDropdownMobile'].forEach(id => {
+      const dd = document.getElementById(id);
+      if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+    });
   });
 
   function setLang(lang) {
     currentLang = lang;
 
-    // Update dropdown display
+    // Update dropdown display (desktop + mobile)
     document.getElementById('langFlag').textContent = langFlags[lang];
     document.getElementById('langLabel').textContent = langLabels[lang];
     document.getElementById('langDropdown').classList.remove('open');
+    const mFlag = document.getElementById('langFlagMobile');
+    const mLabel = document.getElementById('langLabelMobile');
+    if (mFlag) mFlag.textContent = langFlags[lang];
+    if (mLabel) mLabel.textContent = langLabels[lang];
+    const mdd = document.getElementById('langDropdownMobile');
+    if (mdd) mdd.classList.remove('open');
 
-    // Update desktop option states
+    // Update all option states (desktop + mobile dropdowns)
     document.querySelectorAll('.lang-option').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.lang === lang);
-    });
-
-    // Update mobile button states
-    document.querySelectorAll('.mobile-lang-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.lang === lang);
     });
 

@@ -23,7 +23,7 @@ const translations = {
     t11: "Pháp – Việt cùng bạn",
     t12: "Học tiếng Pháp, tiếng Việt trực tuyến – trải nghiệm trại hè và du lịch kết nối hai nền văn hóa tuyệt vời.",
     t13: "Khám phá",
-    t14: "Tư vấn miễn phí →",
+    t14: "Tư vấn ngay",
     t15: "Tiếng Pháp Online",
     t16: "A1 đến C2 · giáo viên bản ngữ",
     t17: "Tiếng Việt Online",
@@ -152,7 +152,15 @@ const translations = {
     t140: "Liên hệ",
     t141: "Việt Nam",
     t142: "T2 – T7: 8:00 – 20:00",
-    t143: "Bảo lưu mọi quyền."
+    t143: "Bảo lưu mọi quyền.",
+    t144: "Khách hàng",
+    t145: "Học viên nói gì về chúng tôi",
+    t146: "Giáo viên người Pháp rất tận tâm. Sau 6 tháng học, tôi đã đạt DELF B2 ngay lần thi đầu tiên. Lớp nhỏ nên được thực hành nói rất nhiều.",
+    t147: "Học viên tiếng Pháp · Hà Nội",
+    t148: "Trại hè ở Pháp là trải nghiệm tuyệt vời nhất của con tôi. Cháu vừa học ngôn ngữ vừa được khám phá văn hóa, về nhà tự tin hẳn lên.",
+    t149: "Phụ huynh · TP.HCM",
+    t150: "Oui France hỗ trợ hồ sơ du học rất chuyên nghiệp. Từ chọn trường, làm visa đến tìm nhà ở Paris – mọi thứ đều suôn sẻ.",
+    t151: "Du học sinh · Paris"
   },
 
   fr: {
@@ -169,7 +177,7 @@ const translations = {
     t11: "France – Vietnam ensemble",
     t12: "Apprenez le français et le vietnamien en ligne – vivez des camps d'été et des voyages qui relient deux cultures magnifiques.",
     t13: "Explorer",
-    t14: "Consultation gratuite →",
+    t14: "Nous contacter",
     t15: "Français Online",
     t16: "A1 à C2 · natifs français",
     t17: "Vietnamien Online",
@@ -298,7 +306,15 @@ const translations = {
     t140: "Contact",
     t141: "Vietnam",
     t142: "Lun – Sam: 8h – 20h",
-    t143: "Tous droits réservés."
+    t143: "Tous droits réservés.",
+    t144: "Témoignages",
+    t145: "Ce que disent nos apprenants",
+    t146: "Des enseignants français très dévoués. Après 6 mois de cours, j'ai obtenu le DELF B2 dès ma première tentative. Les petites classes permettent beaucoup de pratique orale.",
+    t147: "Apprenant de français · Hanoi",
+    t148: "Le camp d'été en France a été la meilleure expérience pour mon enfant. Il a appris la langue tout en découvrant la culture, et il est rentré beaucoup plus confiant.",
+    t149: "Parent · Hô Chi Minh-Ville",
+    t150: "Oui France m'a accompagné de manière très professionnelle. Du choix de l'école au visa jusqu'au logement à Paris – tout s'est parfaitement passé.",
+    t151: "Étudiant · Paris"
   },
 
   en: {
@@ -315,7 +331,7 @@ const translations = {
     t11: "France – Vietnam together",
     t12: "Learn French and Vietnamese online – experience summer camps and travel connecting two wonderful cultures.",
     t13: "Explore",
-    t14: "Free consultation →",
+    t14: "Contact us",
     t15: "French Online",
     t16: "A1 to C2 · native teachers",
     t17: "Vietnamese Online",
@@ -444,7 +460,15 @@ const translations = {
     t140: "Contact",
     t141: "Vietnam",
     t142: "Mon – Sat: 8:00 AM – 8:00 PM",
-    t143: "All rights reserved."
+    t143: "All rights reserved.",
+    t144: "Testimonials",
+    t145: "What our students say",
+    t146: "The French teachers are incredibly dedicated. After 6 months, I passed DELF B2 on my first attempt. Small classes mean lots of speaking practice.",
+    t147: "French student · Hanoi",
+    t148: "The summer camp in France was our child's best experience ever. They learned the language while discovering the culture, and came home so much more confident.",
+    t149: "Parent · Ho Chi Minh City",
+    t150: "Oui France's study abroad support was very professional. From school selection and visa to finding housing in Paris – everything went smoothly.",
+    t151: "Student · Paris"
   }
 };
 
