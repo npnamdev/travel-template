@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhà Gỗ Cao Cấp - Bền Đẹp Trăm Năm</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --wood-dark: #2C1810;
+            --wood-medium: #5C3A21;
+            --wood-light: #8B5E3C;
+            --wood-warm: #A0714F;
+            --gold: #C8953E;
+            --gold-light: #E8B960;
+            --gold-glow: #F5D78E;
+            --cream: #FFF8F0;
+            --cream-dark: #F5E6D3;
+            --text-dark: #1A0F0A;
+            --text-body: #3D2B1F;
+            --text-muted: #7A6455;
+            --white: #FFFFFF;
+            --red-accent: #C0392B;
+            --green-accent: #27AE60;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            color: var(--text-body);
+            background: var(--cream);
+            overflow-x: hidden;
+        }
+
+        /* ========== ANIMATIONS ========== */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(200, 149, 62, 0.4); }
+            50% { box-shadow: 0 0 0 15px rgba(200, 149, 62, 0); }
+        }
+
+        @keyframes grain {
+            0%, 100% { transform: translate(0, 0); }
+            10% { transform: translate(-5%, -10%); }
+            30% { transform: translate(3%, -15%); }
+            50% { transform: translate(12%, 9%); }
+            70% { transform: translate(9%, 4%); }
+            90% { transform: translate(-1%, 7%); }
+        }
+
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ========== GRAIN OVERLAY ========== */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+            animation: grain 8s steps(10) infinite;
+        }
+
+        /* ========== NAVIGATION ========== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            transition: all 0.4s ease;
+            background: transparent;
+        }
+
+        .navbar.scrolled {
+            background: rgba(44, 24, 16, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 0.7rem 2rem;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+        }
+
+        .navbar-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: var(--gold);
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+
+        .logo span {
+            color: var(--cream);
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--cream);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gold);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-links a:hover {
+            color: var(--gold-light);
+        }
+
+        .nav-cta {
+            background: var(--gold);
+            color: var(--wood-dark) !important;
+            padding: 0.6rem 1.4rem;
+            border-radius: 50px;
+            font-weight: 600 !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .nav-cta::after {
+            display: none !important;
+        }
+
+        .nav-cta:hover {
+            background: var(--gold-light) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(200, 149, 62, 0.4);
+        }
+
+        .mobile-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 5px;
+        }
+
+        .mobile-toggle span {
+            width: 28px;
+            height: 2px;
+            background: var(--cream);
+            transition: all 0.3s;
+            border-radius: 2px;
+        }
+
+        /* ========== HERO SECTION ========== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background: var(--wood-dark);
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(135deg, rgba(44, 24, 16, 0.82) 0%, rgba(92, 58, 33, 0.7) 50%, rgba(44, 24, 16, 0.85) 100%);
+        }
+
+        .hero-bg-img {
+            position: absolute;
+            inset: 0;
+            background: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80') center/cover no-repeat;
+        }
+
+        .hero-pattern {
+            position: absolute;
+            inset: 0;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C8953E'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .hero-decorative-line {
+            position: absolute;
+            top: 50%;
+            left: -10%;
+            width: 120%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            opacity: 0.15;
+            transform: rotate(-5deg);
+        }
+
+        .hero-decorative-line:nth-child(2) {
+            top: 30%;
+            transform: rotate(3deg);
+            opacity: 0.08;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 900px;
+            padding: 2rem;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(200, 149, 62, 0.15);
+            border: 1px solid rgba(200, 149, 62, 0.3);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            color: var(--gold-light);
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .hero-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--gold);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 900;
+            color: var(--cream);
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.8s ease 0.2s forwards;
+            opacity: 0;
+        }
+
+        .hero h1 .highlight {
+            background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s linear infinite;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            color: rgba(255, 248, 240, 0.7);
+            max-width: 650px;
+            margin: 0 auto 1.5rem;
+            line-height: 1.8;
+            font-weight: 300;
+            animation: fadeInUp 0.8s ease 0.4s forwards;
+            opacity: 0;
+        }
+
+        .hero-features {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-bottom: 2.5rem;
+            animation: fadeInUp 0.8s ease 0.5s forwards;
+            opacity: 0;
+        }
+
+        .hero-feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--gold-light);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .hero-feature svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--gold);
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease 0.6s forwards;
+            opacity: 0;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            color: var(--wood-dark);
+            padding: 1rem 2.5rem;
+            border-radius: 60px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 25px rgba(200, 149, 62, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 35px rgba(200, 149, 62, 0.5);
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: transparent;
+            color: var(--cream);
+            padding: 1rem 2.5rem;
+            border-radius: 60px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: 2px solid rgba(255, 248, 240, 0.3);
+            cursor: pointer;
+            transition: all 0.4s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--gold);
+            color: var(--gold-light);
+            background: rgba(200, 149, 62, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 3.5rem;
+            padding-top: 2.5rem;
+            border-top: 1px solid rgba(200, 149, 62, 0.15);
+            animation: fadeInUp 0.8s ease 0.8s forwards;
+            opacity: 0;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--gold);
+        }
+
+        .hero-stat-label {
+            font-size: 0.85rem;
+            color: rgba(255, 248, 240, 0.5);
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ========== SECTION STYLES ========== */
+        .section {
+            padding: 6rem 2rem;
+            position: relative;
+        }
+
+        .section-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .section-label::before {
+            content: '';
+            width: 30px;
+            height: 2px;
+            background: var(--gold);
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 900;
+            color: var(--text-dark);
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .section-title.light {
+            color: var(--cream);
+        }
+
+        .section-desc {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            line-height: 1.8;
+            font-weight: 300;
+        }
+
+        .section-desc.light {
+            color: rgba(255, 248, 240, 0.65);
+        }
+
+        /* ========== ABOUT SECTION ========== */
+        .about {
+            background: var(--cream);
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            margin-top: 3rem;
+        }
+
+        .about-image {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+        }
+
+        .about-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .about-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 1px solid rgba(200, 149, 62, 0.2);
+            border-radius: 20px;
+        }
+
+        .about-image .floating-badge {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: rgba(44, 24, 16, 0.9);
+            backdrop-filter: blur(10px);
+            color: var(--gold);
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: 1px solid rgba(200, 149, 62, 0.3);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .about-text h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            margin-bottom: 1.2rem;
+            font-weight: 700;
+        }
+
+        .about-text p {
+            color: var(--text-muted);
+            line-height: 1.9;
+            font-size: 1.05rem;
+            margin-bottom: 2rem;
+        }
+
+        .check-list {
+            list-style: none;
+            display: grid;
+            gap: 1rem;
+        }
+
+        .check-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .check-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .check-icon svg {
+            width: 14px;
+            height: 14px;
+            fill: var(--wood-dark);
+        }
+
+        /* ========== PRICING SECTION ========== */
+        .pricing {
+            background: var(--wood-dark);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(139, 94, 60, 0.04) 2px,
+                    rgba(139, 94, 60, 0.04) 4px
+                );
+            background-size: 6px 100%;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+            position: relative;
+        }
+
+        .price-card {
+            background: rgba(255, 248, 240, 0.04);
+            border: 1px solid rgba(200, 149, 62, 0.15);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .price-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold), transparent);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .price-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(200, 149, 62, 0.4);
+            background: rgba(255, 248, 240, 0.07);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .price-card:hover::before {
+            opacity: 1;
+        }
+
+        .price-card.popular {
+            border-color: var(--gold);
+            background: rgba(200, 149, 62, 0.08);
+        }
+
+        .price-card.popular::before {
+            opacity: 1;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--gold);
+            color: var(--wood-dark);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .price-card-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .price-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: var(--cream);
+            margin-bottom: 0.3rem;
+        }
+
+        .price-card .wood-type {
+            color: var(--gold);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .price-range {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--gold-light);
+            margin-bottom: 0.3rem;
+        }
+
+        .price-unit {
+            font-size: 0.85rem;
+            color: rgba(255, 248, 240, 0.4);
+            margin-bottom: 1.5rem;
+        }
+
+        .price-features {
+            list-style: none;
+            display: grid;
+            gap: 0.8rem;
+        }
+
+        .price-features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: rgba(255, 248, 240, 0.65);
+            line-height: 1.5;
+        }
+
+        .price-features li::before {
+            content: '|';
+            color: var(--gold);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* ========== CALCULATOR SECTION ========== */
+        .calculator {
+            background: var(--cream-dark);
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .calc-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 40px rgba(44, 24, 16, 0.06);
+            border: 1px solid rgba(200, 149, 62, 0.1);
+        }
+
+        .calc-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .calc-card .area {
+            color: var(--gold);
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.9rem 0;
+            border-bottom: 1px solid rgba(200, 149, 62, 0.1);
+        }
+
+        .calc-row:last-child {
+            border-bottom: none;
+        }
+
+        .calc-row .label {
+            font-weight: 500;
+            color: var(--text-body);
+            font-size: 0.95rem;
+        }
+
+        .calc-row .value {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: var(--wood-medium);
+            font-size: 1.05rem;
+        }
+
+        /* ========== HOUSE MODELS ========== */
+        .models {
+            background: var(--cream);
+        }
+
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .model-card {
+            background: var(--white);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(200, 149, 62, 0.1);
+            transition: all 0.4s ease;
+        }
+
+        .model-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(44, 24, 16, 0.12);
+        }
+
+        .model-image {
+            height: 240px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .model-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .model-card:hover .model-image img {
+            transform: scale(1.08);
+        }
+
+        .model-image-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(44, 24, 16, 0.5), transparent);
+            z-index: 1;
+        }
+
+        .model-body {
+            padding: 1.8rem;
+        }
+
+        .model-body h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .model-specs {
+            display: grid;
+            gap: 0.6rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .model-spec {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+
+        .model-spec .spec-label {
+            color: var(--text-muted);
+        }
+
+        .model-spec .spec-value {
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .model-price {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--gold);
+            padding-top: 1rem;
+            border-top: 1px solid rgba(200, 149, 62, 0.15);
+        }
+
+        /* ========== GALLERY ========== */
+        .gallery {
+            background: var(--wood-dark);
+            overflow: hidden;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+            margin-top: 3rem;
+        }
+
+        .gallery-item {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
+
+        .gallery-item-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: linear-gradient(to top, rgba(44, 24, 16, 0.9), transparent);
+            color: var(--cream);
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-align: center;
+            transform: translateY(100%);
+            transition: transform 0.4s ease;
+        }
+
+        .gallery-item:hover .gallery-item-label {
+            transform: translateY(0);
+        }
+
+        /* ========== PROCESS ========== */
+        .process {
+            background: var(--cream);
+        }
+
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.5rem;
+            margin-top: 3rem;
+            position: relative;
+        }
+
+        .process-steps::before {
+            content: '';
+            position: absolute;
+            top: 35px;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+            opacity: 0.3;
+        }
+
+        .process-step {
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--wood-dark);
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            box-shadow: 0 8px 25px rgba(200, 149, 62, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-title {
+            font-weight: 700;
+            color: var(--text-dark);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* ========== WHY US ========== */
+        .why-us {
+            background: var(--cream-dark);
+        }
+
+        .why-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .why-card {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            border-radius: 20px;
+            background: var(--white);
+            border: 1px solid rgba(200, 149, 62, 0.1);
+            transition: all 0.4s ease;
+        }
+
+        .why-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(44, 24, 16, 0.08);
+            border-color: rgba(200, 149, 62, 0.3);
+        }
+
+        .why-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem;
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, rgba(200, 149, 62, 0.1), rgba(200, 149, 62, 0.05));
+        }
+
+        .why-card h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .why-card p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* ========== TESTIMONIALS ========== */
+        .testimonials {
+            background: var(--wood-dark);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .testimonials::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(200, 149, 62, 0.06), transparent);
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+            position: relative;
+        }
+
+        .testimonial-card {
+            background: rgba(255, 248, 240, 0.05);
+            border: 1px solid rgba(200, 149, 62, 0.12);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            background: rgba(255, 248, 240, 0.08);
+            border-color: rgba(200, 149, 62, 0.3);
+        }
+
+        .testimonial-stars {
+            color: var(--gold);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            letter-spacing: 4px;
+        }
+
+        .testimonial-text {
+            color: rgba(255, 248, 240, 0.75);
+            font-size: 1rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .testimonial-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--wood-dark);
+            font-size: 1rem;
+        }
+
+        .testimonial-name {
+            font-weight: 600;
+            color: var(--cream);
+            font-size: 0.95rem;
+        }
+
+        .testimonial-location {
+            font-size: 0.8rem;
+            color: rgba(255, 248, 240, 0.4);
+        }
+
+        /* ========== FAQ ========== */
+        .faq {
+            background: var(--cream);
+        }
+
+        .faq-list {
+            max-width: 750px;
+            margin: 3rem auto 0;
+            display: grid;
+            gap: 1rem;
+        }
+
+        .faq-item {
+            background: var(--white);
+            border-radius: 16px;
+            border: 1px solid rgba(200, 149, 62, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            border-color: rgba(200, 149, 62, 0.3);
+        }
+
+        .faq-question {
+            width: 100%;
+            text-align: left;
+            padding: 1.4rem 1.8rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-family: 'Be Vietnam Pro', sans-serif;
+            gap: 1rem;
+        }
+
+        .faq-question .icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(200, 149, 62, 0.1), rgba(200, 149, 62, 0.05));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s;
+            color: var(--gold);
+            font-size: 1.2rem;
+        }
+
+        .faq-item.active .faq-question .icon {
+            background: var(--gold);
+            color: var(--wood-dark);
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+        }
+
+        .faq-answer-inner {
+            padding: 0 1.8rem 1.4rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        /* ========== CONTACT / CTA ========== */
+        .contact {
+            background: linear-gradient(135deg, var(--wood-dark) 0%, var(--wood-medium) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(200, 149, 62, 0.08), transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(200, 149, 62, 0.05), transparent 50%);
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+        }
+
+        .contact-info h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            color: var(--cream);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .contact-info p {
+            color: rgba(255, 248, 240, 0.6);
+            font-size: 1.05rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .contact-details {
+            display: grid;
+            gap: 1.2rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 248, 240, 0.05);
+            border-radius: 14px;
+            border: 1px solid rgba(200, 149, 62, 0.1);
+            transition: all 0.3s;
+        }
+
+        .contact-item:hover {
+            background: rgba(200, 149, 62, 0.1);
+            border-color: rgba(200, 149, 62, 0.3);
+        }
+
+        .contact-item-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(200, 149, 62, 0.2), rgba(200, 149, 62, 0.1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .contact-item-text .label {
+            font-size: 0.78rem;
+            color: rgba(255, 248, 240, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+
+        .contact-item-text .value {
+            color: var(--cream);
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .contact-buttons {
+            display: grid;
+            gap: 1rem;
+            margin-top: 2.5rem;
+        }
+
+        .contact-buttons .btn-primary {
+            justify-content: center;
+            width: 100%;
+            font-size: 1.1rem;
+            padding: 1.1rem 2rem;
+        }
+
+        .btn-call {
+            background: linear-gradient(135deg, #C0392B, #E74C3C) !important;
+            color: var(--white) !important;
+        }
+
+        .btn-call:hover {
+            box-shadow: 0 8px 30px rgba(192, 57, 43, 0.4) !important;
+        }
+
+        .btn-zalo {
+            background: linear-gradient(135deg, #0068FF, #4A9CFF) !important;
+            color: var(--white) !important;
+        }
+
+        .btn-zalo:hover {
+            box-shadow: 0 8px 30px rgba(0, 104, 255, 0.4) !important;
+        }
+
+        .contact-form-wrapper {
+            background: rgba(255, 248, 240, 0.06);
+            border: 1px solid rgba(200, 149, 62, 0.15);
+            border-radius: 24px;
+            padding: 2.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .contact-form-wrapper h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--cream);
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: rgba(255, 248, 240, 0.6);
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            background: rgba(255, 248, 240, 0.06);
+            border: 1px solid rgba(200, 149, 62, 0.15);
+            border-radius: 12px;
+            color: var(--cream);
+            font-family: 'Be Vietnam Pro', sans-serif;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 248, 240, 0.3);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--gold);
+        }
+
+        .form-group select {
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .form-group select option {
+            background: var(--wood-dark);
+            color: var(--cream);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* ========== FOOTER ========== */
+        .footer {
+            background: #1A0F0A;
+            padding: 3rem 2rem 1.5rem;
+            text-align: center;
+        }
+
+        .footer-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .footer-logo span {
+            color: rgba(255, 248, 240, 0.5);
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        .footer p {
+            color: rgba(255, 248, 240, 0.3);
+            font-size: 0.85rem;
+        }
+
+        .footer-divider {
+            width: 60px;
+            height: 2px;
+            background: var(--gold);
+            margin: 1.5rem auto;
+            opacity: 0.3;
+        }
+
+        /* ========== FLOATING CTA ========== */
+        .floating-cta {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .float-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            text-decoration: none;
+            color: var(--white);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .float-btn:hover {
+            transform: scale(1.12);
+        }
+
+        .float-btn.phone {
+            background: linear-gradient(135deg, #C0392B, #E74C3C);
+            animation: pulse 2s infinite;
+        }
+
+        .float-btn.zalo {
+            background: linear-gradient(135deg, #0068FF, #4A9CFF);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 1024px) {
+            .models-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .process-steps {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .process-steps::before {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(44, 24, 16, 0.98);
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 2rem;
+                z-index: 999;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-links a {
+                font-size: 1.2rem;
+            }
+
+            .mobile-toggle {
+                display: flex;
+                z-index: 1000;
+            }
+
+            .about-grid,
+            .calc-grid,
+            .contact-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .models-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .testimonial-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .gallery-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .process-steps {
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+
+            .why-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .hero-stats {
+                gap: 1.5rem;
+            }
+
+            .hero-stat-number {
+                font-size: 1.6rem;
+            }
+
+            .section {
+                padding: 4rem 1.5rem;
+            }
+
+            .hero-features {
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .gallery-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .process-steps {
+                grid-template-columns: 1fr;
+            }
+
+            .why-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVIGATION -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-inner">
+            <a href="#" class="logo">NHÀ GỖ <span>Việt</span></a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#about">Giới thiệu</a></li>
+                <li><a href="#pricing">Bảng giá</a></li>
+                <li><a href="#models">Mẫu nhà</a></li>
+                <li><a href="#process">Quy trình</a></li>
+                <li><a href="#faq">Hỏi đáp</a></li>
+                <li><a href="#contact" class="nav-cta">Liên hệ</a></li>
+            </ul>
+            <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero" id="hero">
+        <div class="hero-bg-img"></div>
+        <div class="hero-bg"></div>
+        <div class="hero-pattern"></div>
+        <div class="hero-decorative-line"></div>
+        <div class="hero-decorative-line"></div>
+        <div class="hero-content">
+            <div class="hero-badge">Uy tín hàng đầu Việt Nam</div>
+            <h1>Nhà Gỗ Cao Cấp<br><span class="highlight">Bền Đẹp Trăm Năm</span></h1>
+            <p class="hero-subtitle">
+                Thiết kế & thi công nhà gỗ truyền thống – hiện đại<br>
+                Cam kết gỗ thật 100% – Giá minh bạch – Bảo hành dài hạn
+            </p>
+            <div class="hero-features">
+                <div class="hero-feature">
+                    <svg viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                    Gỗ thật 100%
+                </div>
+                <div class="hero-feature">
+                    <svg viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                    Bảo hành 5-10 năm
+                </div>
+                <div class="hero-feature">
+                    <svg viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                    Giá không phát sinh
+                </div>
+            </div>
+            <div class="hero-buttons">
+                <a href="#contact" class="btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+                    Nhận báo giá ngay
+                </a>
+                <a href="tel:09xxxxxxxx" class="btn-secondary">
+                    Gọi tư vấn miễn phí
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-number">10+</div>
+                    <div class="hero-stat-label">Năm kinh nghiệm</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-number">200+</div>
+                    <div class="hero-stat-label">Công trình</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-number">100%</div>
+                    <div class="hero-stat-label">Gỗ chính hãng</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-number">5-10</div>
+                    <div class="hero-stat-label">Năm bảo hành</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="section about" id="about">
+        <div class="section-inner">
+            <div class="about-grid">
+                <div class="about-image animate-on-scroll">
+                    <img src="https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&q=80" alt="Nhà gỗ truyền thống Việt Nam" loading="lazy">
+                    <div class="floating-badge">10+ năm kinh nghiệm</div>
+                </div>
+                <div class="about-text animate-on-scroll">
+                    <span class="section-label">Về chúng tôi</span>
+                    <h3>Chuyên gia nhà gỗ hàng đầu Việt Nam</h3>
+                    <p>
+                        Chúng tôi chuyên thiết kế và thi công nhà gỗ cổ truyền, nhà thờ họ, nhà gỗ sân vườn trên toàn quốc. Với nhiều năm kinh nghiệm, đội ngũ thợ lành nghề và nguồn gỗ chất lượng cao, chúng tôi cam kết mang đến công trình bền vững, thẩm mỹ và giá trị lâu dài.
+                    </p>
+                    <ul class="check-list">
+                        <li>
+                            <span class="check-icon"><svg viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></span>
+                            Gỗ thật 100% — cam kết nguồn gốc rõ ràng
+                        </li>
+                        <li>
+                            <span class="check-icon"><svg viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></span>
+                            Thi công chuẩn kỹ thuật — đội thợ lành nghề
+                        </li>
+                        <li>
+                            <span class="check-icon"><svg viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></span>
+                            Bảo hành 5–10 năm — yên tâm sử dụng
+                        </li>
+                        <li>
+                            <span class="check-icon"><svg viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg></span>
+                            Giá rõ ràng — không phát sinh chi phí
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="section pricing" id="pricing">
+        <div class="section-inner">
+            <div class="animate-on-scroll">
+                <span class="section-label" style="color: var(--gold-light);">Bảng giá theo m&sup2;</span>
+                <h2 class="section-title light">Giá Minh Bạch — Không Phát Sinh</h2>
+                <p class="section-desc light">Chọn loại gỗ phù hợp với nhu cầu và ngân sách của bạn</p>
+            </div>
+
+            <div class="pricing-grid">
+                <!-- Gỗ Xoan -->
+                <div class="price-card animate-on-scroll">
+                    <div class="price-card-icon">🌿</div>
+                    <h3>Gỗ Xoan</h3>
+                    <div class="wood-type">Giá rẻ — Tiết kiệm</div>
+                    <div class="price-range">2 — 4 triệu</div>
+                    <div class="price-unit">VNĐ / m²</div>
+                    <ul class="price-features">
+                        <li>Phù hợp nhà nhỏ, nhà vườn</li>
+                        <li>Giá rẻ, dễ thi công</li>
+                        <li>Độ bền thấp hơn Lim</li>
+                        <li>Nhà 60m² ~ 120 – 240 triệu</li>
+                    </ul>
+                </div>
+
+                <!-- Gỗ Lim Nam Phi -->
+                <div class="price-card popular animate-on-scroll">
+                    <div class="popular-badge">Bán chạy nhất</div>
+                    <div class="price-card-icon">🌳</div>
+                    <h3>Gỗ Lim Nam Phi</h3>
+                    <div class="wood-type">Phổ biến nhất</div>
+                    <div class="price-range">5 — 7 triệu</div>
+                    <div class="price-unit">VNĐ / m²</div>
+                    <ul class="price-features">
+                        <li>Phù hợp nhà 3 gian, nhà ở lâu dài</li>
+                        <li>Bền, chống mối mọt tốt</li>
+                        <li>Được khách hàng ưa chuộng nhất</li>
+                        <li>Nhà 60m² ~ 300 – 420 triệu</li>
+                    </ul>
+                </div>
+
+                <!-- Gỗ Lim Lào -->
+                <div class="price-card animate-on-scroll">
+                    <div class="price-card-icon">🪵</div>
+                    <h3>Gỗ Lim Lào</h3>
+                    <div class="wood-type">Cao cấp</div>
+                    <div class="price-range">7 — 10 triệu</div>
+                    <div class="price-unit">VNĐ / m²</div>
+                    <ul class="price-features">
+                        <li>Phù hợp nhà thờ họ, nhà lớn</li>
+                        <li>Vân đẹp, chắc chắn</li>
+                        <li>Giá trị lâu dài</li>
+                        <li>Nhà 60m² ~ 420 – 600 triệu</li>
+                    </ul>
+                </div>
+
+                <!-- Gỗ Lim Việt -->
+                <div class="price-card animate-on-scroll">
+                    <div class="price-card-icon">🏆</div>
+                    <h3>Gỗ Lim Việt Nam</h3>
+                    <div class="wood-type">Siêu cao cấp</div>
+                    <div class="price-range">10 — 15 triệu</div>
+                    <div class="price-unit">VNĐ / m²</div>
+                    <ul class="price-features">
+                        <li>Phù hợp công trình cao cấp</li>
+                        <li>Cực bền, giá trị rất cao</li>
+                        <li>Đẳng cấp hàng đầu</li>
+                        <li>Nhà 60m² ~ 600 – 900 triệu</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COST CALCULATOR -->
+    <section class="section calculator" id="calculator">
+        <div class="section-inner">
+            <div class="animate-on-scroll" style="text-align: center;">
+                <span class="section-label" style="justify-content: center;">Tính giá nhanh</span>
+                <h2 class="section-title" style="margin-left:auto;margin-right:auto;">Ước Tính Chi Phí Xây Dựng</h2>
+                <p class="section-desc" style="margin-left:auto;margin-right:auto;">Tham khảo chi phí dựa trên diện tích và loại gỗ</p>
+            </div>
+            <div class="calc-grid">
+                <div class="calc-card animate-on-scroll">
+                    <h3>Nhà 60m²</h3>
+                    <div class="area">Diện tích phổ biến cho nhà vườn</div>
+                    <div class="calc-row">
+                        <span class="label">🌿 Gỗ Xoan</span>
+                        <span class="value">120 – 240 triệu</span>
+                    </div>
+                    <div class="calc-row">
+                        <span class="label">🌳 Lim Nam Phi</span>
+                        <span class="value">300 – 420 triệu</span>
+                    </div>
+                    <div class="calc-row">
+                        <span class="label">🪵 Lim Lào</span>
+                        <span class="value">420 – 600 triệu</span>
+                    </div>
+                    <div class="calc-row">
+                        <span class="label">🏆 Lim Việt Nam</span>
+                        <span class="value">600 – 900 triệu</span>
+                    </div>
+                </div>
+                <div class="calc-card animate-on-scroll">
+                    <h3>Nhà 100m²</h3>
+                    <div class="area">Diện tích phổ biến cho nhà 3 gian</div>
+                    <div class="calc-row">
+                        <span class="label">🌿 Gỗ Xoan</span>
+                        <span class="value">200 – 400 triệu</span>
+                    </div>
+                    <div class="calc-row">
+                        <span class="label">🌳 Lim Nam Phi</span>
+                        <span class="value">500 – 700 triệu</span>
+                    </div>
+                    <div class="calc-row">
+                        <span class="label">🪵 Lim Lào</span>
+                        <span class="value">700 triệu – 1 tỷ</span>
+                    </div>
+                    <div class="calc-row">
+                        <span class="label">🏆 Lim Việt Nam</span>
+                        <span class="value">1 – 1.5 tỷ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOUSE MODELS -->
+    <section class="section models" id="models">
+        <div class="section-inner">
+            <div class="animate-on-scroll" style="text-align: center;">
+                <span class="section-label" style="justify-content: center;">Mẫu nhà gỗ</span>
+                <h2 class="section-title" style="margin-left:auto;margin-right:auto;">Các Mẫu Nhà Gỗ Tiêu Biểu</h2>
+                <p class="section-desc" style="margin-left:auto;margin-right:auto;">Từ truyền thống đến hiện đại, đáp ứng mọi nhu cầu</p>
+            </div>
+            <div class="models-grid">
+                <div class="model-card animate-on-scroll">
+                    <div class="model-image">
+                        <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80" alt="Nhà gỗ 3 gian truyền thống" loading="lazy">
+                        <div class="model-image-overlay"></div>
+                    </div>
+                    <div class="model-body">
+                        <h3>Nhà Gỗ 3 Gian Truyền Thống</h3>
+                        <div class="model-specs">
+                            <div class="model-spec">
+                                <span class="spec-label">Diện tích</span>
+                                <span class="spec-value">70 – 100m²</span>
+                            </div>
+                            <div class="model-spec">
+                                <span class="spec-label">Loại gỗ</span>
+                                <span class="spec-value">Lim Nam Phi / Lim Lào</span>
+                            </div>
+                        </div>
+                        <div class="model-price">400 – 800 triệu VNĐ</div>
+                    </div>
+                </div>
+                <div class="model-card animate-on-scroll">
+                    <div class="model-image">
+                        <img src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600&q=80" alt="Nhà gỗ sân vườn hiện đại" loading="lazy">
+                        <div class="model-image-overlay"></div>
+                    </div>
+                    <div class="model-body">
+                        <h3>Nhà Gỗ Sân Vườn Hiện Đại</h3>
+                        <div class="model-specs">
+                            <div class="model-spec">
+                                <span class="spec-label">Diện tích</span>
+                                <span class="spec-value">40 – 80m²</span>
+                            </div>
+                            <div class="model-spec">
+                                <span class="spec-label">Loại gỗ</span>
+                                <span class="spec-value">Xoan / Lim</span>
+                            </div>
+                        </div>
+                        <div class="model-price">150 – 400 triệu VNĐ</div>
+                    </div>
+                </div>
+                <div class="model-card animate-on-scroll">
+                    <div class="model-image">
+                        <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80" alt="Nhà thờ họ gỗ cao cấp" loading="lazy">
+                        <div class="model-image-overlay"></div>
+                    </div>
+                    <div class="model-body">
+                        <h3>Nhà Thờ Họ</h3>
+                        <div class="model-specs">
+                            <div class="model-spec">
+                                <span class="spec-label">Diện tích</span>
+                                <span class="spec-value">80 – 150m²</span>
+                            </div>
+                            <div class="model-spec">
+                                <span class="spec-label">Loại gỗ</span>
+                                <span class="spec-value">Lim Lào / Lim Việt</span>
+                            </div>
+                        </div>
+                        <div class="model-price">700 triệu – 2 tỷ+ VNĐ</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section class="section gallery" id="gallery">
+        <div class="section-inner">
+            <div class="animate-on-scroll" style="text-align: center;">
+                <span class="section-label" style="justify-content: center; color: var(--gold-light);">Hình ảnh công trình</span>
+                <h2 class="section-title light" style="margin-left:auto;margin-right:auto;">Công Trình Thực Tế</h2>
+                <p class="section-desc light" style="margin-left:auto;margin-right:auto;">Hình ảnh các công trình đã thi công thực tế</p>
+            </div>
+            <div class="gallery-grid">
+                <div class="gallery-item animate-on-scroll">
+                    <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=500&q=80" alt="Mặt trước nhà gỗ" loading="lazy">
+                    <div class="gallery-item-label">Mặt trước</div>
+                </div>
+                <div class="gallery-item animate-on-scroll">
+                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500&q=80" alt="Mặt sau nhà gỗ" loading="lazy">
+                    <div class="gallery-item-label">Mặt sau</div>
+                </div>
+                <div class="gallery-item animate-on-scroll">
+                    <img src="https://images.unsplash.com/photo-1600607687644-aac4c3eac7f4?w=500&q=80" alt="Chi tiết gỗ" loading="lazy">
+                    <div class="gallery-item-label">Chi tiết gỗ</div>
+                </div>
+                <div class="gallery-item animate-on-scroll">
+                    <img src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=500&q=80" alt="Toàn cảnh công trình" loading="lazy">
+                    <div class="gallery-item-label">Toàn cảnh</div>
+                </div>
+                <div class="gallery-item animate-on-scroll">
+                    <img src="https://images.unsplash.com/photo-1600585153490-76fb20a32601?w=500&q=80" alt="Thi công nhà gỗ" loading="lazy">
+                    <div class="gallery-item-label">Thi công</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROCESS -->
+    <section class="section process" id="process">
+        <div class="section-inner">
+            <div class="animate-on-scroll" style="text-align: center;">
+                <span class="section-label" style="justify-content: center;">Quy trình</span>
+                <h2 class="section-title" style="margin-left:auto;margin-right:auto;">Quy Trình Thi Công 5 Bước</h2>
+                <p class="section-desc" style="margin-left:auto;margin-right:auto;">Chuyên nghiệp — Minh bạch — Đúng tiến độ</p>
+            </div>
+            <div class="process-steps">
+                <div class="process-step animate-on-scroll">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Khảo sát & Tư vấn</div>
+                    <div class="step-desc">Đến tận nơi khảo sát, tư vấn phương án tối ưu</div>
+                </div>
+                <div class="process-step animate-on-scroll">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Thiết kế bản vẽ</div>
+                    <div class="step-desc">Thiết kế 2D/3D theo yêu cầu, điều chỉnh đến khi ưng ý</div>
+                </div>
+                <div class="process-step animate-on-scroll">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Báo giá chi tiết</div>
+                    <div class="step-desc">Báo giá rõ ràng từng hạng mục, không phát sinh</div>
+                </div>
+                <div class="process-step animate-on-scroll">
+                    <div class="step-number">4</div>
+                    <div class="step-title">Thi công</div>
+                    <div class="step-desc">Đội thợ lành nghề thi công, cập nhật tiến độ liên tục</div>
+                </div>
+                <div class="process-step animate-on-scroll">
+                    <div class="step-number">5</div>
+                    <div class="step-title">Bàn giao</div>
+                    <div class="step-desc">Nghiệm thu chất lượng, bàn giao & bảo hành dài hạn</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WHY US -->
+    <section class="section why-us" id="why-us">
+        <div class="section-inner">
+            <div class="animate-on-scroll" style="text-align: center;">
+                <span class="section-label" style="justify-content: center;">Lý do chọn chúng tôi</span>
+                <h2 class="section-title" style="margin-left:auto;margin-right:auto;">Vì Sao Khách Hàng Tin Tưởng?</h2>
+            </div>
+            <div class="why-grid">
+                <div class="why-card animate-on-scroll">
+                    <div class="why-icon">🏅</div>
+                    <h4>10+ năm kinh nghiệm</h4>
+                    <p>Am hiểu sâu sắc về nhà gỗ truyền thống và hiện đại</p>
+                </div>
+                <div class="why-card animate-on-scroll">
+                    <div class="why-icon">🏠</div>
+                    <h4>200+ công trình</h4>
+                    <p>Hàng trăm công trình hoàn thiện trên toàn quốc</p>
+                </div>
+                <div class="why-card animate-on-scroll">
+                    <div class="why-icon">👷</div>
+                    <h4>Đội thợ lành nghề</h4>
+                    <p>Tay nghề cao, tận tâm với từng chi tiết công trình</p>
+                </div>
+                <div class="why-card animate-on-scroll">
+                    <div class="why-icon">🪵</div>
+                    <h4>Gỗ chuẩn chất lượng</h4>
+                    <p>Nguồn gỗ rõ ràng, cam kết 100% gỗ thật</p>
+                </div>
+                <div class="why-card animate-on-scroll">
+                    <div class="why-icon">💰</div>
+                    <h4>Giá cạnh tranh</h4>
+                    <p>Báo giá minh bạch, không phát sinh chi phí ẩn</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="section testimonials" id="testimonials">
+        <div class="section-inner">
+            <div class="animate-on-scroll" style="text-align: center;">
+                <span class="section-label" style="justify-content: center; color: var(--gold-light);">Khách hàng nói gì</span>
+                <h2 class="section-title light" style="margin-left:auto;margin-right:auto;">Đánh Giá Từ Khách Hàng</h2>
+            </div>
+            <div class="testimonial-grid">
+                <div class="testimonial-card animate-on-scroll">
+                    <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p class="testimonial-text">"Nhà đẹp, gỗ chắc, làm rất có tâm. Gia đình tôi rất hài lòng với công trình."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">M</div>
+                        <div>
+                            <div class="testimonial-name">Anh Minh</div>
+                            <div class="testimonial-location">Hải Phòng</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card animate-on-scroll">
+                    <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p class="testimonial-text">"Thi công nhanh, đúng tiến độ. Đội ngũ chuyên nghiệp và nhiệt tình."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">H</div>
+                        <div>
+                            <div class="testimonial-name">Anh Hùng</div>
+                            <div class="testimonial-location">Hà Nội</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card animate-on-scroll">
+                    <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p class="testimonial-text">"Giá hợp lý, tư vấn nhiệt tình. Rất đáng để đầu tư cho ngôi nhà gỗ."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">L</div>
+                        <div>
+                            <div class="testimonial-name">Chị Lan</div>
+                            <div class="testimonial-location">Nam Định</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section faq" id="faq">
+        <div class="section-inner">
+            <div class="animate-on-scroll" style="text-align: center;">
+                <span class="section-label" style="justify-content: center;">Câu hỏi thường gặp</span>
+                <h2 class="section-title" style="margin-left:auto;margin-right:auto;">Giải Đáp Thắc Mắc</h2>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item active animate-on-scroll">
+                    <button class="faq-question">
+                        Nhà gỗ có bền không?
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            Nhà gỗ nếu được thi công đúng kỹ thuật và sử dụng gỗ chất lượng có thể sử dụng từ <strong>30 đến 50 năm</strong>, thậm chí lâu hơn. Gỗ Lim có độ bền đặc biệt cao, chống mối mọt tốt.
+                        </div>
+                    </div>
+                </div>
+                <div class="faq-item animate-on-scroll">
+                    <button class="faq-question">
+                        Thi công mất bao lâu?
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            Thời gian thi công từ <strong>2 đến 6 tháng</strong> tùy thuộc vào diện tích, loại gỗ và độ phức tạp của thiết kế. Chúng tôi cam kết đúng tiến độ đã thỏa thuận.
+                        </div>
+                    </div>
+                </div>
+                <div class="faq-item animate-on-scroll">
+                    <button class="faq-question">
+                        Có bảo hành không?
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            Có! Chúng tôi bảo hành từ <strong>5 đến 10 năm</strong> tùy theo loại gỗ và hạng mục thi công. Trong thời gian bảo hành, mọi vấn đề phát sinh sẽ được xử lý miễn phí.
+                        </div>
+                    </div>
+                </div>
+                <div class="faq-item animate-on-scroll">
+                    <button class="faq-question">
+                        Giá có phát sinh thêm không?
+                        <span class="icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <div class="faq-answer-inner">
+                            Không. Chúng tôi báo giá chi tiết từng hạng mục trước khi thi công. <strong>Cam kết không phát sinh chi phí</strong> ngoài hợp đồng. Mọi thay đổi (nếu có) đều được thống nhất trước với khách hàng.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="section contact" id="contact">
+        <div class="section-inner">
+            <div class="contact-grid">
+                <div class="contact-info animate-on-scroll">
+                    <span class="section-label" style="color: var(--gold-light);">Liên hệ ngay</span>
+                    <h2>Nhận Báo Giá<br>Miễn Phí Hôm Nay</h2>
+                    <p>Liên hệ ngay để được tư vấn miễn phí và nhận báo giá chi tiết cho công trình nhà gỗ của bạn.</p>
+
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <div class="contact-item-icon">📞</div>
+                            <div class="contact-item-text">
+                                <div class="label">Hotline</div>
+                                <div class="value">09xx xxx xxx</div>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-item-icon">💬</div>
+                            <div class="contact-item-text">
+                                <div class="label">Zalo</div>
+                                <div class="value">09xx xxx xxx</div>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-item-icon">✉️</div>
+                            <div class="contact-item-text">
+                                <div class="label">Email</div>
+                                <div class="value">nhago@gmail.com</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-buttons">
+                        <a href="tel:09xxxxxxxx" class="btn-primary btn-call">
+                            📞 Gọi Ngay
+                        </a>
+                        <a href="#" class="btn-primary btn-zalo">
+                            💬 Nhắn Zalo
+                        </a>
+                    </div>
+                </div>
+
+                <div class="contact-form-wrapper animate-on-scroll">
+                    <h3>Nhận Báo Giá Miễn Phí</h3>
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <label>Họ và tên *</label>
+                            <input type="text" placeholder="Nhập họ tên của bạn" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Số điện thoại *</label>
+                            <input type="tel" placeholder="Nhập số điện thoại" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Loại gỗ quan tâm</label>
+                            <select>
+                                <option value="">-- Chọn loại gỗ --</option>
+                                <option value="xoan">Gỗ Xoan (2-4 triệu/m²)</option>
+                                <option value="lim-nam-phi">Gỗ Lim Nam Phi (5-7 triệu/m²)</option>
+                                <option value="lim-lao">Gỗ Lim Lào (7-10 triệu/m²)</option>
+                                <option value="lim-viet">Gỗ Lim Việt Nam (10-15 triệu/m²)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Diện tích dự kiến (m²)</label>
+                            <input type="text" placeholder="VD: 60m², 100m²...">
+                        </div>
+                        <div class="form-group">
+                            <label>Ghi chú thêm</label>
+                            <textarea placeholder="Mô tả thêm yêu cầu của bạn..."></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; border: none; font-family: 'Be Vietnam Pro', sans-serif; cursor: pointer;">
+                            Nhận Báo Giá Ngay →
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-logo">NHÀ GỖ <span>Việt</span></div>
+        <p>Chuyên thiết kế & thi công nhà gỗ cao cấp trên toàn quốc</p>
+        <div class="footer-divider"></div>
+        <p>&copy; 2024 Nhà Gỗ Việt. Tất cả quyền được bảo lưu.</p>
+    </footer>
+
+    <!-- FLOATING CTA -->
+    <div class="floating-cta">
+        <a href="tel:09xxxxxxxx" class="float-btn phone" title="Gọi ngay">📞</a>
+        <a href="#" class="float-btn zalo" title="Nhắn Zalo">💬</a>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 50);
+        });
+
+        // Mobile menu toggle
+        const mobileToggle = document.getElementById('mobileToggle');
+        const navLinks = document.getElementById('navLinks');
+        mobileToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => navLinks.classList.remove('active'));
+        });
+
+        // Scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, index * 80);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+        // FAQ accordion
+        document.querySelectorAll('.faq-question').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const item = btn.parentElement;
+                const wasActive = item.classList.contains('active');
+                document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+                if (!wasActive) item.classList.add('active');
+            });
+        });
+
+        // Form submit
+        document.getElementById('contactForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Cảm ơn bạn! Chúng tôi sẽ liên hệ lại trong thời gian sớm nhất.');
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
