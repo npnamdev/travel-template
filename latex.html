@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Math Formula Tool</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- MathLive -->
+  <script src="https://unpkg.com/mathlive"></script>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Tippy.js -->
+  <script src="https://unpkg.com/@popperjs/core@2"></script>
+  <script src="https://unpkg.com/tippy.js@6"></script>
+  <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/animations/shift-away-subtle.css">
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <!-- html2canvas -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #eef2ff;
+      min-height: 100vh;
+      padding: 28px 16px;
+      color: #1e1b4b;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark {
+      background: #0f0e1a;
+      color: #e0e7ff;
+    }
+
+    .container {
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    /* Top bar */
+    .top-bar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: none;
+      background: rgba(99,102,241,0.08);
+      color: #818cf8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      padding: 0;
+    }
+    .icon-btn:hover { background: rgba(99,102,241,0.18); color: #6366f1; }
+    .icon-btn:active { transform: scale(0.9); }
+    .icon-btn.active { background: #6366f1; color: #fff; }
+
+    body.dark .icon-btn { background: rgba(165,180,252,0.1); color: #818cf8; }
+    body.dark .icon-btn:hover { background: rgba(165,180,252,0.2); }
+    body.dark .icon-btn.active { background: #6366f1; color: #fff; }
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 14px;
+      box-shadow:
+        0 1px 2px rgba(99,102,241,0.04),
+        0 4px 16px rgba(99,102,241,0.06),
+        0 12px 40px rgba(99,102,241,0.04);
+      border: none;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    body.dark .card {
+      background: #1a1830;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+
+    .card-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6366f1;
+      margin-bottom: 12px;
+    }
+
+    /* Templates */
+    .templates-grid {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .tpl-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1.5px solid #e0e7ff;
+      background: #fafaff;
+      color: #4f46e5;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'Inter', system-ui, sans-serif;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .tpl-btn:hover { background: #e0e7ff; border-color: #a5b4fc; }
+    .tpl-btn:active { transform: scale(0.96); }
+
+    body.dark .tpl-btn { background: #252340; border-color: #312e5a; color: #a5b4fc; }
+    body.dark .tpl-btn:hover { background: #312e5a; }
+
+    /* Editor */
+    .editor-wrap { position: relative; }
+
+    .editor-wrap .placeholder {
+      position: absolute;
+      top: 50%;
+      left: 16px;
+      transform: translateY(-50%);
+      color: #c7d2fe;
+      font-size: 15px;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 1;
+    }
+    .editor-wrap.has-value .placeholder { opacity: 0; }
+
+    math-field {
+      width: 100%;
+      min-height: 64px;
+      font-size: 20px;
+      border: 2px solid #e0e7ff;
+      padding: 14px 16px;
+      border-radius: 14px;
+      transition: all 0.2s;
+      background: #fafaff;
+    }
+    math-field:focus-within {
+      border-color: #818cf8;
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(129,140,248,0.12);
+    }
+
+    body.dark math-field { background: #252340; border-color: #312e5a; color: #e0e7ff; }
+    body.dark math-field:focus-within { border-color: #818cf8; background: #1a1830; }
+
+    /* Preview */
+    .preview-wrap { position: relative; }
+
+    .preview-area {
+      background: linear-gradient(135deg, #fafaff 0%, #f0f0ff 100%);
+      border-radius: 16px;
+      padding: 32px 28px;
+      min-height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+    .preview-area::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      border: 1.5px solid rgba(129,140,248,0.12);
+      pointer-events: none;
+    }
+    .preview-area .empty-hint { color: #a5b4fc; font-size: 14px; font-weight: 500; }
+    .preview-area .katex { color: #1e1b4b; font-size: 1.7em; }
+
+    body.dark .preview-area { background: linear-gradient(135deg, #1a1830 0%, #252340 100%); }
+    body.dark .preview-area::before { border-color: rgba(165,180,252,0.08); }
+    body.dark .preview-area .katex { color: #e0e7ff; }
+
+    .preview-actions {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 4px;
+    }
+
+    .preview-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(99,102,241,0.08);
+      color: #818cf8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      padding: 0;
+    }
+    .preview-btn:hover { background: rgba(99,102,241,0.18); color: #6366f1; }
+    .preview-btn:active { transform: scale(0.9); }
+    .preview-btn.done { color: #34d399; background: rgba(52,211,153,0.12); }
+
+    body.dark .preview-btn { background: rgba(165,180,252,0.1); }
+    body.dark .preview-btn:hover { background: rgba(165,180,252,0.2); }
+
+    /* Code block */
+    .code-wrap { position: relative; }
+
+    .code-block {
+      background: #1e1b4b;
+      border-radius: 12px;
+      padding: 14px 44px 14px 16px;
+      font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      color: #6366f1;
+      word-break: break-all;
+      line-height: 1.7;
+      min-height: 44px;
+    }
+    .code-block.has-code { color: #a5b4fc; }
+
+    body.dark .code-block { background: #0f0e1a; }
+
+    .code-copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(165,180,252,0.1);
+      color: #6366f1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      padding: 0;
+    }
+    .code-copy-btn:hover { background: rgba(165,180,252,0.2); color: #a5b4fc; }
+    .code-copy-btn:active { transform: scale(0.9); }
+    .code-copy-btn.copied { color: #34d399; background: rgba(52,211,153,0.15); }
+
+    /* History */
+    .history-panel {
+      display: none;
+    }
+    .history-panel.open { display: block; }
+
+    .history-list {
+      list-style: none;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+      gap: 10px;
+    }
+    .history-item:hover { background: #f0f0ff; }
+    body.dark .history-item:hover { background: #252340; }
+
+    .history-item-formula {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .history-item-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .history-item-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: none;
+      background: rgba(99,102,241,0.08);
+      color: #818cf8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      padding: 0;
+    }
+    .history-item-btn:hover { background: rgba(99,102,241,0.18); color: #6366f1; }
+    .history-item-btn.delete:hover { background: rgba(239,68,68,0.12); color: #ef4444; }
+
+    .history-empty {
+      text-align: center;
+      color: #a5b4fc;
+      font-size: 13px;
+      padding: 20px;
+    }
+
+    .spacer { height: 18px; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1e1b4b;
+      color: #e0e7ff;
+      padding: 11px 28px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Inter', system-ui, sans-serif;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      z-index: 100;
+      box-shadow: 0 8px 32px rgba(30,27,75,0.2);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Tippy theme */
+    .tippy-box[data-theme~='indigo'] {
+      background: #1e1b4b;
+      color: #e0e7ff;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 2px 4px;
+      box-shadow: 0 4px 16px rgba(30,27,75,0.2);
+    }
+    .tippy-box[data-theme~='indigo'] .tippy-arrow { color: #1e1b4b; }
+
+    @media (max-width: 480px) {
+      body { padding: 16px 10px; }
+      .card { padding: 18px; border-radius: 16px; }
+      math-field { font-size: 17px; min-height: 56px; padding: 12px 14px; }
+      .preview-area { padding: 24px 18px; min-height: 70px; }
+      .preview-area .katex { font-size: 1.4em; }
+      .tpl-btn { font-size: 11px; padding: 5px 10px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Top bar -->
+    <div class="top-bar">
+      <button class="icon-btn" id="historyToggle" data-tippy-content="Lịch sử">
+        <i data-lucide="history" style="width:18px;height:18px;"></i>
+      </button>
+      <button class="icon-btn" id="shareBtn" data-tippy-content="Chia sẻ link">
+        <i data-lucide="share-2" style="width:18px;height:18px;"></i>
+      </button>
+      <button class="icon-btn" id="darkToggle" data-tippy-content="Chế độ tối">
+        <i data-lucide="moon" style="width:18px;height:18px;"></i>
+      </button>
+    </div>
+
+    <!-- Main card -->
+    <div class="card">
+      <!-- Templates -->
+      <div class="card-label">Mẫu công thức</div>
+      <div class="templates-grid" id="templates"></div>
+
+      <!-- Editor -->
+      <div class="card-label">Nhập công thức</div>
+      <div class="editor-wrap" id="editorWrap">
+        <span class="placeholder">Nhập công thức tại đây...</span>
+        <math-field id="editor" virtual-keyboard-mode="onfocus">\frac{a}{b} + \sqrt{x} + \int_0^1 x^2 dx</math-field>
+      </div>
+
+      <!-- Preview -->
+      <div class="spacer"></div>
+      <div class="card-label">Xem trước</div>
+      <div class="preview-wrap">
+        <div class="preview-area" id="inlinePreview">
+          <span class="empty-hint">Công thức sẽ hiện ở đây</span>
+        </div>
+        <div class="preview-actions">
+          <button class="preview-btn" id="copyImgBtn" data-tippy-content="Copy ảnh">
+            <i data-lucide="image" style="width:15px;height:15px;"></i>
+          </button>
+          <button class="preview-btn" id="downloadBtn" data-tippy-content="Tải ảnh PNG">
+            <i data-lucide="download" style="width:15px;height:15px;"></i>
+          </button>
+          <button class="preview-btn" id="transparentToggle" data-tippy-content="Nền trong suốt">
+            <i data-lucide="eye-off" style="width:15px;height:15px;"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Code -->
+      <div class="spacer"></div>
+      <div class="card-label">Mã nhúng</div>
+      <div class="code-wrap">
+        <div id="codePreview" class="code-block">Chờ nhập liệu...</div>
+        <button class="code-copy-btn" id="codeCopyBtn" data-tippy-content="Sao chép mã">
+          <i data-lucide="copy" style="width:15px;height:15px;"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- History panel -->
+    <div class="card history-panel" id="historyPanel">
+      <div class="card-label" style="display:flex;justify-content:space-between;align-items:center;">
+        Lịch sử
+        <button class="icon-btn" id="clearHistory" data-tippy-content="Xoá tất cả" style="width:28px;height:28px;">
+          <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+        </button>
+      </div>
+      <ul class="history-list" id="historyList"></ul>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    lucide.createIcons();
+
+    // === ELEMENTS ===
+    var editor = document.getElementById("editor");
+    var preview = document.getElementById("inlinePreview");
+    var codePreview = document.getElementById("codePreview");
+    var codeCopyBtn = document.getElementById("codeCopyBtn");
+    var downloadBtn = document.getElementById("downloadBtn");
+    var copyImgBtn = document.getElementById("copyImgBtn");
+    var transparentToggle = document.getElementById("transparentToggle");
+    var editorWrap = document.getElementById("editorWrap");
+    var historyPanel = document.getElementById("historyPanel");
+    var historyList = document.getElementById("historyList");
+    var historyToggle = document.getElementById("historyToggle");
+    var darkToggle = document.getElementById("darkToggle");
+    var shareBtn = document.getElementById("shareBtn");
+    var clearHistoryBtn = document.getElementById("clearHistory");
+    var templatesGrid = document.getElementById("templates");
+
+    var useTransparent = false;
+
+    // === TEMPLATES ===
+    var templates = [
+      { name: "Phân số", latex: "\\frac{a}{b}" },
+      { name: "Căn bậc hai", latex: "\\sqrt{x}" },
+      { name: "Luỹ thừa", latex: "x^{n}" },
+      { name: "Chỉ số", latex: "a_{n}" },
+      { name: "Tích phân", latex: "\\int_{a}^{b} f(x) \\, dx" },
+      { name: "Tổng", latex: "\\sum_{i=1}^{n} a_i" },
+      { name: "Giới hạn", latex: "\\lim_{x \\to \\infty} f(x)" },
+      { name: "Ma trận", latex: "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}" },
+      { name: "Hệ PT", latex: "\\begin{cases} x + y = 5 \\\\ x - y = 1 \\end{cases}" },
+      { name: "Bất đẳng thức", latex: "a^2 + b^2 \\geq 2ab" },
+      { name: "Lượng giác", latex: "\\sin^2\\theta + \\cos^2\\theta = 1" },
+      { name: "Logarit", latex: "\\log_a b = \\frac{\\ln b}{\\ln a}" },
+    ];
+
+    templates.forEach(function(t) {
+      var btn = document.createElement("button");
+      btn.className = "tpl-btn";
+      btn.textContent = t.name;
+      btn.addEventListener("click", function() {
+        editor.value = t.latex;
+        render();
+        editor.focus();
+      });
+      templatesGrid.appendChild(btn);
+    });
+
+    // === UTILS ===
+    function cleanLatex(latex) {
+      return latex.trim().replace(/\n/g, " ").replace(/\s+/g, " ");
+    }
+
+    function showToast(msg) {
+      var toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.classList.add("show");
+      setTimeout(function() { toast.classList.remove("show"); }, 1800);
+    }
+
+    function miniConfetti(btn) {
+      var rect = btn.getBoundingClientRect();
+      confetti({
+        particleCount: 30, spread: 50, startVelocity: 15, gravity: 0.8, scalar: 0.7,
+        origin: { x: (rect.left + rect.width / 2) / window.innerWidth, y: (rect.top + rect.height / 2) / window.innerHeight },
+        colors: ['#6366f1', '#818cf8', '#a5b4fc', '#c7d2fe', '#34d399'],
+        disableForReducedMotion: true,
+      });
+    }
+
+    function btnFeedback(btn, originalIcon) {
+      btn.classList.add("done");
+      btn.querySelector("i").setAttribute("data-lucide", "check");
+      lucide.createIcons();
+      miniConfetti(btn);
+      setTimeout(function() {
+        btn.classList.remove("done");
+        btn.querySelector("i").setAttribute("data-lucide", originalIcon);
+        lucide.createIcons();
+      }, 1500);
+    }
+
+    // === RENDER ===
+    function render() {
+      var raw = editor.value;
+      var clean = cleanLatex(raw);
+
+      if (clean.length > 0) {
+        editorWrap.classList.add("has-value");
+        katex.render(clean, preview, { throwOnError: false });
+        codePreview.textContent = "[math]" + clean + "[/math]";
+        codePreview.className = "code-block has-code";
+      } else {
+        editorWrap.classList.remove("has-value");
+        preview.textContent = "";
+        var hint = document.createElement("span");
+        hint.className = "empty-hint";
+        hint.textContent = "Công thức sẽ hiện ở đây";
+        preview.appendChild(hint);
+        codePreview.textContent = "Chờ nhập liệu...";
+        codePreview.className = "code-block";
+      }
+    }
+
+    // === COPY CODE ===
+    codeCopyBtn.addEventListener("click", function() {
+      var clean = cleanLatex(editor.value);
+      if (!clean) return;
+      navigator.clipboard.writeText("[math]" + clean + "[/math]").then(function() {
+        btnFeedback(codeCopyBtn, "copy");
+        saveHistory(clean);
+        showToast("Đã sao chép!");
+      });
+    });
+
+    // === CREATE CANVAS FROM PREVIEW ===
+    function createFormulaCanvas(transparent) {
+      var target = document.getElementById("inlinePreview");
+      if (!target.textContent.trim() || target.querySelector(".empty-hint")) {
+        showToast("Chưa có công thức!");
+        return Promise.reject();
+      }
+      var wrapper = document.createElement("div");
+      wrapper.style.cssText = "display:inline-block;padding:8px 12px;background:" + (transparent ? "transparent" : "#fff") + ";border:none;border-radius:0;line-height:1;";
+      var clone = target.cloneNode(true);
+      clone.style.cssText = "background:transparent;border:none;box-shadow:none;padding:0;min-height:auto;display:inline-block;";
+      wrapper.appendChild(clone);
+      document.body.appendChild(wrapper);
+
+      return html2canvas(wrapper, {
+        backgroundColor: transparent ? null : "#ffffff",
+        scale: 3,
+      }).then(function(canvas) {
+        document.body.removeChild(wrapper);
+        return canvas;
+      }).catch(function() {
+        document.body.removeChild(wrapper);
+        showToast("Lỗi khi tạo ảnh!");
+      });
+    }
+
+    // === DOWNLOAD PNG ===
+    downloadBtn.addEventListener("click", function() {
+      createFormulaCanvas(useTransparent).then(function(canvas) {
+        if (!canvas) return;
+        var link = document.createElement("a");
+        link.download = "formula.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        btnFeedback(downloadBtn, "download");
+        saveHistory(cleanLatex(editor.value));
+        showToast("Đã tải ảnh!");
+      });
+    });
+
+    // === COPY IMAGE TO CLIPBOARD ===
+    copyImgBtn.addEventListener("click", function() {
+      createFormulaCanvas(useTransparent).then(function(canvas) {
+        if (!canvas) return;
+        canvas.toBlob(function(blob) {
+          navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blob })
+          ]).then(function() {
+            btnFeedback(copyImgBtn, "image");
+            saveHistory(cleanLatex(editor.value));
+            showToast("Đã copy ảnh vào clipboard!");
+          }).catch(function() {
+            showToast("Trình duyệt không hỗ trợ copy ảnh!");
+          });
+        }, "image/png");
+      });
+    });
+
+    // === TRANSPARENT TOGGLE ===
+    transparentToggle.addEventListener("click", function() {
+      useTransparent = !useTransparent;
+      transparentToggle.classList.toggle("active", useTransparent);
+      transparentToggle.querySelector("i").setAttribute("data-lucide", useTransparent ? "eye" : "eye-off");
+      lucide.createIcons();
+      showToast(useTransparent ? "Nền trong suốt: BẬT" : "Nền trong suốt: TẮT");
+    });
+
+    // === DARK MODE ===
+    var isDark = localStorage.getItem("math-dark") === "1";
+    if (isDark) document.body.classList.add("dark");
+
+    darkToggle.addEventListener("click", function() {
+      isDark = !isDark;
+      document.body.classList.toggle("dark", isDark);
+      localStorage.setItem("math-dark", isDark ? "1" : "0");
+      darkToggle.querySelector("i").setAttribute("data-lucide", isDark ? "sun" : "moon");
+      lucide.createIcons();
+    });
+
+    // === SHARE LINK ===
+    shareBtn.addEventListener("click", function() {
+      var clean = cleanLatex(editor.value);
+      if (!clean) { showToast("Chưa có công thức!"); return; }
+      var url = location.origin + location.pathname + "?f=" + encodeURIComponent(clean);
+      navigator.clipboard.writeText(url).then(function() {
+        btnFeedback(shareBtn, "share-2");
+        showToast("Đã copy link chia sẻ!");
+      });
+    });
+
+    // Load from URL
+    (function() {
+      var params = new URLSearchParams(location.search);
+      var f = params.get("f");
+      if (f) editor.value = decodeURIComponent(f);
+    })();
+
+    // === HISTORY (localStorage) ===
+    function getHistory() {
+      try { return JSON.parse(localStorage.getItem("math-history") || "[]"); } catch(e) { return []; }
+    }
+
+    function setHistory(arr) {
+      localStorage.setItem("math-history", JSON.stringify(arr));
+    }
+
+    function saveHistory(latex) {
+      if (!latex) return;
+      var hist = getHistory();
+      // Remove duplicate
+      hist = hist.filter(function(h) { return h !== latex; });
+      hist.unshift(latex);
+      if (hist.length > 20) hist = hist.slice(0, 20);
+      setHistory(hist);
+      renderHistory();
+    }
+
+    function renderHistory() {
+      var hist = getHistory();
+      historyList.textContent = "";
+
+      if (hist.length === 0) {
+        var empty = document.createElement("div");
+        empty.className = "history-empty";
+        empty.textContent = "Chưa có lịch sử";
+        historyList.appendChild(empty);
+        return;
+      }
+
+      hist.forEach(function(latex, idx) {
+        var li = document.createElement("li");
+        li.className = "history-item";
+
+        var formulaDiv = document.createElement("div");
+        formulaDiv.className = "history-item-formula";
+        katex.render(latex, formulaDiv, { throwOnError: false });
+
+        var actionsDiv = document.createElement("div");
+        actionsDiv.className = "history-item-actions";
+
+        // Use button
+        var useBtn = document.createElement("button");
+        useBtn.className = "history-item-btn";
+        useBtn.setAttribute("data-tippy-content", "Dùng lại");
+        useBtn.innerHTML = '<i data-lucide="corner-up-left" style="width:14px;height:14px;"></i>';
+        useBtn.addEventListener("click", function(e) {
+          e.stopPropagation();
+          editor.value = latex;
+          render();
+          editor.focus();
+          showToast("Đã chọn công thức!");
+        });
+
+        // Delete button
+        var delBtn = document.createElement("button");
+        delBtn.className = "history-item-btn delete";
+        delBtn.setAttribute("data-tippy-content", "Xoá");
+        delBtn.innerHTML = '<i data-lucide="x" style="width:14px;height:14px;"></i>';
+        delBtn.addEventListener("click", function(e) {
+          e.stopPropagation();
+          var h = getHistory();
+          h.splice(idx, 1);
+          setHistory(h);
+          renderHistory();
+        });
+
+        actionsDiv.appendChild(useBtn);
+        actionsDiv.appendChild(delBtn);
+        li.appendChild(formulaDiv);
+        li.appendChild(actionsDiv);
+        historyList.appendChild(li);
+      });
+
+      lucide.createIcons();
+      tippy('[data-tippy-content]', { theme: 'indigo', animation: 'shift-away-subtle', duration: [200, 150] });
+    }
+
+    // Toggle history panel
+    historyToggle.addEventListener("click", function() {
+      historyPanel.classList.toggle("open");
+      historyToggle.classList.toggle("active");
+      if (historyPanel.classList.contains("open")) renderHistory();
+    });
+
+    // Clear history
+    clearHistoryBtn.addEventListener("click", function() {
+      setHistory([]);
+      renderHistory();
+      showToast("Đã xoá lịch sử!");
+    });
+
+    // === INIT ===
+    render();
+    editor.addEventListener("input", render);
+
+    // Init dark mode icon
+    if (isDark) {
+      darkToggle.querySelector("i").setAttribute("data-lucide", "sun");
+    }
+    lucide.createIcons();
+
+    tippy('[data-tippy-content]', {
+      theme: 'indigo',
+      animation: 'shift-away-subtle',
+      duration: [200, 150],
+    });
+
+    window.addEventListener("load", function() {
+      setTimeout(function() {
+        editor.focus();
+        if (window.mathVirtualKeyboard) window.mathVirtualKeyboard.show();
+      }, 400);
+    });
+  </script>
+</body>
+</html>
