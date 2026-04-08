@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đếm Ký Tự & Từ — Text Counter</title>
+<meta name="description" content="Công cụ đếm ký tự, từ, câu, đoạn văn trực tuyến miễn phí. Hỗ trợ ước tính thời gian đọc.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white' font-weight='bold'%3EAa%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#eef2ff;
+  --surface:#ffffff;
+  --surface2:#e0e7ff;
+  --primary:#6366f1;
+  --primary-hover:#4f46e5;
+  --primary-light:#c7d2fe;
+  --primary-bg:rgba(99,102,241,.08);
+  --text:#1e1b4b;
+  --text2:#4338ca;
+  --text3:#6366f1;
+  --text-muted:#64748b;
+  --border:#c7d2fe;
+  --border2:#a5b4fc;
+  --shadow:0 1px 3px rgba(30,27,75,.06),0 1px 2px rgba(30,27,75,.04);
+  --shadow2:0 4px 6px -1px rgba(30,27,75,.07),0 2px 4px -2px rgba(30,27,75,.05);
+  --shadow3:0 10px 15px -3px rgba(30,27,75,.08),0 4px 6px -4px rgba(30,27,75,.04);
+  --radius:12px;
+  --radius2:16px;
+  --transition:all .2s cubic-bezier(.4,0,.2,1);
+}
+
+.dark{
+  --bg:#0f0d1a;
+  --surface:#1a1730;
+  --surface2:#252240;
+  --primary:#818cf8;
+  --primary-hover:#a5b4fc;
+  --primary-light:#312e81;
+  --primary-bg:rgba(129,140,248,.1);
+  --text:#e0e7ff;
+  --text2:#a5b4fc;
+  --text3:#818cf8;
+  --text-muted:#94a3b8;
+  --border:#312e81;
+  --border2:#3730a3;
+  --shadow:0 1px 3px rgba(0,0,0,.3);
+  --shadow2:0 4px 6px -1px rgba(0,0,0,.3);
+  --shadow3:0 10px 15px -3px rgba(0,0,0,.4);
+}
+
+body{
+  font-family:'Be Vietnam Pro',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.6;
+  transition:var(--transition);
+}
+
+.container{
+  max-width:800px;
+  margin:0 auto;
+  padding:2rem 1.25rem 3rem;
+}
+
+/* Header */
+.header{
+  text-align:center;
+  margin-bottom:2rem;
+}
+.header-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:56px;height:56px;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  border-radius:var(--radius);
+  margin-bottom:1rem;
+  color:#fff;
+}
+.header h1{
+  font-size:1.75rem;
+  font-weight:700;
+  color:var(--text);
+  margin-bottom:.35rem;
+}
+.header p{
+  color:var(--text-muted);
+  font-size:.925rem;
+}
+
+/* Dark mode toggle */
+.dark-toggle{
+  position:fixed;
+  top:1rem;right:1rem;
+  z-index:100;
+  width:42px;height:42px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:var(--surface);
+  color:var(--text);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);
+  transition:var(--transition);
+}
+.dark-toggle:hover{
+  background:var(--surface2);
+  border-color:var(--border2);
+  box-shadow:var(--shadow2);
+}
+
+/* Textarea */
+.textarea-wrap{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  margin-bottom:1rem;
+  transition:var(--transition);
+}
+.textarea-wrap:focus-within{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px var(--primary-bg),var(--shadow2);
+}
+#text-input{
+  width:100%;
+  min-height:220px;
+  padding:1rem 1.25rem;
+  border:none;
+  outline:none;
+  resize:vertical;
+  font-family:'Be Vietnam Pro',sans-serif;
+  font-size:.95rem;
+  line-height:1.7;
+  color:var(--text);
+  background:transparent;
+}
+#text-input::placeholder{
+  color:var(--text-muted);
+  opacity:.7;
+}
+
+/* Action bar */
+.actions{
+  display:flex;
+  gap:.5rem;
+  flex-wrap:wrap;
+  margin-bottom:1.5rem;
+}
+.btn{
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  padding:.55rem 1rem;
+  font-family:'Be Vietnam Pro',sans-serif;
+  font-size:.85rem;
+  font-weight:500;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:var(--surface);
+  color:var(--text);
+  cursor:pointer;
+  transition:var(--transition);
+  box-shadow:var(--shadow);
+}
+.btn:hover{
+  background:var(--surface2);
+  border-color:var(--border2);
+  box-shadow:var(--shadow2);
+}
+.btn-primary{
+  background:var(--primary);
+  color:#fff;
+  border-color:var(--primary);
+}
+.btn-primary:hover{
+  background:var(--primary-hover);
+  border-color:var(--primary-hover);
+}
+
+/* Stats grid */
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+  gap:.75rem;
+  margin-bottom:1.5rem;
+}
+.stat-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1rem 1.1rem;
+  box-shadow:var(--shadow);
+  transition:var(--transition);
+}
+.stat-card:hover{
+  box-shadow:var(--shadow2);
+  border-color:var(--border2);
+}
+.stat-label{
+  display:flex;
+  align-items:center;
+  gap:.4rem;
+  font-size:.78rem;
+  font-weight:500;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  letter-spacing:.03em;
+  margin-bottom:.4rem;
+}
+.stat-label i{
+  width:15px;height:15px;
+  color:var(--text3);
+}
+.stat-value{
+  font-size:1.5rem;
+  font-weight:700;
+  color:var(--text2);
+}
+
+/* Reading time card */
+.reading-card{
+  background:var(--primary-bg);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1rem 1.25rem;
+  display:flex;
+  align-items:center;
+  gap:.75rem;
+  transition:var(--transition);
+}
+.reading-icon{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:40px;height:40px;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  border-radius:10px;
+  color:#fff;
+  flex-shrink:0;
+}
+.reading-info{
+  flex:1;
+}
+.reading-label{
+  font-size:.8rem;
+  color:var(--text-muted);
+  font-weight:500;
+}
+.reading-value{
+  font-size:1.1rem;
+  font-weight:600;
+  color:var(--text);
+}
+
+/* Toast */
+.toast{
+  position:fixed;
+  bottom:1.5rem;
+  left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--text);
+  color:var(--bg);
+  padding:.65rem 1.25rem;
+  border-radius:10px;
+  font-size:.85rem;
+  font-weight:500;
+  box-shadow:var(--shadow3);
+  opacity:0;
+  transition:all .35s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;
+  z-index:200;
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+}
+.toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+@media(max-width:500px){
+  .container{padding:1.25rem 1rem 2rem}
+  .header h1{font-size:1.4rem}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .stat-value{font-size:1.25rem}
+}
+</style>
+</head>
+<body>
+
+<button class="dark-toggle" id="darkToggle" type="button" aria-label="Chuyển chế độ sáng/tối">
+  <i data-lucide="sun" style="width:20px;height:20px"></i>
+</button>
+
+<div class="container">
+  <div class="header">
+    <div class="header-icon">
+      <i data-lucide="text-cursor-input" style="width:28px;height:28px"></i>
+    </div>
+    <h1>Đếm Ký Tự & Từ</h1>
+    <p>Nhập hoặc dán văn bản để phân tích chi tiết</p>
+  </div>
+
+  <div class="textarea-wrap">
+    <textarea id="text-input" placeholder="Nhập hoặc dán văn bản của bạn vào đây..."></textarea>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" id="btnCopy" type="button">
+      <i data-lucide="copy" style="width:16px;height:16px"></i>
+      Sao chép
+    </button>
+    <button class="btn" id="btnClear" type="button">
+      <i data-lucide="trash-2" style="width:16px;height:16px"></i>
+      Xoá tất cả
+    </button>
+  </div>
+
+  <div class="stats-grid" id="statsGrid"></div>
+
+  <div class="reading-card">
+    <div class="reading-icon">
+      <i data-lucide="clock" style="width:20px;height:20px"></i>
+    </div>
+    <div class="reading-info">
+      <div class="reading-label">Thời gian đọc ước tính</div>
+      <div class="reading-value" id="readingTime">0 giây</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // --- Dark mode ---
+  const DARK_KEY = "math-dark";
+  const html = document.documentElement;
+  const toggle = document.getElementById("darkToggle");
+
+  function applyTheme(dark){
+    html.classList.toggle("dark", dark);
+    localStorage.setItem(DARK_KEY, dark ? "1" : "0");
+    updateToggleIcon(dark);
+  }
+
+  function updateToggleIcon(dark){
+    const icon = toggle.querySelector("i");
+    if(icon) icon.setAttribute("data-lucide", dark ? "moon" : "sun");
+    lucide.createIcons();
+  }
+
+  const savedDark = localStorage.getItem(DARK_KEY);
+  const prefersDark = savedDark === null
+    ? window.matchMedia("(prefers-color-scheme:dark)").matches
+    : savedDark === "1";
+  applyTheme(prefersDark);
+
+  toggle.addEventListener("click", function(){
+    applyTheme(!html.classList.contains("dark"));
+  });
+
+  // --- Stats config ---
+  const STATS = [
+    { id:"chars",     label:"Ký tự",              icon:"type" },
+    { id:"charsNS",   label:"Ký tự (không dấu cách)", icon:"text" },
+    { id:"words",     label:"Từ",                 icon:"whole-word" },
+    { id:"sentences", label:"Câu",                icon:"message-square-text" },
+    { id:"paragraphs",label:"Đoạn văn",           icon:"pilcrow" },
+    { id:"lines",     label:"Dòng",               icon:"list" }
+  ];
+
+  // --- Build stat cards safely ---
+  const grid = document.getElementById("statsGrid");
+
+  STATS.forEach(function(s){
+    var card = document.createElement("div");
+    card.className = "stat-card";
+
+    var label = document.createElement("div");
+    label.className = "stat-label";
+
+    var icon = document.createElement("i");
+    icon.setAttribute("data-lucide", s.icon);
+    icon.style.width = "15px";
+    icon.style.height = "15px";
+    label.appendChild(icon);
+
+    var span = document.createElement("span");
+    span.textContent = s.label;
+    label.appendChild(span);
+
+    var value = document.createElement("div");
+    value.className = "stat-value";
+    value.id = "stat-" + s.id;
+    value.textContent = "0";
+
+    card.appendChild(label);
+    card.appendChild(value);
+    grid.appendChild(card);
+  });
+
+  lucide.createIcons();
+
+  // --- Counting logic ---
+  var textarea = document.getElementById("text-input");
+  var readingEl = document.getElementById("readingTime");
+
+  function countStats(text){
+    var chars = text.length;
+    var charsNS = text.replace(/\s/g, "").length;
+    var trimmed = text.trim();
+
+    var words = 0;
+    if(trimmed.length > 0){
+      words = trimmed.split(/\s+/).length;
+    }
+
+    var sentences = 0;
+    if(trimmed.length > 0){
+      var m = trimmed.match(/[.!?…]+(?:\s|$)/g);
+      sentences = m ? m.length : (trimmed.length > 0 ? 1 : 0);
+      if(sentences === 0 && trimmed.length > 0) sentences = 1;
+    }
+
+    var paragraphs = 0;
+    if(trimmed.length > 0){
+      paragraphs = trimmed.split(/\n\s*\n/).filter(function(p){ return p.trim().length > 0; }).length;
+      if(paragraphs === 0) paragraphs = 1;
+    }
+
+    var lines = 0;
+    if(text.length > 0){
+      lines = text.split("\n").length;
+    }
+
+    return {
+      chars: chars,
+      charsNS: charsNS,
+      words: words,
+      sentences: sentences,
+      paragraphs: paragraphs,
+      lines: lines
+    };
+  }
+
+  function formatReadingTime(words){
+    var wpm = 200;
+    var totalSeconds = Math.ceil((words / wpm) * 60);
+    if(totalSeconds === 0) return "0 giây";
+    var minutes = Math.floor(totalSeconds / 60);
+    var seconds = totalSeconds % 60;
+    var parts = [];
+    if(minutes > 0) parts.push(minutes + " phút");
+    if(seconds > 0) parts.push(seconds + " giây");
+    return parts.join(" ");
+  }
+
+  function update(){
+    var text = textarea.value;
+    var stats = countStats(text);
+
+    document.getElementById("stat-chars").textContent = stats.chars.toLocaleString("vi-VN");
+    document.getElementById("stat-charsNS").textContent = stats.charsNS.toLocaleString("vi-VN");
+    document.getElementById("stat-words").textContent = stats.words.toLocaleString("vi-VN");
+    document.getElementById("stat-sentences").textContent = stats.sentences.toLocaleString("vi-VN");
+    document.getElementById("stat-paragraphs").textContent = stats.paragraphs.toLocaleString("vi-VN");
+    document.getElementById("stat-lines").textContent = stats.lines.toLocaleString("vi-VN");
+    readingEl.textContent = formatReadingTime(stats.words);
+  }
+
+  textarea.addEventListener("input", update);
+  update();
+
+  // --- Toast ---
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+
+  function showToast(msg, iconName){
+    clearTimeout(toastTimer);
+    toastEl.textContent = "";
+    if(iconName){
+      var ic = document.createElement("i");
+      ic.setAttribute("data-lucide", iconName);
+      ic.style.width = "16px";
+      ic.style.height = "16px";
+      toastEl.appendChild(ic);
+    }
+    var sp = document.createElement("span");
+    sp.textContent = msg;
+    toastEl.appendChild(sp);
+    lucide.createIcons();
+
+    toastEl.classList.add("show");
+    toastTimer = setTimeout(function(){
+      toastEl.classList.remove("show");
+    }, 2500);
+  }
+
+  // --- Copy ---
+  document.getElementById("btnCopy").addEventListener("click", function(){
+    var text = textarea.value;
+    if(!text.trim()){
+      showToast("Chưa có văn bản để sao chép", "alert-circle");
+      return;
+    }
+    navigator.clipboard.writeText(text).then(function(){
+      showToast("Đã sao chép vào clipboard!", "check-circle");
+    }).catch(function(){
+      showToast("Không thể sao chép", "x-circle");
+    });
+  });
+
+  // --- Clear ---
+  document.getElementById("btnClear").addEventListener("click", function(){
+    if(!textarea.value){
+      showToast("Không có gì để xoá", "alert-circle");
+      return;
+    }
+    textarea.value = "";
+    update();
+    textarea.focus();
+    showToast("Đã xoá tất cả văn bản", "trash-2");
+  });
+
+})();
+</script>
+</body>
+</html>

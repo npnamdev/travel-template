@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tạo Mã QR</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #eef2ff;
+      --bg-card: #fff;
+      --bg-card-hover: #f8f9ff;
+      --text: #1e1b4b;
+      --text-sub: #64608f;
+      --primary: #6366f1;
+      --primary-light: rgba(99,102,241,0.08);
+      --primary-glow: rgba(99,102,241,0.15);
+      --border: rgba(99,102,241,0.08);
+      --shadow: 0 1px 3px rgba(99,102,241,0.04), 0 8px 32px rgba(99,102,241,0.06);
+      --shadow-hover: 0 4px 12px rgba(99,102,241,0.08), 0 16px 48px rgba(99,102,241,0.12);
+    }
+
+    body.dark {
+      --bg: #0b0a14;
+      --bg-card: #15132a;
+      --bg-card-hover: #1c1a35;
+      --text: #e0e7ff;
+      --text-sub: #8b86b0;
+      --primary: #818cf8;
+      --primary-light: rgba(129,140,248,0.1);
+      --primary-glow: rgba(129,140,248,0.12);
+      --border: rgba(129,140,248,0.06);
+      --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.3);
+      --shadow-hover: 0 4px 12px rgba(99,102,241,0.15), 0 16px 48px rgba(0,0,0,0.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -300px;
+      left: -200px;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page { position: relative; z-index: 1; }
+
+    /* Dark mode toggle */
+    .dark-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 50;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      box-shadow: var(--shadow);
+      padding: 0;
+    }
+    .dark-toggle:hover { background: var(--primary-light); transform: scale(1.05); }
+    .dark-toggle:active { transform: scale(0.95); }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 60px 20px 20px;
+    }
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+      letter-spacing: 0.02em;
+    }
+    .header h1 {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+    .header h1 span {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header p {
+      font-size: 15px;
+      color: var(--text-sub);
+      max-width: 460px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Main card */
+    .card {
+      max-width: 520px;
+      margin: 32px auto;
+      background: var(--bg-card);
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 32px;
+      transition: all 0.3s;
+    }
+
+    /* Form elements */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .form-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.6;
+      outline: none;
+      resize: vertical;
+      transition: all 0.2s;
+    }
+    .form-textarea::placeholder { color: var(--text-sub); opacity: 0.5; }
+    .form-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-glow);
+    }
+
+    .form-select {
+      width: 100%;
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 40px;
+    }
+    .form-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-glow);
+    }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 14px;
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(99,102,241,0.3);
+      flex: 1;
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+    }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-secondary {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1.5px solid var(--border);
+      flex: 1;
+    }
+    .btn-secondary:hover {
+      background: var(--primary-glow);
+      transform: translateY(-1px);
+    }
+    .btn-secondary:active { transform: translateY(0); }
+    .btn-secondary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* QR output */
+    .qr-output {
+      margin-top: 28px;
+      text-align: center;
+      display: none;
+    }
+    .qr-output.visible { display: block; }
+
+    .qr-wrapper {
+      display: inline-block;
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      border: 1.5px solid var(--border);
+    }
+    .qr-wrapper canvas,
+    .qr-wrapper img {
+      display: block;
+      border-radius: 4px;
+    }
+
+    .qr-hint {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 20px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: var(--shadow-hover);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 100;
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast .toast-icon {
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+
+    /* Back link */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-sub);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--primary); }
+
+    @media (max-width: 560px) {
+      .card { margin: 24px 16px; padding: 24px 20px; }
+      .btn-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <button class="dark-toggle" id="darkToggle" aria-label="Chuyển chế độ tối">
+    <i data-lucide="moon" style="width:18px;height:18px"></i>
+  </button>
+
+  <div class="page">
+    <header class="header">
+      <a href="../plugin-dashboard.html" class="back-link">
+        <i data-lucide="arrow-left" style="width:14px;height:14px"></i>
+        Quay lại
+      </a>
+      <div class="header-badge">
+        <i data-lucide="qr-code" style="width:14px;height:14px"></i>
+        Tiện ích
+      </div>
+      <h1>Tạo <span>Mã QR</span></h1>
+      <p>Nhập văn bản hoặc đường dẫn URL để tạo mã QR nhanh chóng, hỗ trợ tải xuống ảnh PNG.</p>
+    </header>
+
+    <div class="card">
+      <div class="form-group">
+        <label class="form-label" for="qrInput">Nội dung văn bản hoặc URL</label>
+        <textarea class="form-textarea" id="qrInput" placeholder="Nhập nội dung hoặc dán đường dẫn URL vào đây..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="qrSize">Kích thước mã QR</label>
+        <select class="form-select" id="qrSize">
+          <option value="128">Nhỏ (128 x 128)</option>
+          <option value="256" selected>Vừa (256 x 256)</option>
+          <option value="512">Lớn (512 x 512)</option>
+        </select>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btnGenerate">
+          <i data-lucide="sparkles" style="width:16px;height:16px"></i>
+          Tạo mã QR
+        </button>
+        <button class="btn btn-secondary" id="btnDownload" disabled>
+          <i data-lucide="download" style="width:16px;height:16px"></i>
+          Tải PNG
+        </button>
+      </div>
+
+      <div class="qr-output" id="qrOutput">
+        <div class="qr-wrapper" id="qrWrapper"></div>
+        <p class="qr-hint">Nhấn "Tải PNG" để lưu mã QR về máy</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <i data-lucide="check-circle" class="toast-icon" style="width:16px;height:16px"></i>
+    <span id="toastMsg"></span>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // --- Dark mode ---
+      const darkToggle = document.getElementById('darkToggle');
+      const DARK_KEY = 'math-dark';
+
+      function applyDark(dark) {
+        document.body.classList.toggle('dark', dark);
+        const icon = darkToggle.querySelector('i');
+        if (icon) {
+          icon.setAttribute('data-lucide', dark ? 'sun' : 'moon');
+          lucide.createIcons();
+        }
+      }
+
+      applyDark(localStorage.getItem(DARK_KEY) === 'true');
+
+      darkToggle.addEventListener('click', function () {
+        const next = !document.body.classList.contains('dark');
+        localStorage.setItem(DARK_KEY, next);
+        applyDark(next);
+      });
+
+      // --- Toast ---
+      var toastTimer = null;
+      function showToast(msg) {
+        var toast = document.getElementById('toast');
+        var toastMsg = document.getElementById('toastMsg');
+        toastMsg.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+          toast.classList.remove('show');
+        }, 2500);
+      }
+
+      // --- QR generation ---
+      var qrInstance = null;
+      var qrInput = document.getElementById('qrInput');
+      var qrSize = document.getElementById('qrSize');
+      var qrOutput = document.getElementById('qrOutput');
+      var qrWrapper = document.getElementById('qrWrapper');
+      var btnGenerate = document.getElementById('btnGenerate');
+      var btnDownload = document.getElementById('btnDownload');
+
+      function clearQR() {
+        while (qrWrapper.firstChild) {
+          qrWrapper.removeChild(qrWrapper.firstChild);
+        }
+        qrInstance = null;
+        qrOutput.classList.remove('visible');
+        btnDownload.disabled = true;
+      }
+
+      function generateQR() {
+        var text = qrInput.value.trim();
+        if (!text) {
+          showToast('Vui lòng nhập nội dung hoặc URL');
+          return;
+        }
+
+        clearQR();
+
+        var size = parseInt(qrSize.value, 10);
+
+        try {
+          qrInstance = new QRCode(qrWrapper, {
+            text: text,
+            width: size,
+            height: size,
+            colorDark: '#1e1b4b',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+          });
+
+          qrOutput.classList.add('visible');
+          btnDownload.disabled = false;
+          showToast('Tạo mã QR thành công!');
+        } catch (e) {
+          showToast('Lỗi khi tạo mã QR. Vui lòng thử lại.');
+        }
+      }
+
+      function downloadQR() {
+        var canvas = qrWrapper.querySelector('canvas');
+        if (canvas) {
+          var link = document.createElement('a');
+          link.download = 'qr-code.png';
+          link.href = canvas.toDataURL('image/png');
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          showToast('Đã tải mã QR thành công!');
+          return;
+        }
+
+        var img = qrWrapper.querySelector('img');
+        if (img) {
+          var c = document.createElement('canvas');
+          c.width = img.naturalWidth || img.width;
+          c.height = img.naturalHeight || img.height;
+          var ctx = c.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          var link2 = document.createElement('a');
+          link2.download = 'qr-code.png';
+          link2.href = c.toDataURL('image/png');
+          document.body.appendChild(link2);
+          link2.click();
+          document.body.removeChild(link2);
+          showToast('Đã tải mã QR thành công!');
+        }
+      }
+
+      btnGenerate.addEventListener('click', generateQR);
+      btnDownload.addEventListener('click', downloadQR);
+
+      // Allow Ctrl+Enter / Cmd+Enter to generate
+      qrInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault();
+          generateQR();
+        }
+      });
+
+      // Init Lucide icons
+      lucide.createIcons();
+    })();
+  </script>
+</body>
+</html>

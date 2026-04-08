@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JSON Formatter - Định dạng JSON</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #eef2ff;
+      --bg-card: #fff;
+      --bg-card-hover: #f8f9ff;
+      --text: #1e1b4b;
+      --text-sub: #64608f;
+      --primary: #6366f1;
+      --primary-light: rgba(99,102,241,0.08);
+      --primary-glow: rgba(99,102,241,0.15);
+      --border: rgba(99,102,241,0.08);
+      --shadow: 0 1px 3px rgba(99,102,241,0.04), 0 8px 32px rgba(99,102,241,0.06);
+      --shadow-hover: 0 4px 12px rgba(99,102,241,0.08), 0 16px 48px rgba(99,102,241,0.12);
+      --error: #ef4444;
+      --error-bg: rgba(239,68,68,0.08);
+      --success: #22c55e;
+      --success-bg: rgba(34,197,94,0.08);
+    }
+
+    body.dark {
+      --bg: #0b0a14;
+      --bg-card: #15132a;
+      --bg-card-hover: #1c1a35;
+      --text: #e0e7ff;
+      --text-sub: #8b86b0;
+      --primary: #818cf8;
+      --primary-light: rgba(129,140,248,0.1);
+      --primary-glow: rgba(129,140,248,0.12);
+      --border: rgba(129,140,248,0.06);
+      --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.3);
+      --shadow-hover: 0 4px 12px rgba(99,102,241,0.15), 0 16px 48px rgba(0,0,0,0.4);
+      --error: #f87171;
+      --error-bg: rgba(248,113,113,0.1);
+      --success: #4ade80;
+      --success-bg: rgba(74,222,128,0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -300px;
+      left: -200px;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page { position: relative; z-index: 1; }
+
+    /* Dark mode toggle */
+    .dark-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 50;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      box-shadow: var(--shadow);
+      padding: 0;
+    }
+    .dark-toggle:hover { background: var(--primary-light); transform: scale(1.05); }
+    .dark-toggle:active { transform: scale(0.95); }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 60px 20px 20px;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+      letter-spacing: 0.02em;
+    }
+
+    .header h1 {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+    .header h1 span {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      font-size: 15px;
+      color: var(--text-sub);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Main container */
+    .container {
+      max-width: 900px;
+      margin: 32px auto;
+      padding: 0 20px 60px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .card-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .card-label i { width: 16px; height: 16px; }
+
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 16px;
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      outline: none;
+      resize: vertical;
+      transition: all 0.2s;
+    }
+    textarea::placeholder { color: var(--text-sub); opacity: 0.5; }
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-glow);
+    }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow);
+    }
+    .btn:hover { background: var(--primary-light); border-color: var(--primary); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0) scale(0.98); }
+    .btn i { width: 16px; height: 16px; }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .btn-primary:hover { background: #5558e6; border-color: #5558e6; }
+    body.dark .btn-primary:hover { background: #6d78f5; border-color: #6d78f5; }
+
+    .btn-danger {
+      color: var(--error);
+    }
+    .btn-danger:hover { background: var(--error-bg); border-color: var(--error); }
+
+    /* Error message */
+    .error-box {
+      display: none;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: var(--error-bg);
+      border: 1.5px solid var(--error);
+      color: var(--error);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.5;
+      margin-bottom: 16px;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .error-box.visible { display: flex; }
+    .error-box i { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 24px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: var(--shadow-hover);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 100;
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast i { width: 16px; height: 16px; color: var(--success); }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .card { padding: 20px; }
+      textarea { min-height: 150px; font-size: 12px; }
+      .btn { padding: 9px 14px; font-size: 12px; }
+      .btn-row { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Dark mode toggle -->
+    <button class="dark-toggle" id="darkToggle" aria-label="Chuyển chế độ tối">
+      <i data-lucide="moon"></i>
+    </button>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-badge">
+        <i data-lucide="braces" style="width:14px;height:14px"></i>
+        Công cụ JSON
+      </div>
+      <h1>JSON <span>Formatter</span></h1>
+      <p>Định dạng, thu gọn và kiểm tra tính hợp lệ của dữ liệu JSON nhanh chóng, trực tiếp trên trình duyệt.</p>
+    </div>
+
+    <!-- Main -->
+    <div class="container">
+      <!-- Input card -->
+      <div class="card">
+        <div class="card-label">
+          <i data-lucide="file-json"></i>
+          Dữ liệu JSON đầu vào
+        </div>
+        <textarea id="jsonInput" placeholder='Dán JSON của bạn vào đây, ví dụ: {"name": "Xin chào", "value": 42}'></textarea>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btnFormat">
+          <i data-lucide="indent-increase"></i>
+          Định dạng
+        </button>
+        <button class="btn" id="btnMinify">
+          <i data-lucide="minimize-2"></i>
+          Thu gọn
+        </button>
+        <button class="btn" id="btnValidate">
+          <i data-lucide="check-circle"></i>
+          Kiểm tra
+        </button>
+        <button class="btn" id="btnCopy">
+          <i data-lucide="copy"></i>
+          Sao chép
+        </button>
+        <button class="btn btn-danger" id="btnClear">
+          <i data-lucide="trash-2"></i>
+          Xoá
+        </button>
+      </div>
+
+      <!-- Error box -->
+      <div class="error-box" id="errorBox">
+        <i data-lucide="alert-circle"></i>
+        <span id="errorText"></span>
+      </div>
+
+      <!-- Output card -->
+      <div class="card">
+        <div class="card-label">
+          <i data-lucide="file-check"></i>
+          Kết quả
+        </div>
+        <textarea id="jsonOutput" readonly placeholder="Kết quả sẽ hiển thị ở đây..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <i data-lucide="check"></i>
+    <span id="toastText">Đã sao chép!</span>
+  </div>
+
+  <script>
+    // Init Lucide icons
+    lucide.createIcons();
+
+    // DOM refs
+    const jsonInput = document.getElementById('jsonInput');
+    const jsonOutput = document.getElementById('jsonOutput');
+    const errorBox = document.getElementById('errorBox');
+    const errorText = document.getElementById('errorText');
+    const toast = document.getElementById('toast');
+    const toastText = document.getElementById('toastText');
+    const darkToggle = document.getElementById('darkToggle');
+
+    // --- Dark mode ---
+    function applyDark(isDark) {
+      document.body.classList.toggle('dark', isDark);
+      const icon = darkToggle.querySelector('i');
+      if (icon) {
+        icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+        lucide.createIcons();
+      }
+    }
+
+    const savedDark = localStorage.getItem('math-dark');
+    if (savedDark === 'true') applyDark(true);
+
+    darkToggle.addEventListener('click', function () {
+      const isDark = !document.body.classList.contains('dark');
+      localStorage.setItem('math-dark', isDark);
+      applyDark(isDark);
+    });
+
+    // --- Helpers ---
+    function hideError() {
+      errorBox.classList.remove('visible');
+    }
+
+    function showError(msg) {
+      errorText.textContent = msg;
+      errorBox.classList.add('visible');
+    }
+
+    function showToast(msg) {
+      toastText.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(function () {
+        toast.classList.remove('show');
+      }, 2200);
+    }
+
+    function getLineInfo(jsonStr, charIndex) {
+      var line = 1;
+      var col = 1;
+      for (var i = 0; i < charIndex && i < jsonStr.length; i++) {
+        if (jsonStr[i] === '\n') {
+          line++;
+          col = 1;
+        } else {
+          col++;
+        }
+      }
+      return { line: line, col: col };
+    }
+
+    function parseWithError(jsonStr) {
+      try {
+        var parsed = JSON.parse(jsonStr);
+        return { success: true, data: parsed };
+      } catch (e) {
+        var msg = e.message;
+        // Try to extract position from error message
+        var posMatch = msg.match(/position\s+(\d+)/i);
+        var detail = msg;
+        if (posMatch) {
+          var pos = parseInt(posMatch[1], 10);
+          var info = getLineInfo(jsonStr, pos);
+          detail = msg + ' (Dòng ' + info.line + ', cột ' + info.col + ')';
+        }
+        return { success: false, error: detail };
+      }
+    }
+
+    // --- Actions ---
+    document.getElementById('btnFormat').addEventListener('click', function () {
+      hideError();
+      var raw = jsonInput.value.trim();
+      if (!raw) {
+        showError('Vui lòng nhập dữ liệu JSON.');
+        jsonOutput.value = '';
+        return;
+      }
+      var result = parseWithError(raw);
+      if (!result.success) {
+        showError('JSON không hợp lệ: ' + result.error);
+        jsonOutput.value = '';
+        return;
+      }
+      jsonOutput.value = JSON.stringify(result.data, null, 2);
+    });
+
+    document.getElementById('btnMinify').addEventListener('click', function () {
+      hideError();
+      var raw = jsonInput.value.trim();
+      if (!raw) {
+        showError('Vui lòng nhập dữ liệu JSON.');
+        jsonOutput.value = '';
+        return;
+      }
+      var result = parseWithError(raw);
+      if (!result.success) {
+        showError('JSON không hợp lệ: ' + result.error);
+        jsonOutput.value = '';
+        return;
+      }
+      jsonOutput.value = JSON.stringify(result.data);
+    });
+
+    document.getElementById('btnValidate').addEventListener('click', function () {
+      hideError();
+      var raw = jsonInput.value.trim();
+      if (!raw) {
+        showError('Vui lòng nhập dữ liệu JSON để kiểm tra.');
+        jsonOutput.value = '';
+        return;
+      }
+      var result = parseWithError(raw);
+      if (result.success) {
+        hideError();
+        jsonOutput.value = '';
+        showToast('JSON hợp lệ!');
+      } else {
+        showError('JSON không hợp lệ: ' + result.error);
+        jsonOutput.value = '';
+      }
+    });
+
+    document.getElementById('btnCopy').addEventListener('click', function () {
+      var text = jsonOutput.value;
+      if (!text) {
+        showToast('Chưa có kết quả để sao chép.');
+        return;
+      }
+      navigator.clipboard.writeText(text).then(function () {
+        showToast('Đã sao chép vào clipboard!');
+      }).catch(function () {
+        // Fallback
+        jsonOutput.select();
+        document.execCommand('copy');
+        showToast('Đã sao chép!');
+      });
+    });
+
+    document.getElementById('btnClear').addEventListener('click', function () {
+      jsonInput.value = '';
+      jsonOutput.value = '';
+      hideError();
+    });
+
+    // Hide error on input
+    jsonInput.addEventListener('input', hideError);
+  </script>
+</body>
+</html>

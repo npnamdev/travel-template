@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Base64 Encoder / Decoder</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #eef2ff;
+      --bg-card: #fff;
+      --bg-card-hover: #f8f9ff;
+      --text: #1e1b4b;
+      --text-sub: #64608f;
+      --primary: #6366f1;
+      --primary-light: rgba(99,102,241,0.08);
+      --primary-glow: rgba(99,102,241,0.15);
+      --border: rgba(99,102,241,0.08);
+      --shadow: 0 1px 3px rgba(99,102,241,0.04), 0 8px 32px rgba(99,102,241,0.06);
+      --shadow-hover: 0 4px 12px rgba(99,102,241,0.08), 0 16px 48px rgba(99,102,241,0.12);
+      --danger: #ef4444;
+      --success: #22c55e;
+    }
+
+    body.dark {
+      --bg: #0b0a14;
+      --bg-card: #15132a;
+      --bg-card-hover: #1c1a35;
+      --text: #e0e7ff;
+      --text-sub: #8b86b0;
+      --primary: #818cf8;
+      --primary-light: rgba(129,140,248,0.1);
+      --primary-glow: rgba(129,140,248,0.12);
+      --border: rgba(129,140,248,0.06);
+      --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.3);
+      --shadow-hover: 0 4px 12px rgba(99,102,241,0.15), 0 16px 48px rgba(0,0,0,0.4);
+      --danger: #f87171;
+      --success: #4ade80;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -300px;
+      left: -200px;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page { position: relative; z-index: 1; }
+
+    /* Dark toggle */
+    .dark-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 50;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      box-shadow: var(--shadow);
+      padding: 0;
+    }
+    .dark-toggle:hover { background: var(--primary-light); transform: scale(1.05); }
+    .dark-toggle:active { transform: scale(0.95); }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 60px 20px 20px;
+    }
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+      letter-spacing: 0.02em;
+    }
+    .header h1 {
+      font-size: clamp(24px, 5vw, 36px);
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    .header h1 span {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header p {
+      font-size: 15px;
+      color: var(--text-sub);
+      max-width: 460px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Main container */
+    .container {
+      max-width: 720px;
+      margin: 30px auto 60px;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    /* Textarea */
+    .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+      margin-bottom: 8px;
+      letter-spacing: 0.02em;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      resize: vertical;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+    textarea::placeholder {
+      color: var(--text-sub);
+      opacity: 0.5;
+    }
+
+    /* Button row */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--bg-card);
+      color: var(--text);
+    }
+    .btn:hover { background: var(--primary-light); }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .btn-primary:hover {
+      background: #4f46e5;
+      border-color: #4f46e5;
+    }
+    body.dark .btn-primary:hover {
+      background: #6366f1;
+      border-color: #6366f1;
+    }
+
+    .btn-danger {
+      color: var(--danger);
+      border-color: rgba(239,68,68,0.15);
+    }
+    .btn-danger:hover {
+      background: rgba(239,68,68,0.08);
+    }
+
+    .btn-swap {
+      color: var(--primary);
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .divider-icon {
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--bg-card);
+      color: var(--text);
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-hover);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 100;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast-icon {
+      color: var(--success);
+      display: flex;
+    }
+
+    /* Error message */
+    .error-msg {
+      color: var(--danger);
+      font-size: 13px;
+      font-weight: 500;
+      margin-top: 8px;
+      min-height: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Dark mode toggle -->
+    <button class="dark-toggle" id="darkToggle">
+      <i data-lucide="moon" style="width:18px;height:18px;"></i>
+    </button>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-badge">
+        <i data-lucide="file-code-2" style="width:14px;height:14px;"></i>
+        Base64
+      </div>
+      <h1><span>Base64</span> Encoder / Decoder</h1>
+      <p>Mã hóa và giải mã chuỗi Base64 nhanh chóng, hỗ trợ đầy đủ Unicode.</p>
+    </div>
+
+    <!-- Main card -->
+    <div class="container">
+      <div class="card">
+        <!-- Input -->
+        <label class="field-label" for="inputArea">Nội dung đầu vào</label>
+        <textarea id="inputArea" placeholder="Nhập văn bản hoặc chuỗi Base64 tại đây..."></textarea>
+
+        <!-- Action buttons -->
+        <div class="btn-row">
+          <button class="btn btn-primary" id="encodeBtn">
+            <i data-lucide="lock" style="width:15px;height:15px;"></i>
+            Mã hóa
+          </button>
+          <button class="btn btn-primary" id="decodeBtn">
+            <i data-lucide="unlock" style="width:15px;height:15px;"></i>
+            Giải mã
+          </button>
+          <button class="btn btn-swap" id="swapBtn" title="Hoán đổi đầu vào và đầu ra">
+            <i data-lucide="arrow-up-down" style="width:15px;height:15px;"></i>
+            Hoán đổi
+          </button>
+          <button class="btn btn-danger" id="clearBtn">
+            <i data-lucide="trash-2" style="width:15px;height:15px;"></i>
+            Xóa
+          </button>
+        </div>
+
+        <div class="error-msg" id="errorMsg"></div>
+
+        <!-- Divider -->
+        <div class="divider">
+          <span class="divider-icon">
+            <i data-lucide="arrow-down" style="width:16px;height:16px;"></i>
+          </span>
+        </div>
+
+        <!-- Output -->
+        <label class="field-label" for="outputArea">Kết quả</label>
+        <textarea id="outputArea" placeholder="Kết quả sẽ hiển thị tại đây..." readonly></textarea>
+
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn" id="copyBtn">
+            <i data-lucide="copy" style="width:15px;height:15px;"></i>
+            Sao chép kết quả
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <span class="toast-icon">
+      <i data-lucide="check-circle-2" style="width:16px;height:16px;"></i>
+    </span>
+    <span id="toastText">Đã sao chép!</span>
+  </div>
+
+  <script>
+    (function () {
+      // --- Elements ---
+      var inputArea = document.getElementById("inputArea");
+      var outputArea = document.getElementById("outputArea");
+      var encodeBtn = document.getElementById("encodeBtn");
+      var decodeBtn = document.getElementById("decodeBtn");
+      var swapBtn = document.getElementById("swapBtn");
+      var clearBtn = document.getElementById("clearBtn");
+      var copyBtn = document.getElementById("copyBtn");
+      var errorMsg = document.getElementById("errorMsg");
+      var darkToggle = document.getElementById("darkToggle");
+      var toast = document.getElementById("toast");
+      var toastText = document.getElementById("toastText");
+
+      // --- Helpers ---
+      function showError(msg) {
+        errorMsg.textContent = msg;
+      }
+      function clearError() {
+        errorMsg.textContent = "";
+      }
+
+      var toastTimer = null;
+      function showToast(msg) {
+        toastText.textContent = msg;
+        toast.classList.add("show");
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+          toast.classList.remove("show");
+        }, 2200);
+      }
+
+      // --- Encode (supports Unicode) ---
+      function encodeBase64(str) {
+        var bytes = new TextEncoder().encode(str);
+        var binary = "";
+        for (var i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+      }
+
+      // --- Decode (supports Unicode) ---
+      function decodeBase64(str) {
+        var binary = atob(str);
+        var bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return new TextDecoder().decode(bytes);
+      }
+
+      // --- Encode action ---
+      encodeBtn.addEventListener("click", function () {
+        clearError();
+        var val = inputArea.value;
+        if (!val) {
+          showError("Vui lòng nhập nội dung cần mã hóa.");
+          return;
+        }
+        try {
+          outputArea.value = encodeBase64(val);
+        } catch (e) {
+          showError("Lỗi khi mã hóa: " + e.message);
+        }
+      });
+
+      // --- Decode action ---
+      decodeBtn.addEventListener("click", function () {
+        clearError();
+        var val = inputArea.value.trim();
+        if (!val) {
+          showError("Vui lòng nhập chuỗi Base64 cần giải mã.");
+          return;
+        }
+        try {
+          outputArea.value = decodeBase64(val);
+        } catch (e) {
+          showError("Chuỗi Base64 không hợp lệ.");
+        }
+      });
+
+      // --- Swap ---
+      swapBtn.addEventListener("click", function () {
+        clearError();
+        var tmp = inputArea.value;
+        inputArea.value = outputArea.value;
+        outputArea.value = tmp;
+      });
+
+      // --- Clear ---
+      clearBtn.addEventListener("click", function () {
+        inputArea.value = "";
+        outputArea.value = "";
+        clearError();
+      });
+
+      // --- Copy ---
+      copyBtn.addEventListener("click", function () {
+        var val = outputArea.value;
+        if (!val) {
+          showToast("Không có kết quả để sao chép.");
+          return;
+        }
+        navigator.clipboard.writeText(val).then(function () {
+          showToast("Đã sao chép vào clipboard!");
+        }).catch(function () {
+          // Fallback
+          outputArea.select();
+          document.execCommand("copy");
+          showToast("Đã sao chép!");
+        });
+      });
+
+      // --- Dark mode ---
+      var isDark = localStorage.getItem("math-dark") === "1";
+      function applyDark() {
+        if (isDark) {
+          document.body.classList.add("dark");
+        } else {
+          document.body.classList.remove("dark");
+        }
+        darkToggle.querySelector("i").setAttribute("data-lucide", isDark ? "sun" : "moon");
+        lucide.createIcons();
+      }
+      applyDark();
+
+      darkToggle.addEventListener("click", function () {
+        isDark = !isDark;
+        localStorage.setItem("math-dark", isDark ? "1" : "0");
+        applyDark();
+      });
+
+      // --- Init icons ---
+      lucide.createIcons();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bộ Chọn Màu</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #eef2ff;
+      --bg-card: #fff;
+      --bg-card-hover: #f8f9ff;
+      --text: #1e1b4b;
+      --text-sub: #64608f;
+      --primary: #6366f1;
+      --primary-light: rgba(99,102,241,0.08);
+      --primary-glow: rgba(99,102,241,0.15);
+      --border: rgba(99,102,241,0.08);
+      --shadow: 0 1px 3px rgba(99,102,241,0.04), 0 8px 32px rgba(99,102,241,0.06);
+      --shadow-hover: 0 4px 12px rgba(99,102,241,0.08), 0 16px 48px rgba(99,102,241,0.12);
+    }
+
+    body.dark {
+      --bg: #0b0a14;
+      --bg-card: #15132a;
+      --bg-card-hover: #1c1a35;
+      --text: #e0e7ff;
+      --text-sub: #8b86b0;
+      --primary: #818cf8;
+      --primary-light: rgba(129,140,248,0.1);
+      --primary-glow: rgba(129,140,248,0.12);
+      --border: rgba(129,140,248,0.06);
+      --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.3);
+      --shadow-hover: 0 4px 12px rgba(99,102,241,0.15), 0 16px 48px rgba(0,0,0,0.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -300px;
+      left: -200px;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page { position: relative; z-index: 1; }
+
+    /* Dark toggle */
+    .dark-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 50;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      box-shadow: var(--shadow);
+      padding: 0;
+    }
+    .dark-toggle:hover { background: var(--primary-light); transform: scale(1.05); }
+    .dark-toggle:active { transform: scale(0.95); }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 60px 20px 20px;
+    }
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+      letter-spacing: 0.02em;
+    }
+    .header h1 {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+    .header h1 span {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header p {
+      font-size: 15px;
+      color: var(--text-sub);
+      max-width: 460px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Main layout */
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 20px 20px 60px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      margin-bottom: 20px;
+      transition: box-shadow 0.2s;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-sub);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title i { width: 18px; height: 18px; color: var(--primary); }
+
+    /* Color picker area */
+    .picker-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .color-preview {
+      width: 100%;
+      height: 180px;
+      border-radius: 16px;
+      border: 2px solid var(--border);
+      transition: background-color 0.2s;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .color-input-wrap {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .color-input-wrap input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .preview-label {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 8px;
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Actions row */
+    .actions-row {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+    .hex-input-wrap {
+      flex: 1;
+      position: relative;
+    }
+    .hex-input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Be Vietnam Pro', monospace;
+      font-size: 15px;
+      font-weight: 600;
+      outline: none;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+    .hex-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-glow);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn i { width: 16px; height: 16px; }
+
+    /* Values */
+    .values-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+    .value-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .value-row:hover {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+    .value-row:active { transform: scale(0.99); }
+
+    .value-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      min-width: 36px;
+      text-transform: uppercase;
+    }
+    .value-text {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'Be Vietnam Pro', monospace;
+      color: var(--text);
+    }
+    .value-copy-icon {
+      color: var(--text-sub);
+      opacity: 0.4;
+      transition: opacity 0.2s;
+    }
+    .value-row:hover .value-copy-icon { opacity: 1; }
+
+    /* History */
+    .history-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .history-swatch {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .history-swatch:hover {
+      transform: scale(1.1);
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .history-swatch:active { transform: scale(0.95); }
+
+    .history-empty {
+      color: var(--text-sub);
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-hover);
+      padding: 12px 24px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 100;
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast i { width: 16px; height: 16px; color: #22c55e; }
+
+    /* Back link */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-sub);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--primary); }
+    .back-link i { width: 16px; height: 16px; }
+
+    @media (max-width: 480px) {
+      .card { padding: 20px; }
+      .color-preview { height: 140px; }
+      .actions-row { flex-direction: column; }
+      .history-swatch { width: 38px; height: 38px; }
+    }
+  </style>
+</head>
+<body>
+  <button class="dark-toggle" id="darkToggle" aria-label="Chuyển chế độ tối">
+    <i data-lucide="moon"></i>
+  </button>
+
+  <div class="page">
+    <div class="header">
+      <div class="header-badge">
+        <i data-lucide="palette" style="width:14px;height:14px"></i>
+        Công cụ màu sắc
+      </div>
+      <h1>Bộ Chọn <span>Màu Sắc</span></h1>
+      <p>Chọn màu, xem mã HEX / RGB / HSL, nhấn để sao chép nhanh.</p>
+    </div>
+
+    <div class="container">
+      <a href="../plugin-dashboard.html" class="back-link">
+        <i data-lucide="arrow-left"></i>
+        Quay lại bộ công cụ
+      </a>
+
+      <!-- Picker card -->
+      <div class="card">
+        <div class="card-title">
+          <i data-lucide="pipette"></i>
+          Chọn màu
+        </div>
+        <div class="picker-area">
+          <div class="color-preview" id="colorPreview">
+            <div class="color-input-wrap">
+              <input type="color" id="colorInput" value="#6366f1" aria-label="Chọn màu">
+            </div>
+            <div class="preview-label">Nhấn để chọn màu</div>
+          </div>
+          <div class="actions-row">
+            <div class="hex-input-wrap">
+              <input type="text" class="hex-input" id="hexInput" value="#6366F1" maxlength="7" spellcheck="false" aria-label="Mã HEX">
+            </div>
+            <button class="btn btn-primary" id="randomBtn">
+              <i data-lucide="shuffle"></i>
+              Ngẫu nhiên
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Values card -->
+      <div class="card">
+        <div class="card-title">
+          <i data-lucide="copy"></i>
+          Giá trị màu — nhấn để sao chép
+        </div>
+        <div class="values-grid" id="valuesGrid"></div>
+      </div>
+
+      <!-- History card -->
+      <div class="card">
+        <div class="card-title">
+          <i data-lucide="history"></i>
+          Lịch sử màu gần đây
+        </div>
+        <div class="history-grid" id="historyGrid">
+          <span class="history-empty">Chưa có màu nào</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <i data-lucide="check-circle"></i>
+    <span id="toastMsg"></span>
+  </div>
+
+  <script>
+    // ---------- Dark Mode ----------
+    const darkToggle = document.getElementById('darkToggle');
+    const DARK_KEY = 'math-dark';
+
+    function applyDark(dark) {
+      document.body.classList.toggle('dark', dark);
+      const icon = darkToggle.querySelector('i');
+      if (icon) icon.setAttribute('data-lucide', dark ? 'sun' : 'moon');
+      lucide.createIcons();
+    }
+    applyDark(localStorage.getItem(DARK_KEY) === 'true');
+    darkToggle.addEventListener('click', () => {
+      const next = !document.body.classList.contains('dark');
+      localStorage.setItem(DARK_KEY, next);
+      applyDark(next);
+    });
+
+    // ---------- Elements ----------
+    const colorInput = document.getElementById('colorInput');
+    const colorPreview = document.getElementById('colorPreview');
+    const hexInput = document.getElementById('hexInput');
+    const randomBtn = document.getElementById('randomBtn');
+    const valuesGrid = document.getElementById('valuesGrid');
+    const historyGrid = document.getElementById('historyGrid');
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+
+    let colorHistory = [];
+    let toastTimer = null;
+
+    // ---------- Conversions ----------
+    function hexToRgb(hex) {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return { r, g, b };
+    }
+
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+          case g: h = ((b - r) / d + 2) / 6; break;
+          case b: h = ((r - g) / d + 4) / 6; break;
+        }
+      }
+      return {
+        h: Math.round(h * 360),
+        s: Math.round(s * 100),
+        l: Math.round(l * 100)
+      };
+    }
+
+    // ---------- Toast ----------
+    function showToast(msg) {
+      toastMsg.textContent = msg;
+      toast.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    // ---------- Copy ----------
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Đã sao chép: ' + text);
+      }).catch(() => {
+        showToast('Không thể sao chép');
+      });
+    }
+
+    // ---------- Build value rows ----------
+    function buildValueRow(label, value) {
+      const row = document.createElement('div');
+      row.className = 'value-row';
+      row.setAttribute('role', 'button');
+      row.setAttribute('tabindex', '0');
+      row.title = 'Nhấn để sao chép';
+
+      const labelEl = document.createElement('span');
+      labelEl.className = 'value-label';
+      labelEl.textContent = label;
+
+      const textEl = document.createElement('span');
+      textEl.className = 'value-text';
+      textEl.textContent = value;
+
+      const iconEl = document.createElement('i');
+      iconEl.className = 'value-copy-icon';
+      iconEl.setAttribute('data-lucide', 'clipboard-copy');
+
+      row.appendChild(labelEl);
+      row.appendChild(textEl);
+      row.appendChild(iconEl);
+
+      const handler = () => copyText(value);
+      row.addEventListener('click', handler);
+      row.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); }
+      });
+
+      return row;
+    }
+
+    // ---------- Update display ----------
+    function updateColor(hex) {
+      hex = hex.toUpperCase();
+      colorPreview.style.backgroundColor = hex;
+      colorInput.value = hex.toLowerCase();
+      hexInput.value = hex;
+
+      const { r, g, b } = hexToRgb(hex);
+      const { h, s, l } = rgbToHsl(r, g, b);
+
+      const hexStr = hex;
+      const rgbStr = 'rgb(' + r + ', ' + g + ', ' + b + ')';
+      const hslStr = 'hsl(' + h + ', ' + s + '%, ' + l + '%)';
+
+      // Clear and rebuild values grid safely
+      while (valuesGrid.firstChild) valuesGrid.removeChild(valuesGrid.firstChild);
+      valuesGrid.appendChild(buildValueRow('HEX', hexStr));
+      valuesGrid.appendChild(buildValueRow('RGB', rgbStr));
+      valuesGrid.appendChild(buildValueRow('HSL', hslStr));
+      lucide.createIcons();
+    }
+
+    // ---------- History ----------
+    function addToHistory(hex) {
+      hex = hex.toUpperCase();
+      // Remove duplicate if exists
+      colorHistory = colorHistory.filter(c => c !== hex);
+      colorHistory.unshift(hex);
+      if (colorHistory.length > 10) colorHistory.pop();
+      renderHistory();
+    }
+
+    function renderHistory() {
+      while (historyGrid.firstChild) historyGrid.removeChild(historyGrid.firstChild);
+      if (colorHistory.length === 0) {
+        const emptyEl = document.createElement('span');
+        emptyEl.className = 'history-empty';
+        emptyEl.textContent = 'Chưa có màu nào';
+        historyGrid.appendChild(emptyEl);
+        return;
+      }
+      colorHistory.forEach(hex => {
+        const swatch = document.createElement('div');
+        swatch.className = 'history-swatch';
+        swatch.style.backgroundColor = hex;
+        swatch.title = hex;
+        swatch.setAttribute('role', 'button');
+        swatch.setAttribute('tabindex', '0');
+        swatch.setAttribute('aria-label', 'Chọn màu ' + hex);
+        const handler = () => {
+          updateColor(hex);
+          // Don't re-add to history, just move to front
+          colorHistory = colorHistory.filter(c => c !== hex);
+          colorHistory.unshift(hex);
+          renderHistory();
+        };
+        swatch.addEventListener('click', handler);
+        swatch.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); }
+        });
+        historyGrid.appendChild(swatch);
+      });
+    }
+
+    // ---------- Events ----------
+    colorInput.addEventListener('input', (e) => {
+      updateColor(e.target.value);
+    });
+
+    colorInput.addEventListener('change', (e) => {
+      addToHistory(e.target.value);
+    });
+
+    hexInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        let val = hexInput.value.trim();
+        if (!val.startsWith('#')) val = '#' + val;
+        if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+          updateColor(val);
+          addToHistory(val);
+        } else {
+          showToast('Mã HEX không hợp lệ');
+        }
+      }
+    });
+
+    randomBtn.addEventListener('click', () => {
+      const hex = '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0');
+      updateColor(hex);
+      addToHistory(hex);
+    });
+
+    // ---------- Init ----------
+    updateColor('#6366F1');
+    lucide.createIcons();
+  </script>
+</body>
+</html>

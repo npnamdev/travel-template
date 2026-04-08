@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nén Ảnh Online</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #eef2ff;
+      --bg-card: #fff;
+      --bg-card-hover: #f8f9ff;
+      --text: #1e1b4b;
+      --text-sub: #64608f;
+      --primary: #6366f1;
+      --primary-light: rgba(99,102,241,0.08);
+      --primary-glow: rgba(99,102,241,0.15);
+      --border: rgba(99,102,241,0.08);
+      --shadow: 0 1px 3px rgba(99,102,241,0.04), 0 8px 32px rgba(99,102,241,0.06);
+      --shadow-hover: 0 4px 12px rgba(99,102,241,0.08), 0 16px 48px rgba(99,102,241,0.12);
+      --success: #22c55e;
+      --success-bg: rgba(34,197,94,0.1);
+    }
+
+    body.dark {
+      --bg: #0b0a14;
+      --bg-card: #15132a;
+      --bg-card-hover: #1c1a35;
+      --text: #e0e7ff;
+      --text-sub: #8b86b0;
+      --primary: #818cf8;
+      --primary-light: rgba(129,140,248,0.1);
+      --primary-glow: rgba(129,140,248,0.12);
+      --border: rgba(129,140,248,0.06);
+      --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.3);
+      --shadow-hover: 0 4px 12px rgba(99,102,241,0.15), 0 16px 48px rgba(0,0,0,0.4);
+      --success: #4ade80;
+      --success-bg: rgba(74,222,128,0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -300px;
+      left: -200px;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page { position: relative; z-index: 1; }
+
+    /* Dark toggle */
+    .dark-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 50;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      box-shadow: var(--shadow);
+      padding: 0;
+    }
+    .dark-toggle:hover { background: var(--primary-light); transform: scale(1.05); }
+    .dark-toggle:active { transform: scale(0.95); }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 60px 20px 20px;
+    }
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+      letter-spacing: 0.02em;
+    }
+    .header h1 {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+    .header h1 span {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header p {
+      font-size: 15px;
+      color: var(--text-sub);
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Main container */
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 20px 60px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      margin-bottom: 24px;
+      transition: all 0.3s;
+    }
+
+    /* Upload area */
+    .upload-area {
+      border: 2px dashed var(--primary);
+      border-radius: 16px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: var(--primary-light);
+      position: relative;
+    }
+    .upload-area:hover, .upload-area.drag-over {
+      background: var(--primary-glow);
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+    .upload-area.drag-over {
+      border-style: solid;
+    }
+    .upload-icon {
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+    .upload-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .upload-hint {
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+    .upload-input {
+      display: none;
+    }
+
+    /* Quality control */
+    .quality-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .quality-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 120px;
+    }
+    .quality-slider-wrap {
+      flex: 1;
+      min-width: 200px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .quality-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border);
+      outline: none;
+      transition: all 0.2s;
+    }
+    .quality-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+      transition: transform 0.2s;
+    }
+    .quality-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+    .quality-slider::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+    }
+    .quality-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+      min-width: 52px;
+      text-align: right;
+    }
+
+    /* Preview */
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 640px) {
+      .preview-grid { grid-template-columns: 1fr; }
+    }
+    .preview-box {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      background: var(--bg);
+    }
+    .preview-box-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+    }
+    .preview-box-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .preview-box-size {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+      background: var(--primary-light);
+      padding: 3px 10px;
+      border-radius: 100px;
+    }
+    .preview-img-wrap {
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+    }
+    .preview-img-wrap img {
+      max-width: 100%;
+      max-height: 320px;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+
+    /* Stats */
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      padding: 16px 0;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .stat-value.success {
+      color: var(--success);
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+    .stat-divider {
+      width: 1px;
+      height: 36px;
+      background: var(--border);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(99,102,241,0.25);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(99,102,241,0.35);
+    }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-secondary {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: var(--primary-glow);
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Hidden */
+    .hidden { display: none !important; }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow-hover);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+      max-width: 340px;
+    }
+    .toast .toast-icon { color: var(--success); flex-shrink: 0; }
+    .toast.error .toast-icon { color: #ef4444; }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(16px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateY(0) scale(1); }
+      to { opacity: 0; transform: translateY(-8px) scale(0.95); }
+    }
+
+    /* Placeholder text */
+    .placeholder-text {
+      font-size: 13px;
+      color: var(--text-sub);
+      text-align: center;
+      padding: 40px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Dark toggle -->
+    <button class="dark-toggle" id="darkToggle" aria-label="Chuyển chế độ tối">
+      <i data-lucide="moon" style="width:18px;height:18px"></i>
+    </button>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-badge">
+        <i data-lucide="image" style="width:14px;height:14px"></i>
+        Công cụ ảnh
+      </div>
+      <h1>Nén <span>Ảnh Online</span></h1>
+      <p>Giảm dung lượng ảnh nhanh chóng ngay trên trình duyệt. Không cần tải phần mềm, ảnh không bị gửi lên server.</p>
+    </div>
+
+    <div class="container">
+      <!-- Upload card -->
+      <div class="card">
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-icon">
+            <i data-lucide="upload-cloud" style="width:48px;height:48px"></i>
+          </div>
+          <div class="upload-title">Kéo thả ảnh vào đây</div>
+          <div class="upload-hint">hoặc nhấn để chọn file (PNG, JPG, WEBP)</div>
+          <input type="file" class="upload-input" id="fileInput" accept="image/png,image/jpeg,image/webp" />
+        </div>
+      </div>
+
+      <!-- Quality card -->
+      <div class="card">
+        <div class="quality-section">
+          <div class="quality-label">
+            <i data-lucide="sliders-horizontal" style="width:16px;height:16px"></i>
+            Chất lượng
+          </div>
+          <div class="quality-slider-wrap">
+            <input type="range" class="quality-slider" id="qualitySlider" min="10" max="100" value="75" />
+            <div class="quality-value" id="qualityValue">75%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview card -->
+      <div class="card hidden" id="previewCard">
+        <div class="preview-grid">
+          <div class="preview-box">
+            <div class="preview-box-header">
+              <div class="preview-box-title">
+                <i data-lucide="image" style="width:14px;height:14px"></i>
+                Ảnh gốc
+              </div>
+              <div class="preview-box-size" id="originalSize">--</div>
+            </div>
+            <div class="preview-img-wrap" id="originalPreview">
+              <span class="placeholder-text">Chưa có ảnh</span>
+            </div>
+          </div>
+          <div class="preview-box">
+            <div class="preview-box-header">
+              <div class="preview-box-title">
+                <i data-lucide="zap" style="width:14px;height:14px"></i>
+                Ảnh đã nén
+              </div>
+              <div class="preview-box-size" id="compressedSize">--</div>
+            </div>
+            <div class="preview-img-wrap" id="compressedPreview">
+              <span class="placeholder-text">Đang xử lý...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-bar" id="statsBar">
+          <div class="stat-item">
+            <div class="stat-value" id="statOriginal">--</div>
+            <div class="stat-label">Dung lượng gốc</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <div class="stat-value" id="statCompressed">--</div>
+            <div class="stat-label">Sau khi nén</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <div class="stat-value success" id="statReduction">--</div>
+            <div class="stat-label">Giảm được</div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+          <button class="btn btn-primary" id="downloadBtn" disabled>
+            <i data-lucide="download" style="width:16px;height:16px"></i>
+            Tải ảnh đã nén
+          </button>
+          <button class="btn btn-secondary" id="resetBtn">
+            <i data-lucide="rotate-ccw" style="width:16px;height:16px"></i>
+            Chọn ảnh khác
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    (function() {
+      'use strict';
+
+      // DOM refs
+      const darkToggle = document.getElementById('darkToggle');
+      const uploadArea = document.getElementById('uploadArea');
+      const fileInput = document.getElementById('fileInput');
+      const qualitySlider = document.getElementById('qualitySlider');
+      const qualityValue = document.getElementById('qualityValue');
+      const previewCard = document.getElementById('previewCard');
+      const originalPreview = document.getElementById('originalPreview');
+      const compressedPreview = document.getElementById('compressedPreview');
+      const originalSizeEl = document.getElementById('originalSize');
+      const compressedSizeEl = document.getElementById('compressedSize');
+      const statOriginal = document.getElementById('statOriginal');
+      const statCompressed = document.getElementById('statCompressed');
+      const statReduction = document.getElementById('statReduction');
+      const downloadBtn = document.getElementById('downloadBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const toastContainer = document.getElementById('toastContainer');
+
+      let currentFile = null;
+      let compressedBlob = null;
+      let compressedUrl = null;
+
+      // --- Dark mode ---
+      function applyDark(dark) {
+        document.body.classList.toggle('dark', dark);
+        const icon = darkToggle.querySelector('[data-lucide]');
+        if (icon) icon.setAttribute('data-lucide', dark ? 'sun' : 'moon');
+        lucide.createIcons();
+      }
+
+      const savedDark = localStorage.getItem('math-dark');
+      if (savedDark === 'true') applyDark(true);
+
+      darkToggle.addEventListener('click', function() {
+        const isDark = !document.body.classList.contains('dark');
+        localStorage.setItem('math-dark', isDark);
+        applyDark(isDark);
+      });
+
+      // --- Toast ---
+      function showToast(message, isError) {
+        const toast = document.createElement('div');
+        toast.className = 'toast' + (isError ? ' error' : '');
+
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'toast-icon';
+        const iconEl = document.createElement('i');
+        iconEl.setAttribute('data-lucide', isError ? 'alert-circle' : 'check-circle-2');
+        iconEl.style.width = '18px';
+        iconEl.style.height = '18px';
+        iconSpan.appendChild(iconEl);
+
+        const textNode = document.createTextNode(message);
+
+        toast.appendChild(iconSpan);
+        toast.appendChild(textNode);
+        toastContainer.appendChild(toast);
+
+        lucide.createIcons({ nodes: [toast] });
+
+        setTimeout(function() {
+          if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 3000);
+      }
+
+      // --- File size formatting ---
+      function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+      }
+
+      // --- Upload handling ---
+      uploadArea.addEventListener('click', function() {
+        fileInput.click();
+      });
+
+      uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('drag-over');
+      });
+
+      uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+      });
+
+      uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+        var files = e.dataTransfer.files;
+        if (files.length > 0) handleFile(files[0]);
+      });
+
+      fileInput.addEventListener('change', function() {
+        if (fileInput.files.length > 0) handleFile(fileInput.files[0]);
+      });
+
+      function handleFile(file) {
+        if (!file.type.match(/^image\/(png|jpeg|webp)$/)) {
+          showToast('Vui lòng chọn file ảnh (PNG, JPG, WEBP)', true);
+          return;
+        }
+        if (file.size > 50 * 1024 * 1024) {
+          showToast('File quá lớn (tối đa 50MB)', true);
+          return;
+        }
+        currentFile = file;
+        showToast('Đã tải ảnh: ' + file.name);
+        compressImage();
+      }
+
+      // --- Compress ---
+      function compressImage() {
+        if (!currentFile) return;
+
+        previewCard.classList.remove('hidden');
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          // Show original
+          setPreviewImage(originalPreview, e.target.result);
+          var origSize = currentFile.size;
+          originalSizeEl.textContent = formatSize(origSize);
+          statOriginal.textContent = formatSize(origSize);
+
+          // Compress via canvas
+          var img = new Image();
+          img.onload = function() {
+            var canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+
+            var quality = parseInt(qualitySlider.value, 10) / 100;
+            var outputType = 'image/jpeg';
+            if (currentFile.type === 'image/png' && quality >= 1) {
+              outputType = 'image/png';
+            } else if (currentFile.type === 'image/webp') {
+              outputType = 'image/webp';
+            }
+
+            canvas.toBlob(function(blob) {
+              if (compressedUrl) URL.revokeObjectURL(compressedUrl);
+              compressedBlob = blob;
+              compressedUrl = URL.createObjectURL(blob);
+
+              setPreviewImage(compressedPreview, compressedUrl);
+
+              var compSize = blob.size;
+              compressedSizeEl.textContent = formatSize(compSize);
+              statCompressed.textContent = formatSize(compSize);
+
+              var reduction = ((1 - compSize / origSize) * 100);
+              if (reduction < 0) reduction = 0;
+              statReduction.textContent = reduction.toFixed(1) + '%';
+
+              downloadBtn.disabled = false;
+
+              if (reduction > 0) {
+                showToast('Nén thành công! Giảm ' + reduction.toFixed(1) + '%');
+              } else {
+                showToast('Ảnh đã ở mức tối ưu, không giảm thêm được', true);
+              }
+            }, outputType, quality);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(currentFile);
+      }
+
+      function setPreviewImage(container, src) {
+        while (container.firstChild) {
+          container.removeChild(container.firstChild);
+        }
+        var img = document.createElement('img');
+        img.src = src;
+        img.alt = 'Xem trước ảnh';
+        container.appendChild(img);
+      }
+
+      // --- Quality slider ---
+      qualitySlider.addEventListener('input', function() {
+        qualityValue.textContent = qualitySlider.value + '%';
+        if (currentFile) compressImage();
+      });
+
+      // --- Download ---
+      downloadBtn.addEventListener('click', function() {
+        if (!compressedBlob) return;
+        var a = document.createElement('a');
+        a.href = compressedUrl;
+        var baseName = currentFile.name.replace(/\.[^.]+$/, '');
+        a.download = baseName + '_compressed.jpg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('Đã tải xuống ảnh đã nén');
+      });
+
+      // --- Reset ---
+      resetBtn.addEventListener('click', function() {
+        currentFile = null;
+        if (compressedUrl) URL.revokeObjectURL(compressedUrl);
+        compressedBlob = null;
+        compressedUrl = null;
+        fileInput.value = '';
+        previewCard.classList.add('hidden');
+        downloadBtn.disabled = true;
+        originalSizeEl.textContent = '--';
+        compressedSizeEl.textContent = '--';
+        statOriginal.textContent = '--';
+        statCompressed.textContent = '--';
+        statReduction.textContent = '--';
+      });
+
+      // Init icons
+      lucide.createIcons();
+    })();
+  </script>
+</body>
+</html>
