@@ -416,14 +416,8 @@
           <span class="empty-hint">Công thức sẽ hiện ở đây</span>
         </div>
         <div class="preview-actions">
-          <button class="preview-btn" id="copyImgBtn" data-tippy-content="Copy ảnh">
-            <i data-lucide="image" style="width:15px;height:15px;"></i>
-          </button>
           <button class="preview-btn" id="downloadBtn" data-tippy-content="Tải ảnh PNG">
             <i data-lucide="download" style="width:15px;height:15px;"></i>
-          </button>
-          <button class="preview-btn" id="transparentToggle" data-tippy-content="Nền trong suốt">
-            <i data-lucide="eye-off" style="width:15px;height:15px;"></i>
           </button>
         </div>
       </div>
@@ -462,8 +456,6 @@
     var codePreview = document.getElementById("codePreview");
     var codeCopyBtn = document.getElementById("codeCopyBtn");
     var downloadBtn = document.getElementById("downloadBtn");
-    var copyImgBtn = document.getElementById("copyImgBtn");
-    var transparentToggle = document.getElementById("transparentToggle");
     var editorWrap = document.getElementById("editorWrap");
     var historyPanel = document.getElementById("historyPanel");
     var historyList = document.getElementById("historyList");
@@ -505,7 +497,14 @@
 
     // === UTILS ===
     function cleanLatex(latex) {
-      return latex.trim().replace(/\n/g, " ").replace(/\s+/g, " ");
+      return latex.trim()
+        .replace(/^\[math\]/i, "")
+        .replace(/\[\/math\]$/i, "")
+        .replace(/\[math\]/gi, "")
+        .replace(/\[\/math\]/gi, "")
+        .replace(/\n/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
     }
 
     function showToast(msg) {
@@ -545,7 +544,7 @@
       if (clean.length > 0) {
         editorWrap.classList.add("has-value");
         katex.render(clean, preview, { throwOnError: false });
-        codePreview.textContent = "[math]" + clean + "[/math]";
+        codePreview.textContent = clean;
         codePreview.className = "code-block has-code";
       } else {
         editorWrap.classList.remove("has-value");
@@ -563,7 +562,7 @@
     codeCopyBtn.addEventListener("click", function() {
       var clean = cleanLatex(editor.value);
       if (!clean) return;
-      navigator.clipboard.writeText("[math]" + clean + "[/math]").then(function() {
+      navigator.clipboard.writeText(clean).then(function() {
         btnFeedback(codeCopyBtn, "copy");
         saveHistory(clean);
         showToast("Đã sao chép!");
@@ -608,33 +607,6 @@
         saveHistory(cleanLatex(editor.value));
         showToast("Đã tải ảnh!");
       });
-    });
-
-    // === COPY IMAGE TO CLIPBOARD ===
-    copyImgBtn.addEventListener("click", function() {
-      createFormulaCanvas(useTransparent).then(function(canvas) {
-        if (!canvas) return;
-        canvas.toBlob(function(blob) {
-          navigator.clipboard.write([
-            new ClipboardItem({ "image/png": blob })
-          ]).then(function() {
-            btnFeedback(copyImgBtn, "image");
-            saveHistory(cleanLatex(editor.value));
-            showToast("Đã copy ảnh vào clipboard!");
-          }).catch(function() {
-            showToast("Trình duyệt không hỗ trợ copy ảnh!");
-          });
-        }, "image/png");
-      });
-    });
-
-    // === TRANSPARENT TOGGLE ===
-    transparentToggle.addEventListener("click", function() {
-      useTransparent = !useTransparent;
-      transparentToggle.classList.toggle("active", useTransparent);
-      transparentToggle.querySelector("i").setAttribute("data-lucide", useTransparent ? "eye" : "eye-off");
-      lucide.createIcons();
-      showToast(useTransparent ? "Nền trong suốt: BẬT" : "Nền trong suốt: TẮT");
     });
 
     // === DARK MODE ===
