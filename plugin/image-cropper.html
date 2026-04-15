@@ -313,7 +313,11 @@ body{font-family:'General Sans',sans-serif;background:var(--bg);color:var(--t1);
     radial-gradient(ellipse at 85% 90%,rgba(56,189,248,.05),transparent 45%),
     linear-gradient(180deg,rgba(12,11,24,.3),rgba(8,13,21,.5));
   padding:24px;
+  align-items:center;
 }
+.workspace.panning{cursor:grab}
+.workspace.panning:active{cursor:grabbing}
+.workspace.panning .crop,.workspace.panning .edge,.workspace.panning .corner,.workspace.panning .mid-pill{pointer-events:none}
 .workspace::-webkit-scrollbar{width:6px}
 .workspace::-webkit-scrollbar-thumb{background:var(--s3);border-radius:4px}
 .workspace.on{display:flex}
@@ -1248,6 +1252,13 @@ function applyZoom() {
   cw.style.width = zoomLevel + '%';
   $('zoomLabel').textContent = zoomLevel + '%';
   $('zoomSlider').value = zoomLevel;
+  // Center scroll when zoomed
+  if (zoomLevel > 100) {
+    requestAnimationFrame(function() {
+      ws.scrollLeft = (ws.scrollWidth - ws.clientWidth) / 2;
+      ws.scrollTop = (ws.scrollHeight - ws.clientHeight) / 2;
+    });
+  }
 }
 
 function zoomTo(val) {
@@ -1276,6 +1287,57 @@ ws.addEventListener('wheel', function(e) {
   e.preventDefault();
   zoomChange(e.deltaY < 0 ? 1 : -1);
 }, { passive: false });
+
+// ═══ PAN (Space+drag or middle mouse, like Photoshop) ═══
+var isPanning = false, panStartX = 0, panStartY = 0, panScrollX = 0, panScrollY = 0;
+var spaceHeld = false;
+
+// Block ALL Space key default behavior (page scroll) when image is loaded
+window.addEventListener('keydown', function(e) {
+  if (e.key === ' ' && img && !e.target.matches('input,textarea,select,[contenteditable]')) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!e.repeat) {
+      spaceHeld = true;
+      ws.classList.add('panning');
+    }
+  }
+}, true); // capture phase to intercept before browser scrolls
+
+window.addEventListener('keyup', function(e) {
+  if (e.key === ' ') {
+    e.preventDefault();
+    spaceHeld = false;
+    if (!isPanning) ws.classList.remove('panning');
+  }
+}, true);
+
+ws.addEventListener('mousedown', function(e) {
+  if (spaceHeld || e.button === 1) {
+    e.preventDefault();
+    e.stopPropagation();
+    isPanning = true;
+    panStartX = e.clientX;
+    panStartY = e.clientY;
+    panScrollX = ws.scrollLeft;
+    panScrollY = ws.scrollTop;
+    ws.classList.add('panning');
+  }
+});
+window.addEventListener('mousemove', function(e) {
+  if (!isPanning) return;
+  e.preventDefault();
+  ws.scrollLeft = panScrollX - (e.clientX - panStartX);
+  ws.scrollTop = panScrollY - (e.clientY - panStartY);
+});
+window.addEventListener('mouseup', function(e) {
+  if (isPanning) {
+    isPanning = false;
+    if (!spaceHeld) ws.classList.remove('panning');
+  }
+});
+// Middle click prevent default
+ws.addEventListener('auxclick', function(e) { if (e.button === 1) e.preventDefault(); });
 
 window.addEventListener('resize', function() { if (img) update(); });
 
