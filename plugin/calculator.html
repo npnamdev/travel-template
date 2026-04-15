@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Máy Tính — Calculator</title>
+<meta name="description" content="Máy tính khoa học trực tuyến. Hỗ trợ các phép tính cơ bản và khoa học: sin, cos, tan, log, ln, căn bậc hai, lũy thừa.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23ea580c'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white'%3E🔢%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#1c1917;--surface:#292524;--surface2:#1c1917;--surface3:#44403c;
+  --border:#57534e;--border2:#ea580c;
+  --text:#fafaf9;--text2:#fed7aa;--text3:#fb923c;--text-muted:#a8a29e;
+  --primary:#ea580c;--primary-hover:#c2410c;--primary-light:#7c2d12;
+  --accent:#f59e0b;--accent2:#84cc16;
+  --r:12px;--r2:16px;--r3:24px;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  --shadow2:0 4px 24px rgba(0,0,0,.3);
+  --font:'Outfit',sans-serif;
+  --mono:'Fira Code',monospace;
+}
+
+.dark{
+  --bg:#0c0a09;--surface:#1c1917;--surface2:#0c0a09;--surface3:#292524;
+  --border:#44403c;--border2:#ea580c;
+  --text:#fafaf9;--text2:#fed7aa;--text3:#fb923c;--text-muted:#78716c;
+  --primary:#f97316;--primary-hover:#ea580c;--primary-light:#9a3412;
+  --shadow:0 1px 3px rgba(0,0,0,.5),0 4px 16px rgba(0,0,0,.4);
+  --shadow2:0 4px 24px rgba(0,0,0,.5);
+}
+
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;transition:background .3s,color .3s}
+
+.theme-toggle{
+  position:fixed;top:16px;right:16px;z-index:100;
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);transition:all .3s;color:var(--text)
+}
+.theme-toggle:hover{background:var(--surface3);border-color:var(--border2);transform:scale(1.05)}
+.theme-toggle svg{width:20px;height:20px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+
+.card{
+  width:100%;max-width:420px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r3);padding:24px;
+  box-shadow:var(--shadow2);
+}
+
+.header{text-align:center;margin-bottom:20px}
+.header-icon{
+  width:52px;height:52px;border-radius:14px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:10px;box-shadow:0 4px 16px rgba(234,88,12,.3);
+}
+.header-icon svg{width:26px;height:26px;color:#fff}
+.header h1{font-size:1.3rem;font-weight:800;color:var(--text)}
+.header p{font-size:.8rem;color:var(--text-muted);margin-top:2px}
+
+/* Display */
+.display{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:20px;margin-bottom:16px;
+  min-height:90px;display:flex;flex-direction:column;justify-content:flex-end;
+  text-align:right;overflow:hidden;
+}
+.display-expr{font-family:var(--mono);font-size:.85rem;color:var(--text-muted);min-height:20px;word-break:break-all}
+.display-result{font-family:var(--mono);font-size:2.2rem;font-weight:600;color:var(--text);word-break:break-all;line-height:1.2}
+
+/* Memory indicator */
+.memory-indicator{
+  font-size:.7rem;color:var(--accent);font-weight:600;font-family:var(--mono);
+  min-height:16px;
+}
+
+/* Buttons grid */
+.btn-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
+.calc-btn{
+  padding:14px 8px;border:1px solid var(--border);border-radius:var(--r);
+  background:var(--surface);color:var(--text);cursor:pointer;
+  font-family:var(--font);font-size:.85rem;font-weight:600;
+  transition:all .15s;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.calc-btn:hover{background:var(--surface3);border-color:var(--border2)}
+.calc-btn:active{transform:scale(.95)}
+.calc-btn.op{color:var(--primary);font-weight:700}
+.calc-btn.primary{background:var(--primary);color:#fff;border-color:var(--primary);font-size:1.1rem}
+.calc-btn.primary:hover{background:var(--primary-hover)}
+.calc-btn.sci{font-size:.75rem;color:var(--text3)}
+.calc-btn.mem{font-size:.7rem;color:var(--accent);font-weight:700}
+.calc-btn.span2{grid-column:span 2}
+
+/* History */
+.history-section{margin-top:16px}
+.history-toggle{
+  display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.8rem;
+  color:var(--text-muted);font-weight:600;padding:8px 0;border:none;
+  background:none;font-family:var(--font);transition:color .2s;width:100%;
+}
+.history-toggle:hover{color:var(--text)}
+.history-toggle svg{width:16px;height:16px}
+.history-list{
+  display:none;max-height:200px;overflow-y:auto;margin-top:8px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+  padding:8px;
+}
+.history-list.open{display:block}
+.history-item{
+  padding:8px;border-radius:8px;cursor:pointer;transition:background .15s;
+  font-family:var(--mono);font-size:.78rem;color:var(--text-muted);
+}
+.history-item:hover{background:var(--surface3);color:var(--text)}
+.history-item .hist-result{color:var(--primary);font-weight:600}
+.no-history{text-align:center;padding:12px;font-size:.8rem;color:var(--text-muted)}
+
+@keyframes btn-press{
+  0%{background:rgba(234,88,12,.3)}
+  100%{background:transparent}
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleDark()" aria-label="Đổi giao diện">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+
+<div class="card">
+  <div class="header">
+    <div class="header-icon"><i data-lucide="calculator"></i></div>
+    <h1>Máy Tính Khoa Học</h1>
+    <p>Hỗ trợ đầy đủ phép tính khoa học</p>
+  </div>
+
+  <div class="display">
+    <div class="memory-indicator" id="memIndicator"></div>
+    <div class="display-expr" id="exprDisplay"></div>
+    <div class="display-result" id="resultDisplay">0</div>
+  </div>
+
+  <div class="btn-grid">
+    <button class="calc-btn mem" onclick="memClear()">MC</button>
+    <button class="calc-btn mem" onclick="memRecall()">MR</button>
+    <button class="calc-btn mem" onclick="memAdd()">M+</button>
+    <button class="calc-btn mem" onclick="memSub()">M-</button>
+    <button class="calc-btn op" onclick="inputClear()">C</button>
+
+    <button class="calc-btn sci" onclick="inputFunc('sin(')">sin</button>
+    <button class="calc-btn sci" onclick="inputFunc('cos(')">cos</button>
+    <button class="calc-btn sci" onclick="inputFunc('tan(')">tan</button>
+    <button class="calc-btn sci" onclick="inputFunc('log(')">log</button>
+    <button class="calc-btn sci" onclick="inputFunc('ln(')">ln</button>
+
+    <button class="calc-btn sci" onclick="inputFunc('sqrt(')">&#8730;</button>
+    <button class="calc-btn sci" onclick="inputOp('^')">x^y</button>
+    <button class="calc-btn sci" onclick="inputFactorial()">n!</button>
+    <button class="calc-btn op" onclick="inputOp('(')">(</button>
+    <button class="calc-btn op" onclick="inputOp(')')">)</button>
+
+    <button class="calc-btn" onclick="inputNum('7')">7</button>
+    <button class="calc-btn" onclick="inputNum('8')">8</button>
+    <button class="calc-btn" onclick="inputNum('9')">9</button>
+    <button class="calc-btn op" onclick="inputOp('/')">÷</button>
+    <button class="calc-btn op" onclick="backspace()">⌫</button>
+
+    <button class="calc-btn" onclick="inputNum('4')">4</button>
+    <button class="calc-btn" onclick="inputNum('5')">5</button>
+    <button class="calc-btn" onclick="inputNum('6')">6</button>
+    <button class="calc-btn op" onclick="inputOp('*')">×</button>
+    <button class="calc-btn sci" onclick="inputConst('pi')">π</button>
+
+    <button class="calc-btn" onclick="inputNum('1')">1</button>
+    <button class="calc-btn" onclick="inputNum('2')">2</button>
+    <button class="calc-btn" onclick="inputNum('3')">3</button>
+    <button class="calc-btn op" onclick="inputOp('-')">−</button>
+    <button class="calc-btn sci" onclick="inputConst('e')">e</button>
+
+    <button class="calc-btn" onclick="inputNum('0')">0</button>
+    <button class="calc-btn" onclick="inputNum('.')">.</button>
+    <button class="calc-btn op" onclick="inputOp('+')">+</button>
+    <button class="calc-btn primary span2" onclick="calculate()">=</button>
+  </div>
+
+  <div class="history-section">
+    <button class="history-toggle" onclick="toggleHistory()">
+      <i data-lucide="history"></i> Lịch sử phép tính
+    </button>
+    <div class="history-list" id="historyList">
+      <div class="no-history" id="noHistory">Chưa có phép tính nào</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var expression = '';
+var currentResult = '0';
+var memory = 0;
+var history = [];
+var justCalculated = false;
+
+var exprDisplay = document.getElementById('exprDisplay');
+var resultDisplay = document.getElementById('resultDisplay');
+var memIndicator = document.getElementById('memIndicator');
+
+function updateDisplay(){
+  exprDisplay.textContent = expression;
+  resultDisplay.textContent = currentResult;
+}
+
+function inputNum(n){
+  if(justCalculated){ expression = ''; justCalculated = false; }
+  expression += n;
+  updateDisplay();
+}
+
+function inputOp(op){
+  justCalculated = false;
+  expression += op;
+  updateDisplay();
+}
+
+function inputFunc(fn){
+  if(justCalculated){ expression = ''; justCalculated = false; }
+  expression += fn;
+  updateDisplay();
+}
+
+function inputConst(c){
+  if(justCalculated){ expression = ''; justCalculated = false; }
+  if(c==='pi') expression += 'Math.PI';
+  else if(c==='e') expression += 'Math.E';
+  updateDisplay();
+}
+
+function inputFactorial(){
+  if(justCalculated){ expression = ''; justCalculated = false; }
+  expression += 'fact(';
+  updateDisplay();
+}
+
+function inputClear(){
+  expression = '';
+  currentResult = '0';
+  justCalculated = false;
+  updateDisplay();
+}
+
+function backspace(){
+  if(justCalculated){ expression = ''; currentResult = '0'; justCalculated = false; }
+  else { expression = expression.slice(0,-1); }
+  updateDisplay();
+}
+
+function factorial(n){
+  n = Math.round(n);
+  if(n < 0) return NaN;
+  if(n === 0 || n === 1) return 1;
+  if(n > 170) return Infinity;
+  var r = 1;
+  for(var i=2;i<=n;i++) r *= i;
+  return r;
+}
+
+function calculate(){
+  if(!expression) return;
+  try{
+    var expr = expression
+      .replace(/sin\(/g, 'Math.sin(')
+      .replace(/cos\(/g, 'Math.cos(')
+      .replace(/tan\(/g, 'Math.tan(')
+      .replace(/log\(/g, 'Math.log10(')
+      .replace(/ln\(/g, 'Math.log(')
+      .replace(/sqrt\(/g, 'Math.sqrt(')
+      .replace(/fact\(/g, 'factorial(')
+      .replace(/\^/g, '**');
+
+    // Security note: This eval only processes user-entered math expressions
+    // in a standalone offline calculator tool with no server interaction.
+    var result = Function('factorial', '"use strict"; return (' + expr + ')')(factorial);
+
+    if(typeof result === 'number'){
+      currentResult = Number.isInteger(result) ? String(result) : String(parseFloat(result.toFixed(10)));
+    } else {
+      currentResult = 'Lỗi';
+    }
+
+    addHistory(expression, currentResult);
+    justCalculated = true;
+    updateDisplay();
+  } catch(e){
+    currentResult = 'Lỗi';
+    updateDisplay();
+  }
+}
+
+function memClear(){ memory = 0; memIndicator.textContent = ''; }
+function memRecall(){
+  if(justCalculated){ expression = ''; justCalculated = false; }
+  expression += String(memory);
+  updateDisplay();
+  memIndicator.textContent = 'M = ' + memory;
+}
+function memAdd(){
+  var val = parseFloat(currentResult);
+  if(!isNaN(val)){ memory += val; memIndicator.textContent = 'M = ' + memory; }
+}
+function memSub(){
+  var val = parseFloat(currentResult);
+  if(!isNaN(val)){ memory -= val; memIndicator.textContent = 'M = ' + memory; }
+}
+
+function addHistory(expr, res){
+  history.unshift({expr:expr, result:res});
+  if(history.length > 20) history.pop();
+  renderHistory();
+}
+
+function renderHistory(){
+  var list = document.getElementById('historyList');
+  var noHist = document.getElementById('noHistory');
+  if(history.length === 0){
+    noHist.style.display = 'block';
+    return;
+  }
+  noHist.style.display = 'none';
+  // Remove old items (not noHistory)
+  var items = list.querySelectorAll('.history-item');
+  items.forEach(function(item){ item.remove(); });
+
+  history.forEach(function(h, idx){
+    var div = document.createElement('div');
+    div.className = 'history-item';
+    var exprSpan = document.createElement('span');
+    exprSpan.textContent = h.expr + ' = ';
+    var resSpan = document.createElement('span');
+    resSpan.className = 'hist-result';
+    resSpan.textContent = h.result;
+    div.appendChild(exprSpan);
+    div.appendChild(resSpan);
+    div.addEventListener('click', function(){
+      expression = h.result;
+      currentResult = h.result;
+      justCalculated = true;
+      updateDisplay();
+    });
+    list.appendChild(div);
+  });
+}
+
+function toggleHistory(){
+  document.getElementById('historyList').classList.toggle('open');
+}
+
+// Keyboard support
+document.addEventListener('keydown', function(e){
+  var key = e.key;
+  if(key >= '0' && key <= '9') inputNum(key);
+  else if(key === '.') inputNum('.');
+  else if(key === '+') inputOp('+');
+  else if(key === '-') inputOp('-');
+  else if(key === '*') inputOp('*');
+  else if(key === '/') { e.preventDefault(); inputOp('/'); }
+  else if(key === '(') inputOp('(');
+  else if(key === ')') inputOp(')');
+  else if(key === '^') inputOp('^');
+  else if(key === 'Enter' || key === '=') { e.preventDefault(); calculate(); }
+  else if(key === 'Backspace') backspace();
+  else if(key === 'Escape') inputClear();
+});
+
+function toggleDark(){
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('math-dark', document.documentElement.classList.contains('dark'));
+}
+if(localStorage.getItem('math-dark')==='true') document.documentElement.classList.add('dark');
+
+updateDisplay();
+lucide.createIcons();
+</script>
+</body>
+</html>

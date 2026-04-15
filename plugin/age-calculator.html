@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tính Tuổi — Age Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        :root {
+            --rose: #e11d48;
+            --rose-light: #fb7185;
+            --rose-dark: #9f1239;
+            --rose-50: #fff1f2;
+            --rose-100: #ffe4e6;
+            --bg: #fefcfd;
+            --bg-card: #ffffff;
+            --text: #1a1a2e;
+            --text-secondary: #64748b;
+            --border: #fecdd3;
+            --shadow: 0 4px 24px rgba(225, 29, 72, 0.08);
+            --shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.15);
+        }
+        .dark {
+            --bg: #0f0a0c;
+            --bg-card: #1a1015;
+            --text: #fce7f3;
+            --text-secondary: #f9a8d4;
+            --border: #4c0519;
+            --shadow: 0 4px 24px rgba(225, 29, 72, 0.15);
+            --shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.25);
+            --rose-50: #1a0a10;
+            --rose-100: #2a0f1a;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(225, 29, 72, 0.3);
+        }
+        .header-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .dark-toggle {
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: #fff;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .dark-toggle:hover { background: rgba(255,255,255,0.25); }
+        .container { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+        .input-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .input-card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--rose);
+        }
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .date-input {
+            font-family: 'Quicksand', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 0.75rem 1.25rem;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            background: var(--rose-50);
+            color: var(--text);
+            outline: none;
+            transition: all 0.3s;
+        }
+        .date-input:focus { border-color: var(--rose); box-shadow: 0 0 0 4px rgba(225,29,72,0.15); }
+        .calc-btn {
+            font-family: 'Quicksand', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 0.75rem 2rem;
+            background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(225,29,72,0.3);
+        }
+        .calc-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(225,29,72,0.4); }
+        .results { display: none; }
+        .results.show { display: block; }
+        .age-hero {
+            background: linear-gradient(135deg, var(--rose), var(--rose-light));
+            border-radius: 24px;
+            padding: 2.5rem;
+            text-align: center;
+            color: #fff;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+        .age-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse-bg 4s ease-in-out infinite;
+        }
+        @keyframes pulse-bg { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .age-hero-content { position: relative; z-index: 1; }
+        .age-big {
+            font-family: 'Playfair Display', serif;
+            font-size: 5rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .age-label { font-size: 1.3rem; font-weight: 600; opacity: 0.9; margin-top: 0.5rem; }
+        .age-detail {
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            font-weight: 500;
+            opacity: 0.95;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-4px); }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--rose-100);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.75rem;
+            color: var(--rose);
+        }
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--rose);
+            transition: all 0.5s;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+        .zodiac-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .zodiac-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        .zodiac-emoji { font-size: 3rem; margin-bottom: 0.5rem; }
+        .zodiac-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--rose);
+        }
+        .zodiac-type {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        .fun-facts {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        .fun-facts-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: var(--rose);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .fact-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+        }
+        .fact-item:last-child { border-bottom: none; }
+        .fact-icon { color: var(--rose); flex-shrink: 0; }
+        .countdown-section {
+            background: var(--rose-100);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .countdown-section h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--rose);
+            margin-bottom: 0.75rem;
+        }
+        .countdown-nums {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .countdown-item {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            min-width: 70px;
+        }
+        .countdown-val {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--rose);
+        }
+        .countdown-lbl { font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; }
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: countUp 0.6s ease-out forwards; }
+        @media (max-width: 600px) {
+            .header-title { font-size: 1.3rem; }
+            .age-big { font-size: 3.5rem; }
+            .zodiac-section { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-title">
+            <i data-lucide="cake" style="width:28px;height:28px"></i>
+            Tinh Tuoi
+        </div>
+        <button class="dark-toggle" onclick="toggleDark()" title="Che do toi">
+            <i data-lucide="moon" style="width:20px;height:20px"></i>
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="input-card">
+            <h2>Nhap ngay sinh cua ban</h2>
+            <div class="input-group">
+                <input type="date" class="date-input" id="birthdate" max="">
+                <button class="calc-btn" onclick="calculate()">
+                    <i data-lucide="calculator" style="width:20px;height:20px"></i>
+                    Tinh tuoi
+                </button>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <div class="age-hero">
+                <div class="age-hero-content">
+                    <div class="age-big" id="ageYears">0</div>
+                    <div class="age-label">Tuoi</div>
+                    <div class="age-detail" id="ageDetail"></div>
+                </div>
+            </div>
+
+            <div class="stats-grid" id="statsGrid"></div>
+
+            <div class="countdown-section" id="countdownSection">
+                <h3>Sinh nhat tiep theo</h3>
+                <div class="countdown-nums" id="countdownNums"></div>
+            </div>
+
+            <div class="zodiac-section" id="zodiacSection"></div>
+
+            <div class="fun-facts" id="funFacts">
+                <div class="fun-facts-title">
+                    <i data-lucide="sparkles" style="width:20px;height:20px"></i>
+                    Su that thu vi
+                </div>
+                <div id="funFactsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode
+        function toggleDark() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+        }
+        if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+
+        // Set max date to today
+        document.getElementById('birthdate').max = new Date().toISOString().split('T')[0];
+
+        var westernZodiac = [
+            { sign: 'Ma Ket', emoji: String.fromCodePoint(0x2651), start: [1,1], end: [1,19] },
+            { sign: 'Bao Binh', emoji: String.fromCodePoint(0x2652), start: [1,20], end: [2,18] },
+            { sign: 'Song Ngu', emoji: String.fromCodePoint(0x2653), start: [2,19], end: [3,20] },
+            { sign: 'Bach Duong', emoji: String.fromCodePoint(0x2648), start: [3,21], end: [4,19] },
+            { sign: 'Kim Nguu', emoji: String.fromCodePoint(0x2649), start: [4,20], end: [5,20] },
+            { sign: 'Song Tu', emoji: String.fromCodePoint(0x264A), start: [5,21], end: [6,20] },
+            { sign: 'Cu Giai', emoji: String.fromCodePoint(0x264B), start: [6,21], end: [7,22] },
+            { sign: 'Su Tu', emoji: String.fromCodePoint(0x264C), start: [7,23], end: [8,22] },
+            { sign: 'Xu Nu', emoji: String.fromCodePoint(0x264D), start: [8,23], end: [9,22] },
+            { sign: 'Thien Binh', emoji: String.fromCodePoint(0x264E), start: [9,23], end: [10,22] },
+            { sign: 'Bo Cap', emoji: String.fromCodePoint(0x264F), start: [10,23], end: [11,21] },
+            { sign: 'Nhan Ma', emoji: String.fromCodePoint(0x2650), start: [11,22], end: [12,21] },
+            { sign: 'Ma Ket', emoji: String.fromCodePoint(0x2651), start: [12,22], end: [12,31] }
+        ];
+
+        var chineseZodiacData = [
+            { name: 'Ty (Chuot)', emoji: String.fromCodePoint(0x1F400) },
+            { name: 'Suu (Trau)', emoji: String.fromCodePoint(0x1F403) },
+            { name: 'Dan (Ho)', emoji: String.fromCodePoint(0x1F405) },
+            { name: 'Mao (Meo)', emoji: String.fromCodePoint(0x1F408) },
+            { name: 'Thin (Rong)', emoji: String.fromCodePoint(0x1F409) },
+            { name: 'Ty (Ran)', emoji: String.fromCodePoint(0x1F40D) },
+            { name: 'Ngo (Ngua)', emoji: String.fromCodePoint(0x1F40E) },
+            { name: 'Mui (De)', emoji: String.fromCodePoint(0x1F410) },
+            { name: 'Than (Khi)', emoji: String.fromCodePoint(0x1F412) },
+            { name: 'Dau (Ga)', emoji: String.fromCodePoint(0x1F413) },
+            { name: 'Tuat (Cho)', emoji: String.fromCodePoint(0x1F415) },
+            { name: 'Hoi (Lon)', emoji: String.fromCodePoint(0x1F416) }
+        ];
+
+        var daysVi = ['Chu Nhat', 'Thu Hai', 'Thu Ba', 'Thu Tu', 'Thu Nam', 'Thu Sau', 'Thu Bay'];
+
+        function getWesternZodiac(month, day) {
+            for (var i = 0; i < westernZodiac.length; i++) {
+                var z = westernZodiac[i];
+                var afterStart = month > z.start[0] || (month === z.start[0] && day >= z.start[1]);
+                var beforeEnd = month < z.end[0] || (month === z.end[0] && day <= z.end[1]);
+                if (afterStart && beforeEnd) return z;
+            }
+            return westernZodiac[0];
+        }
+
+        function getChineseZodiac(year) {
+            return chineseZodiacData[(year - 4) % 12];
+        }
+
+        function isLeapYear(year) {
+            return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+        }
+
+        function countLeapYears(startYear, endYear) {
+            var count = 0;
+            for (var y = startYear; y <= endYear; y++) {
+                if (isLeapYear(y)) count++;
+            }
+            return count;
+        }
+
+        function animateNumber(el, target, duration) {
+            duration = duration || 1000;
+            var startTime = performance.now();
+            function update(currentTime) {
+                var elapsed = currentTime - startTime;
+                var progress = Math.min(elapsed / duration, 1);
+                var eased = 1 - Math.pow(1 - progress, 3);
+                var current = Math.floor(target * eased);
+                el.textContent = current.toLocaleString('vi-VN');
+                if (progress < 1) requestAnimationFrame(update);
+                else el.textContent = target.toLocaleString('vi-VN');
+            }
+            requestAnimationFrame(update);
+        }
+
+        var countdownInterval;
+
+        function createStatCard(icon, value, label, delay) {
+            var card = document.createElement('div');
+            card.className = 'stat-card animate-in';
+            card.style.animationDelay = delay + 's';
+
+            var iconDiv = document.createElement('div');
+            iconDiv.className = 'stat-icon';
+            var iconEl = document.createElement('i');
+            iconEl.setAttribute('data-lucide', icon);
+            iconEl.style.width = '24px';
+            iconEl.style.height = '24px';
+            iconDiv.appendChild(iconEl);
+
+            var numDiv = document.createElement('div');
+            numDiv.className = 'stat-number';
+            numDiv.setAttribute('data-target', value);
+            numDiv.textContent = '0';
+
+            var lblDiv = document.createElement('div');
+            lblDiv.className = 'stat-label';
+            lblDiv.textContent = label;
+
+            card.appendChild(iconDiv);
+            card.appendChild(numDiv);
+            card.appendChild(lblDiv);
+            return card;
+        }
+
+        function createZodiacCard(emoji, name, type, delay) {
+            var card = document.createElement('div');
+            card.className = 'zodiac-card animate-in';
+            if (delay) card.style.animationDelay = delay + 's';
+
+            var emojiDiv = document.createElement('div');
+            emojiDiv.className = 'zodiac-emoji';
+            emojiDiv.textContent = emoji;
+
+            var nameDiv = document.createElement('div');
+            nameDiv.className = 'zodiac-name';
+            nameDiv.textContent = name;
+
+            var typeDiv = document.createElement('div');
+            typeDiv.className = 'zodiac-type';
+            typeDiv.textContent = type;
+
+            card.appendChild(emojiDiv);
+            card.appendChild(nameDiv);
+            card.appendChild(typeDiv);
+            return card;
+        }
+
+        function createFactItem(icon, text) {
+            var item = document.createElement('div');
+            item.className = 'fact-item';
+
+            var iconSpan = document.createElement('span');
+            iconSpan.className = 'fact-icon';
+            var iconEl = document.createElement('i');
+            iconEl.setAttribute('data-lucide', icon);
+            iconEl.style.width = '18px';
+            iconEl.style.height = '18px';
+            iconSpan.appendChild(iconEl);
+
+            var textSpan = document.createElement('span');
+            textSpan.textContent = text;
+
+            item.appendChild(iconSpan);
+            item.appendChild(textSpan);
+            return item;
+        }
+
+        function createCountdownItem(value, label) {
+            var item = document.createElement('div');
+            item.className = 'countdown-item';
+
+            var valDiv = document.createElement('div');
+            valDiv.className = 'countdown-val';
+            valDiv.textContent = value;
+
+            var lblDiv = document.createElement('div');
+            lblDiv.className = 'countdown-lbl';
+            lblDiv.textContent = label;
+
+            item.appendChild(valDiv);
+            item.appendChild(lblDiv);
+            return item;
+        }
+
+        function calculate() {
+            var input = document.getElementById('birthdate').value;
+            if (!input) return;
+
+            var birth = new Date(input + 'T00:00:00');
+            var now = new Date();
+
+            if (birth > now) return;
+
+            // Calculate exact age
+            var years = now.getFullYear() - birth.getFullYear();
+            var months = now.getMonth() - birth.getMonth();
+            var days = now.getDate() - birth.getDate();
+
+            if (days < 0) {
+                months--;
+                var prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+                days += prevMonth.getDate();
+            }
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            // Total calculations
+            var diffMs = now - birth;
+            var totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            var totalHours = Math.floor(diffMs / (1000 * 60 * 60));
+            var totalMinutes = Math.floor(diffMs / (1000 * 60));
+            var totalWeeks = Math.floor(totalDays / 7);
+            var totalMonths = years * 12 + months;
+
+            // Show results
+            var results = document.getElementById('results');
+            results.classList.add('show');
+
+            // Animate main age
+            var ageEl = document.getElementById('ageYears');
+            animateNumber(ageEl, years, 800);
+            document.getElementById('ageDetail').textContent =
+                years + ' nam, ' + months + ' thang, ' + days + ' ngay';
+
+            // Stats grid
+            var statsGrid = document.getElementById('statsGrid');
+            statsGrid.textContent = '';
+            var stats = [
+                { icon: 'calendar-days', value: totalDays, label: 'Tong so ngay' },
+                { icon: 'clock', value: totalHours, label: 'Tong so gio' },
+                { icon: 'timer', value: totalMinutes, label: 'Tong so phut' },
+                { icon: 'calendar-range', value: totalWeeks, label: 'Tong so tuan' },
+                { icon: 'calendar', value: totalMonths, label: 'Tong so thang' },
+                { icon: 'heart-pulse', value: totalDays * 103680, label: 'Nhip tim (uoc tinh)' }
+            ];
+            stats.forEach(function(s, i) {
+                statsGrid.appendChild(createStatCard(s.icon, s.value, s.label, i * 0.1));
+            });
+
+            // Zodiac
+            var month = birth.getMonth() + 1;
+            var day = birth.getDate();
+            var western = getWesternZodiac(month, day);
+            var chinese = getChineseZodiac(birth.getFullYear());
+
+            var zodiacSection = document.getElementById('zodiacSection');
+            zodiacSection.textContent = '';
+            zodiacSection.appendChild(createZodiacCard(western.emoji, western.sign, 'Cung hoang dao phuong Tay', 0));
+            zodiacSection.appendChild(createZodiacCard(chinese.emoji, chinese.name, 'Con giap Viet Nam', 0.1));
+
+            // Fun facts
+            var dayOfWeek = daysVi[birth.getDay()];
+            var leapYears = countLeapYears(birth.getFullYear(), now.getFullYear());
+            var seasons = Math.floor(totalDays / 91);
+            var sleepHours = Math.floor(totalDays * 8);
+
+            var funFactsList = document.getElementById('funFactsList');
+            funFactsList.textContent = '';
+            funFactsList.appendChild(createFactItem('calendar-check', 'Ban sinh vao ' + dayOfWeek));
+            funFactsList.appendChild(createFactItem('zap', 'Ban da song qua ' + leapYears + ' nam nhuan'));
+            funFactsList.appendChild(createFactItem('sun', 'Ban da trai qua khoang ' + seasons + ' mua'));
+            funFactsList.appendChild(createFactItem('moon-star', 'Ban da ngu khoang ' + sleepHours.toLocaleString('vi-VN') + ' gio'));
+            funFactsList.appendChild(createFactItem('footprints', 'Ban da di khoang ' + (totalDays * 7000).toLocaleString('vi-VN') + ' buoc chan'));
+            funFactsList.appendChild(createFactItem('utensils', 'Ban da an khoang ' + (totalDays * 3).toLocaleString('vi-VN') + ' bua an'));
+
+            // Next birthday countdown
+            updateCountdown(birth);
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(function() { updateCountdown(birth); }, 1000);
+
+            // Recreate icons and animate numbers
+            lucide.createIcons();
+            setTimeout(function() {
+                var numEls = document.querySelectorAll('.stat-number[data-target]');
+                numEls.forEach(function(el, i) {
+                    var target = parseInt(el.getAttribute('data-target'));
+                    setTimeout(function() { animateNumber(el, target, 1200); }, i * 100);
+                });
+            }, 100);
+        }
+
+        function updateCountdown(birth) {
+            var now = new Date();
+            var nextBirthday = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
+            if (nextBirthday <= now) {
+                nextBirthday = new Date(now.getFullYear() + 1, birth.getMonth(), birth.getDate());
+            }
+            var diff = nextBirthday - now;
+            var d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            var h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            var s = Math.floor((diff % (1000 * 60)) / 1000);
+
+            var container = document.getElementById('countdownNums');
+            container.textContent = '';
+            container.appendChild(createCountdownItem(d, 'Ngay'));
+            container.appendChild(createCountdownItem(h, 'Gio'));
+            container.appendChild(createCountdownItem(m, 'Phut'));
+            container.appendChild(createCountdownItem(s, 'Giay'));
+        }
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>

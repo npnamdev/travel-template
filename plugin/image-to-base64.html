@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ảnh sang Base64 — Image to Base64</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+:root {
+  --bg: #f0fdfa;
+  --bg-card: #ffffff;
+  --bg-code: #f0fdf4;
+  --text: #042f2e;
+  --text-sub: #5f7a76;
+  --primary: #0d9488;
+  --primary-dark: #0f766e;
+  --primary-light: rgba(13,148,136,0.08);
+  --primary-glow: rgba(13,148,136,0.18);
+  --border: rgba(13,148,136,0.12);
+  --shadow: 0 2px 8px rgba(13,148,136,0.05), 0 12px 36px rgba(13,148,136,0.07);
+  --shadow-hover: 0 8px 24px rgba(13,148,136,0.1), 0 20px 56px rgba(13,148,136,0.12);
+  --accent: #14b8a6;
+  --accent2: #5eead4;
+  --radius: 14px;
+}
+body.dark {
+  --bg: #021a19;
+  --bg-card: #0a2725;
+  --bg-code: #0c2f2d;
+  --text: #ccfbf1;
+  --text-sub: #5eead4;
+  --primary: #14b8a6;
+  --primary-dark: #2dd4bf;
+  --primary-light: rgba(20,184,166,0.1);
+  --primary-glow: rgba(20,184,166,0.15);
+  --border: rgba(20,184,166,0.1);
+  --shadow: 0 2px 8px rgba(0,0,0,0.3), 0 12px 36px rgba(0,0,0,0.4);
+  --shadow-hover: 0 8px 24px rgba(20,184,166,0.12), 0 20px 56px rgba(0,0,0,0.5);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  color: var(--text);
+  transition: background 0.4s, color 0.4s;
+}
+body::before {
+  content: '';
+  position: fixed;
+  top: -100px; left: 50%;
+  width: 800px; height: 400px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(13,148,136,0.07) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+.top-bar {
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(20px);
+  background: rgba(240,253,250,0.85);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.4s;
+}
+body.dark .top-bar { background: rgba(2,26,25,0.88); }
+.top-bar h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.15rem; font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, var(--primary), #06b6d4);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.top-bar-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--bg-card);
+  color: var(--text); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s;
+}
+.icon-btn:hover { background: var(--primary-light); border-color: var(--primary); transform: translateY(-1px); }
+
+.container { max-width: 960px; margin: 0 auto; padding: 28px 20px; position: relative; z-index: 1; }
+
+.tabs {
+  display: flex; gap: 4px;
+  background: var(--bg-card);
+  border-radius: 12px; padding: 4px;
+  border: 1px solid var(--border);
+  margin-bottom: 24px; box-shadow: var(--shadow);
+}
+.tab-btn {
+  flex: 1; padding: 12px 20px;
+  border: none; border-radius: 10px;
+  background: transparent; color: var(--text-sub);
+  font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; transition: all 0.25s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--primary), #06b6d4);
+  color: white; box-shadow: 0 4px 16px rgba(13,148,136,0.3);
+}
+.tab-btn:not(.active):hover { background: var(--primary-light); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeSlide 0.3s ease-out; }
+@keyframes fadeSlide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.upload-area {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 40px 20px; text-align: center;
+  cursor: pointer; transition: all 0.3s;
+  background: var(--bg-card);
+}
+.upload-area:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+.upload-area.dragover { border-color: var(--primary); background: var(--primary-light); }
+.upload-area i { color: var(--primary); margin-bottom: 10px; }
+.upload-area p { color: var(--text-sub); font-size: 0.9rem; margin-top: 6px; }
+.upload-area .title { font-weight: 600; color: var(--text); font-size: 1rem; }
+.upload-area input { display: none; }
+
+.url-input-row {
+  display: flex; gap: 8px; margin-top: 16px;
+}
+.url-input-row input {
+  flex: 1; padding: 12px 16px;
+  border-radius: 10px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  transition: border 0.2s;
+}
+.url-input-row input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+
+.btn {
+  padding: 12px 24px; border-radius: 10px; border: none;
+  background: linear-gradient(135deg, var(--primary), #06b6d4);
+  color: white; font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; transition: all 0.25s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(13,148,136,0.25); }
+.btn:active { transform: translateY(0); }
+.btn-outline {
+  padding: 10px 20px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg-card);
+  color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-outline:hover { border-color: var(--primary); background: var(--primary-light); }
+
+.result-area {
+  display: none; margin-top: 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius); border: 1px solid var(--border);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.result-area.active { display: block; animation: fadeSlide 0.3s ease-out; }
+
+.result-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  font-weight: 600; font-size: 0.9rem;
+}
+.result-header .info { display: flex; align-items: center; gap: 8px; }
+.result-header .info i { color: var(--primary); }
+
+.result-preview {
+  padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.result-preview img {
+  max-width: 300px; max-height: 200px;
+  border-radius: 8px; object-fit: contain;
+  background: repeating-conic-gradient(#e5e5e5 0% 25%, transparent 0% 50%) 50%/14px 14px;
+}
+body.dark .result-preview img {
+  background: repeating-conic-gradient(#333 0% 25%, transparent 0% 50%) 50%/14px 14px;
+}
+
+.code-block {
+  margin: 0 20px 20px;
+  background: var(--bg-code);
+  border-radius: 10px; border: 1px solid var(--border);
+  overflow: hidden;
+}
+.code-block-header {
+  padding: 10px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8rem; color: var(--text-sub); font-weight: 500;
+}
+.code-block textarea {
+  width: 100%; min-height: 120px; padding: 16px;
+  border: none; background: transparent; color: var(--text);
+  font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+  resize: vertical; outline: none;
+}
+
+.badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.badge {
+  padding: 5px 12px; border-radius: 99px;
+  font-size: 0.78rem; font-weight: 500;
+  background: var(--primary-light); color: var(--primary-dark);
+}
+body.dark .badge { color: var(--accent); }
+
+.decode-input {
+  width: 100%; min-height: 140px; padding: 16px;
+  border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text);
+  font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+  resize: vertical; transition: border 0.2s;
+}
+.decode-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+
+.decode-result {
+  display: none; margin-top: 16px;
+  text-align: center;
+}
+.decode-result.active { display: block; animation: fadeSlide 0.3s ease-out; }
+.decode-result img {
+  max-width: 100%; max-height: 300px;
+  border-radius: 10px; box-shadow: var(--shadow);
+}
+
+.copy-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+  background: var(--primary); color: white;
+  padding: 12px 24px; border-radius: 12px;
+  font-weight: 600; font-size: 0.9rem;
+  box-shadow: 0 8px 32px rgba(13,148,136,0.3);
+  transition: transform 0.3s ease; z-index: 999;
+}
+.copy-toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1><i data-lucide="file-code-2" style="width:22px;height:22px"></i> Ảnh sang Base64</h1>
+  <div class="top-bar-actions">
+    <button class="icon-btn" id="darkToggle" title="Chế độ tối"><i data-lucide="moon" style="width:18px;height:18px"></i></button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('encode')"><i data-lucide="arrow-right-left" style="width:16px;height:16px"></i> Mã hóa (Encode)</button>
+    <button class="tab-btn" onclick="switchTab('decode')"><i data-lucide="undo-2" style="width:16px;height:16px"></i> Giải mã (Decode)</button>
+  </div>
+
+  <!-- ENCODE TAB -->
+  <div class="tab-content active" id="tab-encode">
+    <div class="upload-area" id="encUploadArea">
+      <i data-lucide="upload-cloud" style="width:44px;height:44px"></i>
+      <p class="title">Tải ảnh lên để chuyển Base64</p>
+      <p>Kéo thả hoặc nhấn chọn (PNG, JPG, WEBP, GIF, SVG)</p>
+      <input type="file" id="encFileInput" accept="image/*">
+    </div>
+
+    <div class="url-input-row">
+      <input type="text" id="urlInput" placeholder="Hoặc dán URL ảnh vào đây...">
+      <button class="btn" onclick="loadFromUrl()"><i data-lucide="link" style="width:16px;height:16px"></i> Tải</button>
+    </div>
+
+    <div class="result-area" id="encResult">
+      <div class="result-header">
+        <div class="info"><i data-lucide="check-circle" style="width:18px;height:18px"></i> Kết quả</div>
+        <div class="badges">
+          <span class="badge" id="encType">-</span>
+          <span class="badge" id="encSize">-</span>
+          <span class="badge" id="encB64Size">-</span>
+        </div>
+      </div>
+      <div class="result-preview">
+        <img id="encPreview" src="" alt="Preview">
+      </div>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span>Base64 String</span>
+          <button class="btn-outline" onclick="copyText('encBase64')"><i data-lucide="copy" style="width:14px;height:14px"></i> Copy</button>
+        </div>
+        <textarea id="encBase64" readonly></textarea>
+      </div>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span>HTML &lt;img&gt; tag</span>
+          <button class="btn-outline" onclick="copyText('encHtml')"><i data-lucide="copy" style="width:14px;height:14px"></i> Copy</button>
+        </div>
+        <textarea id="encHtml" readonly rows="2"></textarea>
+      </div>
+      <div class="code-block" style="margin-bottom:20px">
+        <div class="code-block-header">
+          <span>CSS background</span>
+          <button class="btn-outline" onclick="copyText('encCss')"><i data-lucide="copy" style="width:14px;height:14px"></i> Copy</button>
+        </div>
+        <textarea id="encCss" readonly rows="2"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- DECODE TAB -->
+  <div class="tab-content" id="tab-decode">
+    <p style="margin-bottom:12px;color:var(--text-sub);font-size:0.9rem;">Dán chuỗi Base64 hoặc Data URI vào bên dưới để giải mã thành ảnh:</p>
+    <textarea class="decode-input" id="decInput" placeholder="data:image/png;base64,iVBOR... hoặc chỉ chuỗi base64"></textarea>
+    <div style="margin-top:12px;display:flex;gap:8px;">
+      <button class="btn" onclick="decodeBase64()"><i data-lucide="image" style="width:16px;height:16px"></i> Giải mã</button>
+      <button class="btn-outline" onclick="downloadDecoded()"><i data-lucide="download" style="width:14px;height:14px"></i> Tải ảnh</button>
+    </div>
+    <div class="decode-result" id="decResult">
+      <img id="decPreview" src="" alt="Decoded">
+    </div>
+  </div>
+</div>
+
+<div class="copy-toast" id="toast">Đã sao chép!</div>
+
+<script>
+const encUploadArea = document.getElementById('encUploadArea');
+const encFileInput = document.getElementById('encFileInput');
+const encResult = document.getElementById('encResult');
+
+encUploadArea.addEventListener('click', () => encFileInput.click());
+encUploadArea.addEventListener('dragover', e => { e.preventDefault(); encUploadArea.classList.add('dragover'); });
+encUploadArea.addEventListener('dragleave', () => encUploadArea.classList.remove('dragover'));
+encUploadArea.addEventListener('drop', e => {
+  e.preventDefault(); encUploadArea.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) encodeFile(e.dataTransfer.files[0]);
+});
+encFileInput.addEventListener('change', e => { if (e.target.files[0]) encodeFile(e.target.files[0]); });
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (tab==='encode'?0:1)===i));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+}
+
+function encodeFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUri = e.target.result;
+    showEncodeResult(dataUri, file.type, file.size);
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadFromUrl() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) return;
+  fetch(url).then(r => r.blob()).then(blob => {
+    const reader = new FileReader();
+    reader.onload = e => showEncodeResult(e.target.result, blob.type, blob.size);
+    reader.readAsDataURL(blob);
+  }).catch(() => alert('Không thể tải ảnh. Kiểm tra URL hoặc CORS.'));
+}
+
+function showEncodeResult(dataUri, mimeType, originalSize) {
+  const base64Only = dataUri.split(',')[1];
+  document.getElementById('encPreview').src = dataUri;
+  document.getElementById('encBase64').value = base64Only;
+  document.getElementById('encHtml').value = `<img src="${dataUri}" alt="image">`;
+  document.getElementById('encCss').value = `background-image: url(${dataUri});`;
+  document.getElementById('encType').textContent = mimeType || 'unknown';
+  document.getElementById('encSize').textContent = formatSize(originalSize);
+  document.getElementById('encB64Size').textContent = 'Base64: ' + formatSize(base64Only.length);
+  encResult.classList.add('active');
+}
+
+function formatSize(bytes) {
+  if (bytes > 1048576) return (bytes/1048576).toFixed(1)+' MB';
+  if (bytes > 1024) return (bytes/1024).toFixed(1)+' KB';
+  return bytes+' B';
+}
+
+function decodeBase64() {
+  let val = document.getElementById('decInput').value.trim();
+  if (!val) return;
+  if (!val.startsWith('data:')) {
+    val = 'data:image/png;base64,' + val;
+  }
+  const img = document.getElementById('decPreview');
+  img.src = val;
+  img.onerror = () => alert('Chuỗi Base64 không hợp lệ.');
+  img.onload = () => {
+    document.getElementById('decResult').classList.add('active');
+  };
+}
+
+function downloadDecoded() {
+  const src = document.getElementById('decPreview').src;
+  if (!src) return;
+  const a = document.createElement('a');
+  a.href = src; a.download = 'decoded_image.png';
+  a.click();
+}
+
+function copyText(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.value).then(() => showToast());
+}
+
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// Dark mode
+if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+document.getElementById('darkToggle').addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+});
+
+lucide.createIcons();
+</script>
+</body>
+</html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ảnh sang PDF — Image to PDF</title>
+<meta name="description" content="Ghép nhiều ảnh thành một file PDF. Hỗ trợ kéo thả, sắp xếp, tùy chỉnh kích thước trang.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='14' fill='white'%3E🖼%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#eff6ff;--surface:#fff;--surface2:#eff6ff;--surface3:#dbeafe;
+  --border:#bfdbfe;--border2:#2563eb;
+  --text:#0f172a;--text2:#1e40af;--text3:#2563eb;--text-muted:#64748b;
+  --primary:#2563eb;--primary-hover:#1d4ed8;--primary-light:#dbeafe;
+  --accent:#8b5cf6;
+  --r:12px;--r2:16px;--r3:24px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.05);
+  --shadow2:0 4px 24px rgba(0,0,0,.1);
+  --font:'Plus Jakarta Sans',sans-serif;
+}
+.dark{
+  --bg:#0a1628;--surface:#152040;--surface2:#0a1628;--surface3:#1e3060;
+  --border:#1e3a6e;--border2:#3b82f6;
+  --text:#e2e8f0;--text2:#93c5fd;--text3:#60a5fa;--text-muted:#94a3b8;
+  --primary:#3b82f6;--primary-hover:#2563eb;--primary-light:#172554;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+  --shadow2:0 4px 24px rgba(0,0,0,.4);
+}
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding:24px;transition:background .3s,color .3s}
+
+.theme-toggle{
+  position:fixed;top:16px;right:16px;z-index:100;
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);transition:all .3s;color:var(--text)
+}
+.theme-toggle:hover{background:var(--surface3);border-color:var(--border2);transform:scale(1.05)}
+.theme-toggle svg{width:20px;height:20px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+
+.container{max-width:900px;margin:0 auto}
+.header{text-align:center;margin-bottom:28px;padding-top:20px}
+.header-icon{
+  width:60px;height:60px;border-radius:16px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:12px;box-shadow:0 4px 20px rgba(37,99,235,.3);
+}
+.header-icon svg{width:28px;height:28px;color:#fff}
+.header h1{font-size:1.6rem;font-weight:800;color:var(--text)}
+.header p{font-size:.85rem;color:var(--text-muted);margin-top:4px}
+
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r3);padding:24px;
+  box-shadow:var(--shadow2);margin-bottom:20px;
+}
+
+.upload-zone{
+  border:2px dashed var(--border);border-radius:var(--r2);
+  padding:48px 24px;text-align:center;cursor:pointer;
+  transition:all .3s;position:relative;
+}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--primary);background:var(--primary-light)}
+.upload-zone svg{width:48px;height:48px;color:var(--primary);margin-bottom:12px}
+.upload-zone h3{font-size:1.1rem;font-weight:600;margin-bottom:4px}
+.upload-zone p{font-size:.8rem;color:var(--text-muted)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+.options-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.option-group{flex:1;min-width:130px}
+.option-group label{display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.option-group select,.option-group input{
+  width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r);
+  background:var(--surface2);color:var(--text);font-family:var(--font);font-size:.9rem;
+}
+.option-group select:focus,.option-group input:focus{outline:none;border-color:var(--primary)}
+
+.btn{
+  padding:12px 24px;border:none;border-radius:var(--r);font-family:var(--font);
+  font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn svg{width:18px;height:18px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-secondary{background:var(--surface3);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--primary)}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-danger:hover{background:#dc2626}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+
+.image-list{margin-top:16px}
+.image-item{
+  display:flex;align-items:center;gap:12px;padding:10px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+  margin-bottom:8px;cursor:grab;transition:all .2s;
+}
+.image-item:hover{border-color:var(--primary)}
+.image-item.dragging{opacity:.4;border-style:dashed}
+.image-item.drag-over{border-color:var(--primary);background:var(--primary-light)}
+.image-item img{width:60px;height:60px;object-fit:cover;border-radius:8px;flex-shrink:0}
+.image-item-info{flex:1;min-width:0}
+.image-item-info .name{font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.image-item-info .meta{font-size:.75rem;color:var(--text-muted)}
+.image-item .grip{color:var(--text-muted);flex-shrink:0}
+.image-item .grip svg{width:18px;height:18px}
+.image-item .remove-img{
+  background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;flex-shrink:0;
+}
+.image-item .remove-img:hover{color:#ef4444}
+.image-item .remove-img svg{width:18px;height:18px}
+
+.preview-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:16px;
+}
+.preview-page{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+  overflow:hidden;text-align:center;
+}
+.preview-page img{width:100%;aspect-ratio:3/4;object-fit:contain;padding:8px;background:#f8fafc}
+.dark .preview-page img{background:#0a1628}
+.preview-page .page-label{padding:8px;font-size:.78rem;font-weight:600;color:var(--text-muted)}
+
+.count-badge{
+  display:inline-block;background:var(--primary);color:#fff;border-radius:20px;
+  padding:2px 10px;font-size:.78rem;font-weight:600;margin-left:8px;
+}
+
+.hidden{display:none}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease}
+
+@media(max-width:600px){
+  .options-row{flex-direction:column}
+  .preview-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+}
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+
+<div class="container">
+  <div class="header">
+    <div class="header-icon"><i data-lucide="image"></i></div>
+    <h1>Ảnh sang PDF</h1>
+    <p>Ghép nhiều ảnh thành một file PDF dễ dàng</p>
+  </div>
+
+  <div class="card">
+    <div class="upload-zone" id="uploadZone">
+      <i data-lucide="upload-cloud"></i>
+      <h3>Kéo thả ảnh vào đây</h3>
+      <p>Hỗ trợ JPG, PNG, WEBP — chọn nhiều ảnh cùng lúc</p>
+      <input type="file" accept="image/*" multiple id="fileInput">
+    </div>
+
+    <div id="imageList" class="image-list hidden"></div>
+
+    <div id="addMoreRow" class="hidden" style="margin-top:8px">
+      <button class="btn btn-secondary" onclick="document.getElementById('addMoreInput').click()">
+        <i data-lucide="plus"></i> Thêm ảnh
+      </button>
+      <button class="btn btn-danger" onclick="clearAll()" style="margin-left:8px">
+        <i data-lucide="trash-2"></i> Xóa tất cả
+      </button>
+      <input type="file" accept="image/*" multiple id="addMoreInput" style="display:none">
+    </div>
+  </div>
+
+  <div class="card" id="optionsCard" style="display:none">
+    <h3 style="margin-bottom:16px">Tùy chỉnh</h3>
+    <div class="options-row">
+      <div class="option-group">
+        <label>Kích thước trang</label>
+        <select id="pageSize">
+          <option value="a4">A4</option>
+          <option value="a3">A3</option>
+          <option value="letter">Letter</option>
+        </select>
+      </div>
+      <div class="option-group">
+        <label>Hướng trang</label>
+        <select id="orientation">
+          <option value="portrait">Dọc (Portrait)</option>
+          <option value="landscape">Ngang (Landscape)</option>
+        </select>
+      </div>
+      <div class="option-group">
+        <label>Căn ảnh</label>
+        <select id="fitMode">
+          <option value="fit">Vừa khung (Fit)</option>
+          <option value="fill">Lấp đầy (Fill)</option>
+          <option value="stretch">Kéo giãn (Stretch)</option>
+        </select>
+      </div>
+      <div class="option-group">
+        <label>Lề (mm)</label>
+        <input type="number" id="margin" value="10" min="0" max="50">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="createBtn" onclick="createPDF()">
+        <i data-lucide="file-down"></i> Tạo PDF
+      </button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="previewCard">
+    <h3>Xem trước</h3>
+    <div class="preview-grid" id="previewGrid"></div>
+  </div>
+</div>
+
+<script>
+var images=[];
+var dragSrcIndex=null;
+
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  localStorage.setItem('math-dark',document.body.classList.contains('dark'));
+  lucide.createIcons();
+}
+if(localStorage.getItem('math-dark')==='true') document.body.classList.add('dark');
+
+var uploadZone=document.getElementById('uploadZone');
+var fileInput=document.getElementById('fileInput');
+var addMoreInput=document.getElementById('addMoreInput');
+
+['dragover','dragenter'].forEach(function(evt){
+  uploadZone.addEventListener(evt,function(e){e.preventDefault();uploadZone.classList.add('dragover')});
+});
+['dragleave','drop'].forEach(function(evt){
+  uploadZone.addEventListener(evt,function(e){e.preventDefault();uploadZone.classList.remove('dragover')});
+});
+uploadZone.addEventListener('drop',function(e){
+  handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change',function(e){handleFiles(e.target.files)});
+addMoreInput.addEventListener('change',function(e){handleFiles(e.target.files);e.target.value=''});
+
+function handleFiles(files){
+  Array.from(files).forEach(function(f){
+    if(!f.type.startsWith('image/')) return;
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      var img=new Image();
+      img.onload=function(){
+        images.push({name:f.name,size:f.size,dataUrl:ev.target.result,width:img.width,height:img.height});
+        renderList();
+      };
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+function renderList(){
+  var list=document.getElementById('imageList');
+  list.textContent='';
+  if(images.length===0){
+    list.classList.add('hidden');
+    document.getElementById('addMoreRow').classList.add('hidden');
+    document.getElementById('optionsCard').style.display='none';
+    uploadZone.classList.remove('hidden');
+    return;
+  }
+  uploadZone.classList.add('hidden');
+  list.classList.remove('hidden');
+  document.getElementById('addMoreRow').classList.remove('hidden');
+  document.getElementById('optionsCard').style.display='';
+
+  images.forEach(function(im,idx){
+    var item=document.createElement('div');
+    item.className='image-item fade-in';
+    item.draggable=true;
+    item.setAttribute('data-index',idx);
+
+    item.addEventListener('dragstart',function(e){
+      dragSrcIndex=idx;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+    });
+    item.addEventListener('dragend',function(){item.classList.remove('dragging')});
+    item.addEventListener('dragover',function(e){e.preventDefault();item.classList.add('drag-over')});
+    item.addEventListener('dragleave',function(){item.classList.remove('drag-over')});
+    item.addEventListener('drop',function(e){
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      if(dragSrcIndex!==null && dragSrcIndex!==idx){
+        var moved=images.splice(dragSrcIndex,1)[0];
+        images.splice(idx,0,moved);
+        renderList();
+      }
+    });
+
+    var grip=document.createElement('span');
+    grip.className='grip';
+    var gripIcon=document.createElement('i');
+    gripIcon.setAttribute('data-lucide','grip-vertical');
+    grip.appendChild(gripIcon);
+    item.appendChild(grip);
+
+    var thumb=document.createElement('img');
+    thumb.src=im.dataUrl;
+    thumb.alt=im.name;
+    item.appendChild(thumb);
+
+    var info=document.createElement('div');
+    info.className='image-item-info';
+    var nameEl=document.createElement('div');
+    nameEl.className='name';
+    nameEl.textContent=im.name;
+    var metaEl=document.createElement('div');
+    metaEl.className='meta';
+    metaEl.textContent=(im.size/1024).toFixed(0)+' KB — '+im.width+'x'+im.height;
+    info.appendChild(nameEl);
+    info.appendChild(metaEl);
+    item.appendChild(info);
+
+    var removeBtn=document.createElement('button');
+    removeBtn.className='remove-img';
+    removeBtn.setAttribute('data-index',idx);
+    removeBtn.onclick=function(){images.splice(idx,1);renderList()};
+    var removeIcon=document.createElement('i');
+    removeIcon.setAttribute('data-lucide','x');
+    removeBtn.appendChild(removeIcon);
+    item.appendChild(removeBtn);
+
+    list.appendChild(item);
+  });
+  lucide.createIcons();
+}
+
+function clearAll(){
+  images=[];
+  renderList();
+  fileInput.value='';
+  document.getElementById('previewCard').classList.add('hidden');
+}
+
+async function createPDF(){
+  if(images.length===0) return;
+  var jsPDF=window.jspdf.jsPDF;
+  var pageSize=document.getElementById('pageSize').value;
+  var orientation=document.getElementById('orientation').value;
+  var fitMode=document.getElementById('fitMode').value;
+  var margin=parseFloat(document.getElementById('margin').value)||0;
+
+  var doc=new jsPDF({orientation:orientation,unit:'mm',format:pageSize});
+  var pw=doc.internal.pageSize.getWidth();
+  var ph=doc.internal.pageSize.getHeight();
+  var aw=pw-margin*2;
+  var ah=ph-margin*2;
+
+  var previewGrid=document.getElementById('previewGrid');
+  previewGrid.textContent='';
+  document.getElementById('previewCard').classList.remove('hidden');
+
+  for(var i=0;i<images.length;i++){
+    if(i>0) doc.addPage();
+    var im=images[i];
+    var iw=im.width;
+    var ih=im.height;
+    var x=margin,y=margin,w=aw,h=ah;
+
+    if(fitMode==='fit'){
+      var ratio=Math.min(aw/iw,ah/ih);
+      w=iw*ratio;
+      h=ih*ratio;
+      x=margin+(aw-w)/2;
+      y=margin+(ah-h)/2;
+    }else if(fitMode==='fill'){
+      var ratio2=Math.max(aw/iw,ah/ih);
+      w=iw*ratio2;
+      h=ih*ratio2;
+      x=margin+(aw-w)/2;
+      y=margin+(ah-h)/2;
+    }
+
+    doc.addImage(im.dataUrl,'JPEG',x,y,w,h);
+
+    var prevPage=document.createElement('div');
+    prevPage.className='preview-page fade-in';
+    var prevImg=document.createElement('img');
+    prevImg.src=im.dataUrl;
+    prevImg.alt='Trang '+(i+1);
+    prevPage.appendChild(prevImg);
+    var label=document.createElement('div');
+    label.className='page-label';
+    label.textContent='Trang '+(i+1);
+    prevPage.appendChild(label);
+    previewGrid.appendChild(prevPage);
+  }
+
+  doc.save('images-to-pdf.pdf');
+}
+
+lucide.createIcons();
+</script>
+</body>
+</html>

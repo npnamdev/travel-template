@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pomodoro Timer — Đồng Hồ Pomodoro</title>
+<meta name="description" content="Đồng hồ Pomodoro giúp bạn tập trung làm việc hiệu quả. 25 phút làm việc, 5 phút nghỉ ngắn, 15 phút nghỉ dài.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23dc2626'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white'%3E🍅%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#fef2f2;--surface:#fff;--surface2:#fef2f2;--surface3:#fee2e2;
+  --border:#fecaca;--border2:#f87171;
+  --text:#1c1917;--text2:#dc2626;--text3:#ef4444;--text-muted:#78716c;
+  --primary:#dc2626;--primary-hover:#b91c1c;--primary-light:#fca5a5;
+  --accent:#ea580c;--accent2:#f59e0b;
+  --r:12px;--r2:16px;--r3:24px;
+  --shadow:0 1px 3px rgba(220,38,38,.08),0 4px 16px rgba(220,38,38,.06);
+  --shadow2:0 4px 24px rgba(220,38,38,.12);
+  --font:'Nunito',sans-serif;
+  --mono:'Space Mono',monospace;
+}
+
+.dark{
+  --bg:#1a0a0a;--surface:#261212;--surface2:#2d1515;--surface3:#3d1c1c;
+  --border:#4a2020;--border2:#dc2626;
+  --text:#fef2f2;--text2:#fca5a5;--text3:#f87171;--text-muted:#a8a29e;
+  --primary:#ef4444;--primary-hover:#dc2626;--primary-light:#7f1d1d;
+  --accent:#fb923c;--accent2:#fbbf24;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  --shadow2:0 4px 24px rgba(0,0,0,.3);
+}
+
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;transition:background .3s,color .3s}
+
+.theme-toggle{
+  position:fixed;top:16px;right:16px;z-index:100;
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);transition:all .3s;color:var(--text)
+}
+.theme-toggle:hover{background:var(--surface2);border-color:var(--border2);transform:scale(1.05)}
+.theme-toggle svg{width:20px;height:20px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+
+.card{
+  width:100%;max-width:480px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r3);padding:32px;
+  box-shadow:var(--shadow2);
+}
+
+.header{text-align:center;margin-bottom:24px}
+.header-icon{
+  width:56px;height:56px;border-radius:16px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:12px;box-shadow:0 4px 16px rgba(220,38,38,.3);
+}
+.header-icon svg{width:28px;height:28px;color:#fff}
+.header h1{font-size:1.4rem;font-weight:800;color:var(--text);letter-spacing:-.3px}
+.header p{font-size:.85rem;color:var(--text-muted);margin-top:4px}
+
+.mode-tabs{display:flex;gap:6px;margin-bottom:28px;background:var(--surface2);border-radius:var(--r);padding:4px;border:1px solid var(--border)}
+.mode-tab{
+  flex:1;padding:10px 8px;border:none;background:transparent;
+  border-radius:10px;cursor:pointer;font-family:var(--font);
+  font-size:.8rem;font-weight:700;color:var(--text-muted);transition:all .2s;
+}
+.mode-tab.active{background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(220,38,38,.3)}
+.mode-tab:hover:not(.active){background:var(--surface3);color:var(--text)}
+
+.timer-container{display:flex;justify-content:center;margin-bottom:28px;position:relative}
+.timer-svg{width:240px;height:240px;transform:rotate(-90deg)}
+.timer-bg{fill:none;stroke:var(--surface3);stroke-width:8}
+.timer-progress{
+  fill:none;stroke:var(--primary);stroke-width:8;
+  stroke-linecap:round;transition:stroke .3s;
+}
+.timer-text{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;
+}
+.timer-time{font-family:var(--mono);font-size:3rem;font-weight:700;color:var(--text);line-height:1}
+.timer-label{font-size:.8rem;color:var(--text-muted);margin-top:4px;font-weight:600}
+
+.controls{display:flex;gap:10px;justify-content:center;margin-bottom:24px}
+.btn{
+  padding:12px 24px;border:none;border-radius:var(--r);cursor:pointer;
+  font-family:var(--font);font-size:.9rem;font-weight:700;
+  transition:all .2s;display:flex;align-items:center;gap:8px;
+}
+.btn svg{width:18px;height:18px}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 2px 12px rgba(220,38,38,.3)}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px);box-shadow:0 4px 16px rgba(220,38,38,.4)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--surface3);border-color:var(--border2)}
+
+.sessions{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-bottom:20px;
+}
+.session-dot{
+  width:16px;height:16px;border-radius:50%;border:2px solid var(--border2);
+  transition:all .3s;
+}
+.session-dot.completed{background:var(--primary);border-color:var(--primary);box-shadow:0 0 8px rgba(220,38,38,.4)}
+.session-label{font-size:.8rem;color:var(--text-muted);font-weight:600;margin-left:8px}
+
+.settings-toggle{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  cursor:pointer;font-size:.8rem;color:var(--text-muted);font-weight:600;
+  padding:8px;border:none;background:none;font-family:var(--font);width:100%;
+  transition:color .2s;
+}
+.settings-toggle:hover{color:var(--text)}
+.settings-toggle svg{width:16px;height:16px}
+.settings-panel{
+  display:none;margin-top:16px;padding:16px;background:var(--surface2);
+  border-radius:var(--r2);border:1px solid var(--border);
+}
+.settings-panel.open{display:block}
+.setting-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.setting-row:last-child{margin-bottom:0}
+.setting-row label{font-size:.8rem;font-weight:600;color:var(--text)}
+.setting-row input{
+  width:72px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface);color:var(--text);font-family:var(--mono);
+  font-size:.85rem;text-align:center;
+}
+.setting-row input:focus{outline:none;border-color:var(--primary)}
+
+@keyframes celebrate{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.05)}
+  100%{transform:scale(1)}
+}
+.celebrate .timer-svg{animation:celebrate .5s ease 3}
+
+@keyframes pulse-ring{
+  0%{transform:rotate(-90deg) scale(1);opacity:1}
+  100%{transform:rotate(-90deg) scale(1.15);opacity:0}
+}
+.pulse-ring{display:none}
+.celebrate .pulse-ring{display:block;animation:pulse-ring 1s ease-out 3}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleDark()" aria-label="Đổi giao diện">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+
+<div class="card">
+  <div class="header">
+    <div class="header-icon"><i data-lucide="timer"></i></div>
+    <h1>Đồng Hồ Pomodoro</h1>
+    <p>Tập trung làm việc hiệu quả hơn</p>
+  </div>
+
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="setMode('work')">Làm việc</button>
+    <button class="mode-tab" onclick="setMode('short')">Nghỉ ngắn</button>
+    <button class="mode-tab" onclick="setMode('long')">Nghỉ dài</button>
+  </div>
+
+  <div class="timer-container" id="timerContainer">
+    <svg class="timer-svg" viewBox="0 0 200 200">
+      <circle class="timer-bg" cx="100" cy="100" r="88"/>
+      <circle class="pulse-ring" cx="100" cy="100" r="88" fill="none" stroke="var(--primary)" stroke-width="4" opacity=".3"/>
+      <circle class="timer-progress" id="timerProgress" cx="100" cy="100" r="88"
+        stroke-dasharray="553" stroke-dashoffset="0"/>
+    </svg>
+    <div class="timer-text">
+      <div class="timer-time" id="timerDisplay">25:00</div>
+      <div class="timer-label" id="timerLabel">Sẵn sàng</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-primary" id="btnStart" onclick="toggleTimer()">
+      <i data-lucide="play" id="btnIcon"></i> <span id="btnText">Bắt đầu</span>
+    </button>
+    <button class="btn btn-secondary" onclick="resetTimer()">
+      <i data-lucide="rotate-ccw"></i> Đặt lại
+    </button>
+  </div>
+
+  <div class="sessions">
+    <div class="session-dot" id="dot0"></div>
+    <div class="session-dot" id="dot1"></div>
+    <div class="session-dot" id="dot2"></div>
+    <div class="session-dot" id="dot3"></div>
+    <span class="session-label" id="sessionLabel">0 / 4 phiên</span>
+  </div>
+
+  <button class="settings-toggle" onclick="toggleSettings()">
+    <i data-lucide="settings"></i> Cài đặt thời gian
+  </button>
+  <div class="settings-panel" id="settingsPanel">
+    <div class="setting-row">
+      <label>Làm việc (phút)</label>
+      <input type="number" id="setWork" value="25" min="1" max="120" onchange="updateSettings()">
+    </div>
+    <div class="setting-row">
+      <label>Nghỉ ngắn (phút)</label>
+      <input type="number" id="setShort" value="5" min="1" max="30" onchange="updateSettings()">
+    </div>
+    <div class="setting-row">
+      <label>Nghỉ dài (phút)</label>
+      <input type="number" id="setLong" value="15" min="1" max="60" onchange="updateSettings()">
+    </div>
+  </div>
+</div>
+
+<script>
+const CIRCUMFERENCE = 2 * Math.PI * 88;
+let durations = { work: 25*60, short: 5*60, long: 15*60 };
+let currentMode = 'work';
+let timeLeft = durations.work;
+let totalTime = durations.work;
+let running = false;
+let interval = null;
+let sessions = 0;
+
+const progress = document.getElementById('timerProgress');
+const displayEl = document.getElementById('timerDisplay');
+const labelEl = document.getElementById('timerLabel');
+const btnIcon = document.getElementById('btnIcon');
+const btnText = document.getElementById('btnText');
+const container = document.getElementById('timerContainer');
+
+progress.style.strokeDasharray = CIRCUMFERENCE;
+progress.style.strokeDashoffset = '0';
+
+function formatTime(s){
+  const m = Math.floor(s/60);
+  const sec = s%60;
+  return String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+}
+
+function updateDisplay(){
+  displayEl.textContent = formatTime(timeLeft);
+  const fraction = 1 - timeLeft / totalTime;
+  progress.style.strokeDashoffset = String(fraction * CIRCUMFERENCE);
+  document.title = formatTime(timeLeft) + ' — Pomodoro';
+}
+
+function updateBtnUI(iconName, text){
+  btnIcon.setAttribute('data-lucide', iconName);
+  btnText.textContent = text;
+  lucide.createIcons();
+}
+
+function setMode(mode){
+  currentMode = mode;
+  if(running){ clearInterval(interval); running = false; }
+  timeLeft = durations[mode];
+  totalTime = durations[mode];
+  var labels = {work:'Làm việc',short:'Nghỉ ngắn',long:'Nghỉ dài'};
+  labelEl.textContent = labels[mode];
+  updateBtnUI('play', 'Bắt đầu');
+  updateDisplay();
+  document.querySelectorAll('.mode-tab').forEach(function(t,i){
+    var modes = ['work','short','long'];
+    t.classList.toggle('active', modes[i]===mode);
+  });
+  container.classList.remove('celebrate');
+}
+
+function toggleTimer(){
+  if(running){
+    clearInterval(interval);
+    running = false;
+    labelEl.textContent = 'Tạm dừng';
+    updateBtnUI('play', 'Tiếp tục');
+  } else {
+    running = true;
+    var modeLabels = {work:'Đang làm việc...',short:'Đang nghỉ ngắn...',long:'Đang nghỉ dài...'};
+    labelEl.textContent = modeLabels[currentMode];
+    updateBtnUI('pause', 'Tạm dừng');
+    interval = setInterval(function(){
+      timeLeft--;
+      updateDisplay();
+      if(timeLeft <= 0){
+        clearInterval(interval);
+        running = false;
+        onComplete();
+      }
+    }, 1000);
+  }
+}
+
+function resetTimer(){
+  if(running) clearInterval(interval);
+  running = false;
+  timeLeft = durations[currentMode];
+  totalTime = durations[currentMode];
+  labelEl.textContent = 'Sẵn sàng';
+  updateBtnUI('play', 'Bắt đầu');
+  updateDisplay();
+  container.classList.remove('celebrate');
+}
+
+function onComplete(){
+  playBeep();
+  container.classList.add('celebrate');
+  if(currentMode === 'work'){
+    sessions++;
+    updateSessions();
+    labelEl.textContent = 'Hoàn thành!';
+    updateBtnUI('play', 'Bắt đầu');
+    setTimeout(function(){
+      if(sessions % 4 === 0) setMode('long');
+      else setMode('short');
+    }, 2000);
+  } else {
+    labelEl.textContent = 'Nghỉ xong!';
+    updateBtnUI('play', 'Bắt đầu');
+    setTimeout(function(){ setMode('work'); }, 2000);
+  }
+}
+
+function updateSessions(){
+  for(var i=0;i<4;i++){
+    var filled = i < (sessions % 4 === 0 && sessions > 0 ? 4 : sessions % 4);
+    document.getElementById('dot'+i).classList.toggle('completed', filled);
+  }
+  if(sessions % 4 === 0 && sessions > 0){
+    setTimeout(function(){
+      for(var i=0;i<4;i++) document.getElementById('dot'+i).classList.remove('completed');
+    }, 2000);
+  }
+  document.getElementById('sessionLabel').textContent = sessions + ' phiên hoàn thành';
+}
+
+function playBeep(){
+  try{
+    var ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [0, 200, 400].forEach(function(delay){
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 800;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + delay/1000);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + delay/1000 + 0.15);
+      osc.start(ctx.currentTime + delay/1000);
+      osc.stop(ctx.currentTime + delay/1000 + 0.15);
+    });
+  }catch(e){}
+}
+
+function toggleSettings(){
+  document.getElementById('settingsPanel').classList.toggle('open');
+}
+
+function updateSettings(){
+  var w = parseInt(document.getElementById('setWork').value)||25;
+  var s = parseInt(document.getElementById('setShort').value)||5;
+  var l = parseInt(document.getElementById('setLong').value)||15;
+  durations = {work:w*60,short:s*60,long:l*60};
+  if(!running) {
+    timeLeft = durations[currentMode];
+    totalTime = durations[currentMode];
+    updateDisplay();
+  }
+}
+
+function toggleDark(){
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('math-dark', document.documentElement.classList.contains('dark'));
+}
+if(localStorage.getItem('math-dark')==='true') document.documentElement.classList.add('dark');
+
+updateDisplay();
+lucide.createIcons();
+</script>
+</body>
+</html>

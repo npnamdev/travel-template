@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tạo Hash — Hash Generator</title>
+<meta name="description" content="Tạo MD5, SHA-1, SHA-256, SHA-512 hash từ văn bản hoặc file.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e7490'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white'%3E🔐%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inconsolata:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#ecfeff;--surface:#fff;--surface2:#cffafe;--surface3:#a5f3fc;
+  --border:#67e8f9;--border2:#22d3ee;
+  --text:#083344;--text2:#155e75;--text3:#0e7490;--text-muted:#64748b;
+  --primary:#0e7490;--primary-hover:#0c4a6e;--primary-light:#67e8f9;
+  --accent:#8b5cf6;
+  --r:12px;--r2:16px;--r3:20px;
+  --shadow:0 1px 3px rgba(14,116,144,.08),0 4px 16px rgba(14,116,144,.06);
+  --shadow2:0 4px 24px rgba(14,116,144,.12);
+  --font:'Outfit',sans-serif;--mono:'Inconsolata',monospace;
+}
+.dark{
+  --bg:#051a22;--surface:#0a2533;--surface2:#0d3040;--surface3:#114050;
+  --border:#164e63;--border2:#0e7490;
+  --text:#cffafe;--text2:#67e8f9;--text3:#22d3ee;--text-muted:#94a3b8;
+  --primary:#22d3ee;--primary-hover:#06b6d4;--primary-light:#164e63;
+  --accent:#a78bfa;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  --shadow2:0 4px 24px rgba(0,0,0,.3);
+}
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;transition:background .3s,color .3s}
+
+.theme-toggle{
+  position:fixed;top:16px;right:16px;z-index:100;
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);transition:all .3s;color:var(--text)
+}
+.theme-toggle:hover{background:var(--surface2);transform:scale(1.05)}
+.theme-toggle svg{width:20px;height:20px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+
+.card{width:100%;max-width:680px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:32px;box-shadow:var(--shadow2)}
+
+.header{text-align:center;margin-bottom:28px}
+.header-icon{
+  width:64px;height:64px;border-radius:18px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:12px;box-shadow:0 4px 20px rgba(14,116,144,.3);
+}
+.header-icon svg{width:32px;height:32px;color:#fff}
+.header h1{font-size:1.6rem;font-weight:700}
+.header p{font-size:.85rem;color:var(--text-muted);margin-top:4px}
+
+.btn{
+  padding:10px 18px;border:none;border-radius:var(--r);font-family:var(--font);font-weight:600;
+  font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .2s;
+}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--text-muted);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface2)}
+.btn-sm{padding:6px 10px;font-size:.75rem}
+
+.section{margin-bottom:24px}
+.section h3{font-size:.95rem;font-weight:600;margin-bottom:10px;color:var(--text2)}
+
+textarea{
+  width:100%;min-height:80px;padding:14px;border:1px solid var(--border);border-radius:var(--r);
+  background:var(--surface2);color:var(--text);font-family:var(--font);font-size:.9rem;
+  outline:none;resize:vertical;transition:border-color .2s;
+}
+textarea:focus{border-color:var(--primary)}
+
+.hash-grid{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.hash-item{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+  padding:14px;transition:all .2s;
+}
+.hash-item:hover{border-color:var(--border2)}
+.hash-label{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;
+}
+.hash-type{font-size:.8rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px}
+.hash-value{
+  font-family:var(--mono);font-size:.78rem;color:var(--text);word-break:break-all;
+  line-height:1.6;user-select:all;
+}
+.hash-value.empty{color:var(--text-muted);font-style:italic}
+
+.file-upload{
+  border:2px dashed var(--border);border-radius:var(--r);padding:24px;text-align:center;
+  cursor:pointer;transition:all .2s;background:var(--surface2);
+}
+.file-upload:hover{border-color:var(--primary);background:var(--surface3)}
+.file-upload i{margin-bottom:8px}
+.file-upload p{font-size:.85rem;color:var(--text-muted)}
+.file-upload input{display:none}
+.file-name{font-size:.85rem;color:var(--text2);font-weight:600;margin-top:8px}
+
+.compare-section{margin-top:24px}
+.compare-row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.compare-row input{
+  flex:1;min-width:150px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r);
+  background:var(--surface2);color:var(--text);font-family:var(--mono);font-size:.8rem;
+  outline:none;
+}
+.compare-row input:focus{border-color:var(--primary)}
+.compare-result{
+  padding:10px 16px;border-radius:var(--r);font-size:.85rem;font-weight:600;text-align:center;
+  display:none;
+}
+.compare-result.match{display:block;background:#dcfce7;color:#166534;border:1px solid #86efac}
+.compare-result.no-match{display:block;background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.dark .compare-result.match{background:#14532d;color:#86efac;border-color:#166534}
+.dark .compare-result.no-match{background:#450a0a;color:#fca5a5;border-color:#7f1d1d}
+
+.copy-toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--primary);color:#fff;padding:10px 20px;border-radius:var(--r);
+  font-size:.85rem;font-weight:600;transition:transform .3s;z-index:200;
+}
+.copy-toast.show{transform:translateX(-50%) translateY(0)}
+
+@media(max-width:500px){
+  .compare-row{flex-direction:column}
+}
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleDark()">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+
+<div class="card">
+  <div class="header">
+    <div class="header-icon"><i data-lucide="shield-check"></i></div>
+    <h1>Tạo Hash</h1>
+    <p>MD5, SHA-1, SHA-256, SHA-512 từ văn bản hoặc file</p>
+  </div>
+
+  <div class="section">
+    <h3>Nhập văn bản</h3>
+    <textarea id="textInput" placeholder="Nhập văn bản cần tạo hash..." oninput="generateHashes()"></textarea>
+  </div>
+
+  <div class="section">
+    <h3>Kết quả Hash</h3>
+    <div class="hash-grid" id="hashGrid">
+      <div class="hash-item" id="md5Item">
+        <div class="hash-label"><span class="hash-type">MD5</span><button class="btn btn-ghost btn-sm" onclick="copyHash('md5')"><i data-lucide="copy" style="width:12px;height:12px"></i></button></div>
+        <div class="hash-value empty" id="md5Value">Nhập văn bản để tạo hash...</div>
+      </div>
+      <div class="hash-item" id="sha1Item">
+        <div class="hash-label"><span class="hash-type">SHA-1</span><button class="btn btn-ghost btn-sm" onclick="copyHash('sha1')"><i data-lucide="copy" style="width:12px;height:12px"></i></button></div>
+        <div class="hash-value empty" id="sha1Value">Nhập văn bản để tạo hash...</div>
+      </div>
+      <div class="hash-item" id="sha256Item">
+        <div class="hash-label"><span class="hash-type">SHA-256</span><button class="btn btn-ghost btn-sm" onclick="copyHash('sha256')"><i data-lucide="copy" style="width:12px;height:12px"></i></button></div>
+        <div class="hash-value empty" id="sha256Value">Nhập văn bản để tạo hash...</div>
+      </div>
+      <div class="hash-item" id="sha512Item">
+        <div class="hash-label"><span class="hash-type">SHA-512</span><button class="btn btn-ghost btn-sm" onclick="copyHash('sha512')"><i data-lucide="copy" style="width:12px;height:12px"></i></button></div>
+        <div class="hash-value empty" id="sha512Value">Nhập văn bản để tạo hash...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Hash từ file</h3>
+    <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+      <i data-lucide="upload" style="width:24px;height:24px;color:var(--text-muted)"></i>
+      <p>Nhấn để chọn file hoặc kéo thả</p>
+      <input type="file" id="fileInput" onchange="hashFile(this)">
+      <div class="file-name" id="fileName"></div>
+    </div>
+    <div class="hash-grid" id="fileHashGrid" style="display:none">
+      <div class="hash-item"><div class="hash-label"><span class="hash-type">SHA-256 (file)</span><button class="btn btn-ghost btn-sm" onclick="copyFileHash()"><i data-lucide="copy" style="width:12px;height:12px"></i></button></div><div class="hash-value" id="fileSha256"></div></div>
+    </div>
+  </div>
+
+  <div class="compare-section">
+    <h3>So sánh Hash</h3>
+    <div class="compare-row">
+      <input type="text" id="hash1" placeholder="Hash 1..." oninput="compareHashes()">
+      <input type="text" id="hash2" placeholder="Hash 2..." oninput="compareHashes()">
+    </div>
+    <div class="compare-result" id="compareResult"></div>
+  </div>
+</div>
+
+<div class="copy-toast" id="copyToast">Đã sao chép!</div>
+
+<script>
+function toggleDark(){
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('math-dark',document.documentElement.classList.contains('dark'));
+  lucide.createIcons();
+}
+if(localStorage.getItem('math-dark')==='true') document.documentElement.classList.add('dark');
+
+function showToast(){
+  const t=document.getElementById('copyToast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// MD5 implementation
+function md5(string){
+  function rotl(v,n){return(v<<n)|(v>>>(32-n))}
+  function cmn(q,a,b,x,s,t){a=((a+q)&0xFFFFFFFF);a=((a+x)&0xFFFFFFFF);a=((a+t)&0xFFFFFFFF);return((rotl(a,s)+b)&0xFFFFFFFF)}
+  function ff(a,b,c,d,x,s,t){return cmn((b&c)|((~b)&d),a,b,x,s,t)}
+  function gg(a,b,c,d,x,s,t){return cmn((b&d)|(c&(~d)),a,b,x,s,t)}
+  function hh(a,b,c,d,x,s,t){return cmn(b^c^d,a,b,x,s,t)}
+  function ii(a,b,c,d,x,s,t){return cmn(c^(b|(~d)),a,b,x,s,t)}
+
+  const bytes=new TextEncoder().encode(string);
+  let n=bytes.length;
+  let tail=[0x80];
+  let padLen=(55-n%64+64)%64;
+  for(let i=0;i<padLen;i++) tail.push(0);
+  let bits=n*8;
+  tail.push(bits&0xff,(bits>>>8)&0xff,(bits>>>16)&0xff,(bits>>>24)&0xff,0,0,0,0);
+
+  const buf=new Uint8Array(n+tail.length);
+  buf.set(bytes);buf.set(tail,n);
+
+  let a=0x67452301,b=0xefcdab89,c=0x98badcfe,d=0x10325476;
+
+  for(let i=0;i<buf.length;i+=64){
+    const w=[];
+    for(let j=0;j<16;j++){
+      w[j]=buf[i+j*4]|(buf[i+j*4+1]<<8)|(buf[i+j*4+2]<<16)|(buf[i+j*4+3]<<24);
+    }
+    let aa=a,bb=b,cc=c,dd=d;
+
+    a=ff(a,b,c,d,w[0],7,-680876936);d=ff(d,a,b,c,w[1],12,-389564586);c=ff(c,d,a,b,w[2],17,606105819);b=ff(b,c,d,a,w[3],22,-1044525330);
+    a=ff(a,b,c,d,w[4],7,-176418897);d=ff(d,a,b,c,w[5],12,1200080426);c=ff(c,d,a,b,w[6],17,-1473231341);b=ff(b,c,d,a,w[7],22,-45705983);
+    a=ff(a,b,c,d,w[8],7,1770035416);d=ff(d,a,b,c,w[9],12,-1958414417);c=ff(c,d,a,b,w[10],17,-42063);b=ff(b,c,d,a,w[11],22,-1990404162);
+    a=ff(a,b,c,d,w[12],7,1804603682);d=ff(d,a,b,c,w[13],12,-40341101);c=ff(c,d,a,b,w[14],17,-1502002290);b=ff(b,c,d,a,w[15],22,1236535329);
+
+    a=gg(a,b,c,d,w[1],5,-165796510);d=gg(d,a,b,c,w[6],9,-1069501632);c=gg(c,d,a,b,w[11],14,643717713);b=gg(b,c,d,a,w[0],20,-373897302);
+    a=gg(a,b,c,d,w[5],5,-701558691);d=gg(d,a,b,c,w[10],9,38016083);c=gg(c,d,a,b,w[15],14,-660478335);b=gg(b,c,d,a,w[4],20,-405537848);
+    a=gg(a,b,c,d,w[9],5,568446438);d=gg(d,a,b,c,w[14],9,-1019803690);c=gg(c,d,a,b,w[3],14,-187363961);b=gg(b,c,d,a,w[8],20,1163531501);
+    a=gg(a,b,c,d,w[13],5,-1444681467);d=gg(d,a,b,c,w[2],9,-51403784);c=gg(c,d,a,b,w[7],14,1735328473);b=gg(b,c,d,a,w[12],20,-1926607734);
+
+    a=hh(a,b,c,d,w[5],4,-378558);d=hh(d,a,b,c,w[8],11,-2022574463);c=hh(c,d,a,b,w[11],16,1839030562);b=hh(b,c,d,a,w[14],23,-35309556);
+    a=hh(a,b,c,d,w[1],4,-1530992060);d=hh(d,a,b,c,w[4],11,1272893353);c=hh(c,d,a,b,w[7],16,-155497632);b=hh(b,c,d,a,w[10],23,-1094730640);
+    a=hh(a,b,c,d,w[13],4,681279174);d=hh(d,a,b,c,w[0],11,-358537222);c=hh(c,d,a,b,w[3],16,-722521979);b=hh(b,c,d,a,w[6],23,76029189);
+    a=hh(a,b,c,d,w[9],4,-640364487);d=hh(d,a,b,c,w[12],11,-421815835);c=hh(c,d,a,b,w[15],16,530742520);b=hh(b,c,d,a,w[2],23,-995338651);
+
+    a=ii(a,b,c,d,w[0],6,-198630844);d=ii(d,a,b,c,w[7],10,1126891415);c=ii(c,d,a,b,w[14],15,-1416354905);b=ii(b,c,d,a,w[5],21,-57434055);
+    a=ii(a,b,c,d,w[12],6,1700485571);d=ii(d,a,b,c,w[3],10,-1894986606);c=ii(c,d,a,b,w[10],15,-1051523);b=ii(b,c,d,a,w[1],21,-2054922799);
+    a=ii(a,b,c,d,w[8],6,1873313359);d=ii(d,a,b,c,w[15],10,-30611744);c=ii(c,d,a,b,w[6],15,-1560198380);b=ii(b,c,d,a,w[13],21,1309151649);
+    a=ii(a,b,c,d,w[4],6,-145523070);d=ii(d,a,b,c,w[11],10,-1120210379);c=ii(c,d,a,b,w[2],15,718787259);b=ii(b,c,d,a,w[9],21,-343485551);
+
+    a=(a+aa)>>>0;b=(b+bb)>>>0;c=(c+cc)>>>0;d=(d+dd)>>>0;
+  }
+
+  function hex(n){let s='';for(let i=0;i<4;i++)s+=('0'+((n>>(i*8))&0xff).toString(16)).slice(-2);return s}
+  return hex(a)+hex(b)+hex(c)+hex(d);
+}
+
+async function sha(algo,data){
+  const buf=typeof data==='string'?new TextEncoder().encode(data):data;
+  const hash=await crypto.subtle.digest(algo,buf);
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+let hashes={md5:'',sha1:'',sha256:'',sha512:''};
+
+async function generateHashes(){
+  const text=document.getElementById('textInput').value;
+  if(!text){
+    ['md5','sha1','sha256','sha512'].forEach(t=>{
+      const el=document.getElementById(t+'Value');
+      el.textContent='Nhập văn bản để tạo hash...';
+      el.classList.add('empty');
+    });
+    hashes={md5:'',sha1:'',sha256:'',sha512:''};
+    return;
+  }
+  hashes.md5=md5(text);
+  hashes.sha1=await sha('SHA-1',text);
+  hashes.sha256=await sha('SHA-256',text);
+  hashes.sha512=await sha('SHA-512',text);
+
+  ['md5','sha1','sha256','sha512'].forEach(t=>{
+    const el=document.getElementById(t+'Value');
+    el.textContent=hashes[t];
+    el.classList.remove('empty');
+  });
+}
+
+function copyHash(type){
+  if(hashes[type]){
+    navigator.clipboard.writeText(hashes[type]).then(showToast);
+  }
+}
+
+let fileHash='';
+async function hashFile(input){
+  const file=input.files[0];
+  if(!file) return;
+  document.getElementById('fileName').textContent=file.name+' ('+formatSize(file.size)+')';
+  document.getElementById('fileHashGrid').style.display='flex';
+
+  const buf=await file.arrayBuffer();
+  fileHash=await sha('SHA-256',buf);
+  document.getElementById('fileSha256').textContent=fileHash;
+}
+
+function copyFileHash(){
+  if(fileHash) navigator.clipboard.writeText(fileHash).then(showToast);
+}
+
+function formatSize(bytes){
+  if(bytes<1024) return bytes+' B';
+  if(bytes<1048576) return (bytes/1024).toFixed(1)+' KB';
+  return (bytes/1048576).toFixed(1)+' MB';
+}
+
+function compareHashes(){
+  const h1=document.getElementById('hash1').value.trim().toLowerCase();
+  const h2=document.getElementById('hash2').value.trim().toLowerCase();
+  const el=document.getElementById('compareResult');
+  if(!h1||!h2){el.style.display='none';el.className='compare-result';return}
+  if(h1===h2){
+    el.textContent='Hai hash giống nhau!';
+    el.className='compare-result match';
+  }else{
+    el.textContent='Hai hash khác nhau!';
+    el.className='compare-result no-match';
+  }
+}
+
+// File drag and drop
+const uploadArea=document.querySelector('.file-upload');
+uploadArea.addEventListener('dragover',e=>{e.preventDefault();uploadArea.style.borderColor='var(--primary)'});
+uploadArea.addEventListener('dragleave',()=>{uploadArea.style.borderColor=''});
+uploadArea.addEventListener('drop',e=>{
+  e.preventDefault();uploadArea.style.borderColor='';
+  const fi=document.getElementById('fileInput');
+  fi.files=e.dataTransfer.files;
+  hashFile(fi);
+});
+
+lucide.createIcons();
+</script>
+</body>
+</html>

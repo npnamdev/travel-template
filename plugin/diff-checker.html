@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>So Sánh Văn Bản — Diff Checker</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #eef0ff;
+      --bg-card: #fff;
+      --text: #1e1b4b;
+      --text-sub: #6b7280;
+      --primary: #4f46e5;
+      --primary-light: rgba(79,70,229,0.08);
+      --primary-glow: rgba(79,70,229,0.15);
+      --border: rgba(79,70,229,0.1);
+      --shadow: 0 1px 3px rgba(79,70,229,0.04), 0 8px 32px rgba(79,70,229,0.06);
+      --added-bg: rgba(34,197,94,0.12);
+      --added-text: #15803d;
+      --removed-bg: rgba(239,68,68,0.12);
+      --removed-text: #dc2626;
+      --unchanged-text: #9ca3af;
+    }
+    body.dark {
+      --bg: #0c0a1a;
+      --bg-card: #16132e;
+      --text: #e0e7ff;
+      --text-sub: #8b86b0;
+      --primary: #818cf8;
+      --primary-light: rgba(129,140,248,0.1);
+      --primary-glow: rgba(129,140,248,0.12);
+      --border: rgba(129,140,248,0.08);
+      --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.3);
+      --added-bg: rgba(34,197,94,0.15);
+      --added-text: #4ade80;
+      --removed-bg: rgba(239,68,68,0.15);
+      --removed-text: #f87171;
+      --unchanged-text: #6b7280;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px; right: -200px;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(79,70,229,0.08) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    .header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .header h1 i { color: var(--primary); }
+    .header p { color: var(--text-sub); margin-top: 0.25rem; font-size: 0.95rem; }
+    .dark-toggle {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      color: var(--text);
+      box-shadow: var(--shadow);
+      transition: all 0.3s;
+    }
+    .dark-toggle:hover { transform: scale(1.1); }
+    .editors {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 768px) {
+      .editors { grid-template-columns: 1fr; }
+      .header h1 { font-size: 1.4rem; }
+    }
+    .editor-box {
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .editor-label {
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--primary);
+    }
+    textarea {
+      width: 100%;
+      min-height: 220px;
+      padding: 1rem;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-family: 'Space Grotesk', monospace;
+      font-size: 0.9rem;
+      resize: vertical;
+      outline: none;
+    }
+    textarea::placeholder { color: var(--text-sub); opacity: 0.6; }
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.5rem;
+      border-radius: 12px;
+      border: none;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(79,70,229,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(79,70,229,0.4); }
+    .btn-secondary {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--primary-glow); }
+    .stats {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .stat {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 0.75rem 1.25rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .stat.added { color: var(--added-text); }
+    .stat.removed { color: var(--removed-text); }
+    .stat.unchanged { color: var(--unchanged-text); }
+    .result-box {
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .result-header {
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .diff-output {
+      padding: 0;
+      font-family: 'Space Grotesk', monospace;
+      font-size: 0.85rem;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    .diff-line {
+      display: flex;
+      padding: 0.15rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .diff-line.added { background: var(--added-bg); color: var(--added-text); }
+    .diff-line.removed { background: var(--removed-bg); color: var(--removed-text); }
+    .diff-line.unchanged { color: var(--unchanged-text); }
+    .line-num {
+      min-width: 60px;
+      display: flex;
+      gap: 0.5rem;
+      opacity: 0.6;
+      user-select: none;
+      font-size: 0.8rem;
+    }
+    .line-num span { min-width: 25px; text-align: right; }
+    .line-content { flex: 1; white-space: pre-wrap; word-break: break-all; padding-left: 0.75rem; }
+    .line-prefix { font-weight: 700; min-width: 1rem; }
+    .empty-state {
+      padding: 3rem;
+      text-align: center;
+      color: var(--text-sub);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1><i data-lucide="file-diff"></i> So Sánh Văn Bản</h1>
+        <p>Diff Checker -- So sánh sự khác biệt giữa hai đoạn văn bản</p>
+      </div>
+      <button class="dark-toggle" onclick="toggleDark()" title="Chuyển giao diện">
+        <i data-lucide="moon"></i>
+      </button>
+    </div>
+
+    <div class="editors">
+      <div class="editor-box">
+        <div class="editor-label"><i data-lucide="file-text" style="width:16px;height:16px"></i> Văn bản gốc</div>
+        <textarea id="textA" placeholder="Dán văn bản gốc vào đây..."></textarea>
+      </div>
+      <div class="editor-box">
+        <div class="editor-label"><i data-lucide="file-text" style="width:16px;height:16px"></i> Văn bản mới</div>
+        <textarea id="textB" placeholder="Dán văn bản mới vào đây..."></textarea>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" onclick="compare()"><i data-lucide="git-compare" style="width:18px;height:18px"></i> So Sánh</button>
+      <button class="btn btn-secondary" onclick="swapTexts()"><i data-lucide="arrow-left-right" style="width:18px;height:18px"></i> Đổi chỗ</button>
+      <button class="btn btn-secondary" onclick="clearAll()"><i data-lucide="trash-2" style="width:18px;height:18px"></i> Xoá hết</button>
+    </div>
+
+    <div class="stats" id="stats" style="display:none">
+      <div class="stat added"><i data-lucide="plus" style="width:16px;height:16px"></i> Thêm: <span id="addedCount">0</span></div>
+      <div class="stat removed"><i data-lucide="minus" style="width:16px;height:16px"></i> Xoá: <span id="removedCount">0</span></div>
+      <div class="stat unchanged"><i data-lucide="equal" style="width:16px;height:16px"></i> Không đổi: <span id="unchangedCount">0</span></div>
+    </div>
+
+    <div class="result-box" id="resultBox" style="display:none">
+      <div class="result-header"><i data-lucide="list" style="width:16px;height:16px"></i> Kết quả so sánh</div>
+      <div class="diff-output" id="diffOutput"></div>
+    </div>
+  </div>
+
+  <script>
+    function toggleDark() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+      lucide.createIcons();
+    }
+    if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+
+    function swapTexts() {
+      const a = document.getElementById('textA');
+      const b = document.getElementById('textB');
+      const tmp = a.value;
+      a.value = b.value;
+      b.value = tmp;
+    }
+    function clearAll() {
+      document.getElementById('textA').value = '';
+      document.getElementById('textB').value = '';
+      document.getElementById('stats').style.display = 'none';
+      document.getElementById('resultBox').style.display = 'none';
+    }
+
+    function escapeHtml(t) {
+      const div = document.createElement('div');
+      div.textContent = t;
+      return div.innerHTML;
+    }
+
+    function compare() {
+      const a = document.getElementById('textA').value.split('\n');
+      const b = document.getElementById('textB').value.split('\n');
+      const diff = computeDiff(a, b);
+
+      let added = 0, removed = 0, unchanged = 0;
+      const output = document.getElementById('diffOutput');
+      output.textContent = '';
+
+      diff.forEach(function(d) {
+        const line = document.createElement('div');
+        line.className = 'diff-line ' + d.type;
+
+        var prefix = ' ';
+        if (d.type === 'added') { prefix = '+'; added++; }
+        else if (d.type === 'removed') { prefix = '-'; removed++; }
+        else { unchanged++; }
+
+        var lnA = d.lineA != null ? d.lineA : '';
+        var lnB = d.lineB != null ? d.lineB : '';
+
+        var numDiv = document.createElement('div');
+        numDiv.className = 'line-num';
+        var spanA = document.createElement('span');
+        spanA.textContent = lnA;
+        var spanB = document.createElement('span');
+        spanB.textContent = lnB;
+        numDiv.appendChild(spanA);
+        numDiv.appendChild(spanB);
+
+        var prefixSpan = document.createElement('span');
+        prefixSpan.className = 'line-prefix';
+        prefixSpan.textContent = prefix;
+
+        var contentDiv = document.createElement('div');
+        contentDiv.className = 'line-content';
+        contentDiv.textContent = d.text;
+
+        line.appendChild(numDiv);
+        line.appendChild(prefixSpan);
+        line.appendChild(contentDiv);
+        output.appendChild(line);
+      });
+
+      document.getElementById('addedCount').textContent = added;
+      document.getElementById('removedCount').textContent = removed;
+      document.getElementById('unchangedCount').textContent = unchanged;
+      document.getElementById('stats').style.display = 'flex';
+      document.getElementById('resultBox').style.display = 'block';
+    }
+
+    function computeDiff(a, b) {
+      var m = a.length, n = b.length;
+      var dp = [];
+      for (var i = 0; i <= m; i++) {
+        dp[i] = [];
+        for (var j = 0; j <= n; j++) dp[i][j] = 0;
+      }
+      for (var i = 1; i <= m; i++)
+        for (var j = 1; j <= n; j++)
+          dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1]+1 : Math.max(dp[i-1][j], dp[i][j-1]);
+
+      var result = [];
+      var i = m, j = n;
+      while (i > 0 || j > 0) {
+        if (i > 0 && j > 0 && a[i-1] === b[j-1]) {
+          result.unshift({type:'unchanged', text:a[i-1], lineA:i, lineB:j});
+          i--; j--;
+        } else if (j > 0 && (i === 0 || dp[i][j-1] >= dp[i-1][j])) {
+          result.unshift({type:'added', text:b[j-1], lineA:null, lineB:j});
+          j--;
+        } else {
+          result.unshift({type:'removed', text:a[i-1], lineA:i, lineB:null});
+          i--;
+        }
+      }
+      return result;
+    }
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>

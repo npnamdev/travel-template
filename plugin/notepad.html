@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghi Chú Nhanh — Notepad Online</title>
+<meta name="description" content="Ghi chú nhanh online với tự động lưu, hỗ trợ markdown, nhiều tab ghi chú, tìm kiếm.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2378716c'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='16' fill='%23f59e0b'%3E%E2%9C%8F%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Cascadia+Code:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#fafaf9;--surface:#fff;--surface2:#f5f5f4;--surface3:#e7e5e4;
+  --border:#d6d3d1;--border2:#a8a29e;
+  --text:#1c1917;--text2:#78716c;--text3:#57534e;--text-muted:#a8a29e;
+  --primary:#78716c;--primary-hover:#57534e;--primary-light:#d6d3d1;
+  --accent:#f59e0b;--accent-hover:#d97706;--accent-light:#fef3c7;
+  --r:12px;--r2:16px;--r3:20px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --shadow2:0 4px 24px rgba(0,0,0,.08);
+  --font:'Nunito',sans-serif;
+  --mono:'Cascadia Code','Fira Code',monospace;
+}
+.dark{
+  --bg:#1a1816;--surface:#242220;--surface2:#2e2c29;--surface3:#3a3835;
+  --border:#44413d;--border2:#78716c;
+  --text:#e7e5e4;--text2:#a8a29e;--text3:#d6d3d1;--text-muted:#78716c;
+  --primary:#a8a29e;--primary-hover:#d6d3d1;--primary-light:#44413d;
+  --accent:#f59e0b;--accent-hover:#fbbf24;--accent-light:#451a03;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  --shadow2:0 4px 24px rgba(0,0,0,.3);
+}
+html,body{height:100%;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);background:var(--bg);color:var(--text);transition:background .3s,color .3s;display:flex;flex-direction:column}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;transition:background .3s}
+.sidebar-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sidebar-header h2{font-size:1rem;font-weight:700;flex:1;color:var(--accent)}
+.sidebar-header svg{width:20px;height:20px}
+.sidebar-search{padding:10px 16px}
+.sidebar-search input{width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);font-family:var(--font);font-size:.82rem;color:var(--text);outline:none;transition:border-color .2s}
+.sidebar-search input:focus{border-color:var(--accent)}
+.note-list{flex:1;overflow-y:auto;padding:8px}
+.note-item{padding:10px 14px;border-radius:var(--r);cursor:pointer;margin-bottom:4px;transition:all .15s;border:1px solid transparent}
+.note-item:hover{background:var(--surface2)}
+.note-item.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.note-item .note-title{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note-item .note-date{font-size:.72rem;color:var(--text-muted);margin-top:2px}
+.note-item .note-preview{font-size:.75rem;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border)}
+.add-btn{width:100%;padding:10px;border-radius:var(--r);border:1px dashed var(--border);background:transparent;color:var(--accent);font-family:var(--font);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.add-btn:hover{background:var(--accent-light);border-color:var(--accent)}
+.add-btn svg{width:16px;height:16px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.toolbar{padding:10px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--surface)}
+.tool-btn{padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:.78rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:4px}
+.tool-btn:hover{border-color:var(--accent);color:var(--accent)}
+.tool-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tool-btn svg{width:14px;height:14px}
+.toolbar .spacer{flex:1}
+.title-input{border:none;background:transparent;font-family:var(--font);font-size:1rem;font-weight:700;color:var(--text);outline:none;padding:4px 8px;flex:1;min-width:120px}
+.title-input::placeholder{color:var(--text-muted)}
+.editor-area{flex:1;display:flex;overflow:hidden;position:relative}
+.editor-area textarea{width:100%;height:100%;padding:24px;border:none;background:var(--bg);font-family:var(--font);font-size:1rem;color:var(--text);resize:none;outline:none;line-height:1.8;transition:font-size .2s}
+.md-preview{width:100%;height:100%;padding:24px;overflow-y:auto;background:var(--bg);line-height:1.8;display:none}
+.status-bar{padding:6px 20px;border-top:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:16px;font-size:.75rem;color:var(--text-muted)}
+.status-bar .dot{width:6px;height:6px;border-radius:50%;background:#22c55e}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:100;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:all .3s;color:var(--text)}
+.theme-toggle:hover{background:var(--surface2);transform:scale(1.05)}
+.theme-toggle svg{width:18px;height:18px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+.menu-toggle{display:none;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer}
+.menu-toggle svg{width:18px;height:18px}
+@media(max-width:700px){
+  .sidebar{position:fixed;left:-280px;top:0;bottom:0;z-index:50;width:270px;transition:left .3s;box-shadow:var(--shadow2)}
+  .sidebar.open{left:0}
+  .menu-toggle{display:flex;align-items:center;gap:4px}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:40}
+  .overlay.show{display:block}
+}
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="app">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <i data-lucide="notebook-pen" style="color:var(--accent)"></i>
+      <h2>Ghi Chú</h2>
+    </div>
+    <div class="sidebar-search">
+      <input type="text" id="searchInput" placeholder="Tìm kiếm ghi chú..." oninput="filterNotes()">
+    </div>
+    <div class="note-list" id="noteList"></div>
+    <div class="sidebar-footer">
+      <button class="add-btn" onclick="addNote()"><i data-lucide="plus"></i> Ghi chú mới</button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="toolbar">
+      <button class="menu-toggle" onclick="openSidebar()"><i data-lucide="menu"></i></button>
+      <input class="title-input" id="titleInput" placeholder="Tiêu đề ghi chú..." oninput="onTitleChange()">
+      <div class="spacer"></div>
+      <button class="tool-btn" id="mdToggle" onclick="toggleMarkdown()"><i data-lucide="file-text"></i> Markdown</button>
+      <button class="tool-btn" onclick="changeFontSize(1)"><i data-lucide="a-large-small"></i> A+</button>
+      <button class="tool-btn" onclick="changeFontSize(-1)">A-</button>
+      <button class="tool-btn" onclick="downloadNote()"><i data-lucide="download"></i></button>
+      <button class="tool-btn" onclick="deleteCurrentNote()" style="color:#ef4444"><i data-lucide="trash-2"></i></button>
+    </div>
+    <div class="editor-area">
+      <textarea id="editor" placeholder="Bắt đầu viết ghi chú..." oninput="onEditorInput()"></textarea>
+      <div class="md-preview" id="mdPreview"></div>
+    </div>
+    <div class="status-bar">
+      <span class="dot"></span>
+      <span id="autoSaveStatus">Tự động lưu</span>
+      <span id="charStat">0 ký tự</span>
+      <span id="wordStat">0 từ</span>
+      <span id="lineStat">0 dòng</span>
+    </div>
+  </div>
+</div>
+<script>
+function toggleTheme(){document.documentElement.classList.toggle('dark');localStorage.setItem('math-dark',document.documentElement.classList.contains('dark'))}
+if(localStorage.getItem('math-dark')==='true')document.documentElement.classList.add('dark');
+
+var STORAGE_KEY='notepad-notes';
+var notes=[];
+var activeId=null;
+var mdMode=false;
+var fontSize=16;
+var saveTimer=null;
+
+function loadNotes(){
+  try{
+    var data=localStorage.getItem(STORAGE_KEY);
+    if(data)notes=JSON.parse(data);
+  }catch(e){notes=[]}
+  if(!notes.length)addNote();
+  else{activeId=notes[0].id;renderList();loadActiveNote()}
+}
+
+function saveNotes(){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(notes));
+  var el=document.getElementById('autoSaveStatus');
+  el.textContent='Đã lưu!';
+  setTimeout(function(){el.textContent='Tự động lưu'},1200);
+}
+
+function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+
+function addNote(){
+  var note={id:genId(),title:'Ghi chú mới',content:'',created:Date.now(),updated:Date.now()};
+  notes.unshift(note);
+  activeId=note.id;
+  saveNotes();
+  renderList();
+  loadActiveNote();
+  document.getElementById('titleInput').focus();
+  closeSidebar();
+}
+
+function getActive(){return notes.find(function(n){return n.id===activeId})}
+
+function renderList(){
+  var list=document.getElementById('noteList');
+  var search=document.getElementById('searchInput').value.toLowerCase();
+  list.textContent='';
+  var filtered=notes.filter(function(n){
+    if(!search)return true;
+    return n.title.toLowerCase().indexOf(search)>=0||n.content.toLowerCase().indexOf(search)>=0;
+  });
+  filtered.forEach(function(n){
+    var item=document.createElement('div');
+    item.className='note-item'+(n.id===activeId?' active':'');
+    var titleDiv=document.createElement('div');
+    titleDiv.className='note-title';
+    titleDiv.textContent=n.title||'Không tiêu đề';
+    var dateDiv=document.createElement('div');
+    dateDiv.className='note-date';
+    dateDiv.textContent=new Date(n.updated).toLocaleString('vi-VN');
+    var prevDiv=document.createElement('div');
+    prevDiv.className='note-preview';
+    prevDiv.textContent=n.content.substring(0,60);
+    item.appendChild(titleDiv);
+    item.appendChild(dateDiv);
+    item.appendChild(prevDiv);
+    item.addEventListener('click',function(){
+      activeId=n.id;
+      renderList();
+      loadActiveNote();
+      closeSidebar();
+    });
+    list.appendChild(item);
+  });
+}
+
+function loadActiveNote(){
+  var note=getActive();
+  if(!note)return;
+  document.getElementById('titleInput').value=note.title;
+  document.getElementById('editor').value=note.content;
+  updateStats();
+  if(mdMode)renderMarkdown();
+}
+
+function onTitleChange(){
+  var note=getActive();
+  if(!note)return;
+  note.title=document.getElementById('titleInput').value;
+  note.updated=Date.now();
+  scheduleSave();
+  renderList();
+}
+
+function onEditorInput(){
+  var note=getActive();
+  if(!note)return;
+  note.content=document.getElementById('editor').value;
+  note.updated=Date.now();
+  updateStats();
+  scheduleSave();
+  if(mdMode)renderMarkdown();
+}
+
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(saveNotes,500);
+}
+
+function updateStats(){
+  var text=document.getElementById('editor').value;
+  document.getElementById('charStat').textContent=text.length+' ký tự';
+  document.getElementById('wordStat').textContent=(text.trim()?text.trim().split(/\s+/).length:0)+' từ';
+  document.getElementById('lineStat').textContent=(text?text.split('\n').length:0)+' dòng';
+}
+
+function toggleMarkdown(){
+  mdMode=!mdMode;
+  document.getElementById('mdToggle').classList.toggle('active',mdMode);
+  document.getElementById('editor').style.display=mdMode?'none':'block';
+  document.getElementById('mdPreview').style.display=mdMode?'block':'none';
+  if(mdMode)renderMarkdown();
+}
+
+function renderMarkdown(){
+  var text=document.getElementById('editor').value;
+  var preview=document.getElementById('mdPreview');
+  preview.textContent='';
+  var lines=text.split('\n');
+  var i=0;
+  while(i<lines.length){
+    var line=lines[i];
+    if(line.match(/^### /)){
+      var h=document.createElement('h3');
+      h.textContent=line.replace(/^### /,'');
+      h.style.cssText='margin:16px 0 8px;color:var(--accent);font-size:1.1rem';
+      preview.appendChild(h);i++;continue;
+    }
+    if(line.match(/^## /)){
+      var h2=document.createElement('h2');
+      h2.textContent=line.replace(/^## /,'');
+      h2.style.cssText='margin:16px 0 8px;color:var(--accent);font-size:1.3rem';
+      preview.appendChild(h2);i++;continue;
+    }
+    if(line.match(/^# /)){
+      var h1=document.createElement('h1');
+      h1.textContent=line.replace(/^# /,'');
+      h1.style.cssText='margin:16px 0 8px;color:var(--accent);font-size:1.6rem';
+      preview.appendChild(h1);i++;continue;
+    }
+    if(line.match(/^> /)){
+      var bq=document.createElement('blockquote');
+      bq.textContent=line.replace(/^> /,'');
+      bq.style.cssText='border-left:3px solid var(--accent);padding-left:16px;color:var(--text2);margin:12px 0';
+      preview.appendChild(bq);i++;continue;
+    }
+    if(line.match(/^- /)){
+      var ul=document.createElement('ul');
+      ul.style.cssText='padding-left:24px;margin:8px 0';
+      while(i<lines.length&&lines[i].match(/^- /)){
+        var li=document.createElement('li');
+        li.textContent=lines[i].replace(/^- /,'');
+        ul.appendChild(li);i++;
+      }
+      preview.appendChild(ul);continue;
+    }
+    if(!line.trim()){preview.appendChild(document.createElement('br'));i++;continue}
+    var p=document.createElement('p');
+    p.style.margin='8px 0';
+    appendInline(p,line);
+    preview.appendChild(p);i++;
+  }
+}
+
+function appendInline(parent,text){
+  var parts=text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+  for(var j=0;j<parts.length;j++){
+    var part=parts[j];
+    if(!part)continue;
+    if(part.match(/^\*\*(.+)\*\*$/)){
+      var strong=document.createElement('strong');
+      strong.textContent=part.slice(2,-2);
+      strong.style.color='var(--accent)';
+      parent.appendChild(strong);
+    }else if(part.match(/^\*(.+)\*$/)){
+      var em=document.createElement('em');
+      em.textContent=part.slice(1,-1);
+      parent.appendChild(em);
+    }else if(part.match(/^`([^`]+)`$/)){
+      var code=document.createElement('code');
+      code.textContent=part.slice(1,-1);
+      code.style.cssText='background:var(--surface2);padding:2px 6px;border-radius:4px;font-family:var(--mono);font-size:.85em';
+      parent.appendChild(code);
+    }else{
+      parent.appendChild(document.createTextNode(part));
+    }
+  }
+}
+
+function changeFontSize(dir){
+  fontSize=Math.min(28,Math.max(12,fontSize+dir*2));
+  document.getElementById('editor').style.fontSize=fontSize+'px';
+}
+
+function downloadNote(){
+  var note=getActive();
+  if(!note)return;
+  var blob=new Blob([note.content],{type:'text/plain;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(note.title||'note')+'.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function deleteCurrentNote(){
+  if(notes.length<=1){
+    notes[0].title='Ghi chú mới';notes[0].content='';notes[0].updated=Date.now();
+    saveNotes();renderList();loadActiveNote();return;
+  }
+  notes=notes.filter(function(n){return n.id!==activeId});
+  activeId=notes[0].id;
+  saveNotes();renderList();loadActiveNote();
+}
+
+function filterNotes(){renderList()}
+
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+loadNotes();
+lucide.createIcons();
+</script>
+</body>
+</html>

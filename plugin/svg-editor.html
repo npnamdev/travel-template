@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chỉnh Sửa SVG — SVG Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+:root {
+  --bg: #ecfdf5;
+  --bg-card: #ffffff;
+  --bg-code: #f0fdf4;
+  --text: #022c22;
+  --text-sub: #4b7a6a;
+  --primary: #059669;
+  --primary-dark: #047857;
+  --primary-light: rgba(5,150,105,0.08);
+  --primary-glow: rgba(5,150,105,0.18);
+  --border: rgba(5,150,105,0.12);
+  --shadow: 0 2px 8px rgba(5,150,105,0.05), 0 12px 36px rgba(5,150,105,0.07);
+  --shadow-hover: 0 8px 24px rgba(5,150,105,0.12);
+  --accent: #10b981;
+  --danger: #ef4444;
+  --radius: 14px;
+}
+body.dark {
+  --bg: #011f17;
+  --bg-card: #052e21;
+  --bg-code: #03291d;
+  --text: #d1fae5;
+  --text-sub: #6ee7b7;
+  --primary: #10b981;
+  --primary-dark: #34d399;
+  --primary-light: rgba(16,185,129,0.1);
+  --primary-glow: rgba(16,185,129,0.15);
+  --border: rgba(16,185,129,0.1);
+  --shadow: 0 2px 8px rgba(0,0,0,0.3), 0 12px 36px rgba(0,0,0,0.4);
+  --shadow-hover: 0 8px 24px rgba(16,185,129,0.12);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  color: var(--text);
+  transition: background 0.4s, color 0.4s;
+}
+body::before {
+  content: '';
+  position: fixed;
+  top: -150px; left: 50%;
+  width: 700px; height: 400px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(5,150,105,0.07) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+.top-bar {
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(20px);
+  background: rgba(236,253,245,0.85);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.4s;
+}
+body.dark .top-bar { background: rgba(1,31,23,0.88); }
+.top-bar h1 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.2rem; font-weight: 800;
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, #059669, #14b8a6);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.top-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--bg-card);
+  color: var(--text); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s;
+}
+.icon-btn:hover { background: var(--primary-light); border-color: var(--primary); }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; position: relative; z-index: 1; }
+
+.workspace {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 850px) { .workspace { grid-template-columns: 1fr; } }
+
+.panel {
+  background: var(--bg-card); border-radius: var(--radius);
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  overflow: hidden; display: flex; flex-direction: column;
+}
+.panel-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  font-weight: 600; font-size: 0.9rem;
+}
+.panel-header .left { display: flex; align-items: center; gap: 8px; }
+.panel-header .left i { color: var(--primary); }
+
+.code-area {
+  width: 100%; min-height: 350px; padding: 16px;
+  border: none; background: var(--bg-code); color: var(--text);
+  font-family: 'Fira Code', monospace; font-size: 0.82rem;
+  resize: vertical; outline: none; line-height: 1.6;
+  flex: 1;
+}
+
+.preview-area {
+  flex: 1; padding: 20px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 350px;
+  background: repeating-conic-gradient(var(--bg-code) 0% 25%, transparent 0% 50%) 50%/16px 16px;
+}
+.preview-area svg, .preview-area img {
+  max-width: 100%; max-height: 300px;
+}
+
+.toolbar {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 20px;
+}
+.tool-btn {
+  padding: 10px 18px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg-card);
+  color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; gap: 6px;
+}
+.tool-btn:hover { border-color: var(--primary); background: var(--primary-light); transform: translateY(-1px); }
+.tool-btn.primary {
+  background: linear-gradient(135deg, var(--primary), #14b8a6);
+  color: white; border-color: transparent;
+}
+.tool-btn.primary:hover { box-shadow: 0 6px 20px rgba(5,150,105,0.25); }
+
+.stats {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
+}
+.stat {
+  padding: 6px 14px; border-radius: 99px;
+  font-size: 0.8rem; font-weight: 500;
+  background: var(--primary-light); color: var(--primary-dark);
+}
+body.dark .stat { color: var(--accent); }
+.stat.saved { background: rgba(16,185,129,0.15); color: #10b981; }
+
+.color-editor {
+  display: none; margin-bottom: 16px;
+  background: var(--bg-card); border-radius: var(--radius);
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  padding: 16px;
+}
+.color-editor.active { display: block; animation: slideDown 0.3s ease-out; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+.color-list {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+}
+.color-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 10px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg);
+  font-family: 'Fira Code', monospace; font-size: 0.78rem;
+}
+.color-chip .swatch {
+  width: 20px; height: 20px; border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.color-chip input[type="color"] {
+  width: 24px; height: 24px; border: none; padding: 0;
+  border-radius: 4px; cursor: pointer; background: transparent;
+}
+
+.resize-row {
+  display: none; margin-bottom: 16px;
+  background: var(--bg-card); border-radius: var(--radius);
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  padding: 16px;
+  gap: 12px; align-items: end;
+}
+.resize-row.active { display: flex; flex-wrap: wrap; animation: slideDown 0.3s ease-out; }
+.resize-row .field { display: flex; flex-direction: column; gap: 4px; }
+.resize-row label { font-size: 0.8rem; font-weight: 500; color: var(--text-sub); }
+.resize-row input {
+  padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text); font-size: 0.9rem; width: 120px;
+}
+.resize-row input:focus { outline: none; border-color: var(--primary); }
+
+.copy-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+  background: var(--primary); color: white;
+  padding: 12px 24px; border-radius: 12px;
+  font-weight: 600; font-size: 0.9rem;
+  box-shadow: 0 8px 32px rgba(5,150,105,0.3);
+  transition: transform 0.3s ease; z-index: 999;
+}
+.copy-toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1><i data-lucide="pen-tool" style="width:22px;height:22px"></i> Chỉnh Sửa SVG</h1>
+  <div class="top-actions">
+    <button class="icon-btn" id="darkToggle" title="Chế độ tối"><i data-lucide="moon" style="width:18px;height:18px"></i></button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="stats">
+    <span class="stat" id="statOriginal">Gốc: 0 B</span>
+    <span class="stat" id="statOptimized">Tối ưu: 0 B</span>
+    <span class="stat saved" id="statSaved">Tiết kiệm: 0%</span>
+  </div>
+
+  <div class="toolbar">
+    <button class="tool-btn primary" onclick="optimizeSvg()"><i data-lucide="zap" style="width:16px;height:16px"></i> Tối ưu hóa</button>
+    <button class="tool-btn" onclick="toggleColorEditor()"><i data-lucide="palette" style="width:16px;height:16px"></i> Đổi màu</button>
+    <button class="tool-btn" onclick="toggleResizer()"><i data-lucide="maximize-2" style="width:16px;height:16px"></i> Kích thước</button>
+    <button class="tool-btn" onclick="copySvg()"><i data-lucide="copy" style="width:16px;height:16px"></i> Sao chép</button>
+    <button class="tool-btn" onclick="downloadSvg()"><i data-lucide="download" style="width:16px;height:16px"></i> Tải xuống</button>
+    <button class="tool-btn" onclick="formatSvg()"><i data-lucide="align-left" style="width:16px;height:16px"></i> Format</button>
+  </div>
+
+  <div class="color-editor" id="colorEditor">
+    <div style="font-weight:600;font-size:0.9rem;display:flex;align-items:center;gap:8px;">
+      <i data-lucide="palette" style="width:16px;height:16px;color:var(--primary)"></i> Đổi màu trong SVG
+    </div>
+    <div class="color-list" id="colorList"></div>
+  </div>
+
+  <div class="resize-row" id="resizeRow">
+    <div class="field">
+      <label>Width</label>
+      <input type="number" id="svgW" placeholder="auto">
+    </div>
+    <div class="field">
+      <label>Height</label>
+      <input type="number" id="svgH" placeholder="auto">
+    </div>
+    <button class="tool-btn primary" onclick="applySvgResize()" style="margin-bottom:0"><i data-lucide="check" style="width:16px;height:16px"></i> Áp dụng</button>
+  </div>
+
+  <div class="workspace">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="left"><i data-lucide="code-2" style="width:18px;height:18px"></i> Mã SVG</div>
+      </div>
+      <textarea class="code-area" id="svgInput" placeholder="Dán mã SVG vào đây..." oninput="updatePreview()"></textarea>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="left"><i data-lucide="eye" style="width:18px;height:18px"></i> Xem trước</div>
+      </div>
+      <div class="preview-area" id="previewArea">
+        <p style="color:var(--text-sub);font-size:0.9rem;">Dán SVG bên trái để xem trước</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="copy-toast" id="toast">Đã sao chép!</div>
+
+<script>
+var svgInput = document.getElementById('svgInput');
+var previewArea = document.getElementById('previewArea');
+var originalSizeBytes = 0;
+
+function updatePreview() {
+  var code = svgInput.value.trim();
+  if (!code) {
+    previewArea.innerHTML = '<p style="color:var(--text-sub);font-size:0.9rem;">Dán SVG bên trái để xem trước</p>';
+    updateStats(0, 0);
+    return;
+  }
+  if (code.indexOf('<svg') !== -1) {
+    previewArea.innerHTML = code;
+    var size = new Blob([code]).size;
+    if (originalSizeBytes === 0) originalSizeBytes = size;
+    updateStats(originalSizeBytes, size);
+  }
+}
+
+function updateStats(origSize, optSize) {
+  document.getElementById('statOriginal').textContent = 'Gốc: ' + formatSize(origSize);
+  document.getElementById('statOptimized').textContent = 'Tối ưu: ' + formatSize(optSize);
+  var saved = origSize > 0 ? Math.round((1 - optSize / origSize) * 100) : 0;
+  document.getElementById('statSaved').textContent = 'Tiết kiệm: ' + saved + '%';
+}
+
+function formatSize(b) {
+  if (b > 1048576) return (b / 1048576).toFixed(1) + ' MB';
+  if (b > 1024) return (b / 1024).toFixed(1) + ' KB';
+  return b + ' B';
+}
+
+function optimizeSvg() {
+  var code = svgInput.value;
+  if (!code.trim()) return;
+  originalSizeBytes = new Blob([code]).size;
+  // Remove comments
+  code = code.replace(/<!--[\s\S]*?-->/g, '');
+  // Remove xml declaration
+  code = code.replace(/<\?xml[^?]*\?>/gi, '');
+  // Remove doctype
+  code = code.replace(/<!DOCTYPE[^>]*>/gi, '');
+  // Remove metadata, title, desc
+  code = code.replace(/<metadata[\s\S]*?<\/metadata>/gi, '');
+  code = code.replace(/<title[\s\S]*?<\/title>/gi, '');
+  code = code.replace(/<desc[\s\S]*?<\/desc>/gi, '');
+  // Remove empty groups
+  code = code.replace(/<g>\s*<\/g>/g, '');
+  // Remove editor namespaces
+  code = code.replace(/\s+xmlns:(inkscape|sodipodi|sketch|dc|cc|rdf)="[^"]*"/g, '');
+  code = code.replace(/\s+(inkscape|sodipodi|sketch):[a-z-]+="[^"]*"/gi, '');
+  // Remove unnecessary attributes
+  code = code.replace(/\s+data-name="[^"]*"/g, '');
+  // Collapse whitespace
+  code = code.replace(/\s+/g, ' ').replace(/>\s+</g, '><').trim();
+  // Clean up self-closing tags
+  code = code.replace(/\s*\/>/g, '/>');
+
+  svgInput.value = code;
+  updatePreview();
+}
+
+function formatSvg() {
+  var code = svgInput.value.trim();
+  if (!code) return;
+  var formatted = '';
+  var indent = 0;
+  code = code.replace(/>\s*</g, '>\n<');
+  var lines = code.split('\n');
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim();
+    if (!line) continue;
+    if (line.indexOf('</') === 0) indent--;
+    var spaces = '';
+    for (var j = 0; j < Math.max(0, indent); j++) spaces += '  ';
+    formatted += spaces + line + '\n';
+    if (line.match(/^<[^/!?][^>]*[^/]>$/) && !line.match(/<.*>.*<\//)) indent++;
+  }
+  svgInput.value = formatted.trim();
+  updatePreview();
+}
+
+function toggleColorEditor() {
+  var el = document.getElementById('colorEditor');
+  el.classList.toggle('active');
+  if (el.classList.contains('active')) extractColors();
+}
+
+function extractColors() {
+  var code = svgInput.value;
+  var colorSet = {};
+  var patterns = [/fill="(#[0-9a-fA-F]{3,8})"/g, /stroke="(#[0-9a-fA-F]{3,8})"/g,
+    /fill:\s*(#[0-9a-fA-F]{3,8})/g, /stroke:\s*(#[0-9a-fA-F]{3,8})/g,
+    /stop-color="(#[0-9a-fA-F]{3,8})"/g];
+  for (var pi = 0; pi < patterns.length; pi++) {
+    var m;
+    while ((m = patterns[pi].exec(code)) !== null) colorSet[m[1].toLowerCase()] = true;
+  }
+  var list = document.getElementById('colorList');
+  list.innerHTML = '';
+  var colors = Object.keys(colorSet);
+  if (colors.length === 0) {
+    list.innerHTML = '<span style="font-size:0.85rem;color:var(--text-sub)">Không tìm thấy màu trong SVG</span>';
+    return;
+  }
+  for (var ci = 0; ci < colors.length; ci++) {
+    var color = colors[ci];
+    var chip = document.createElement('div');
+    chip.className = 'color-chip';
+    var fullColor = color;
+    if (fullColor.length === 4) {
+      fullColor = '#' + fullColor[1]+fullColor[1]+fullColor[2]+fullColor[2]+fullColor[3]+fullColor[3];
+    }
+    chip.innerHTML = '<div class="swatch" style="background:' + color + '"></div>' +
+      '<span>' + color + '</span>' +
+      '<input type="color" value="' + fullColor + '" data-orig="' + color + '">';
+    chip.querySelector('input').addEventListener('change', function() {
+      replaceColor(this.getAttribute('data-orig'), this.value);
+    });
+    list.appendChild(chip);
+  }
+}
+
+function replaceColor(oldColor, newColor) {
+  var code = svgInput.value;
+  var escaped = oldColor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  var regex = new RegExp(escaped, 'gi');
+  code = code.replace(regex, newColor);
+  svgInput.value = code;
+  updatePreview();
+  extractColors();
+}
+
+function toggleResizer() {
+  document.getElementById('resizeRow').classList.toggle('active');
+}
+
+function applySvgResize() {
+  var code = svgInput.value;
+  var w = document.getElementById('svgW').value;
+  var h = document.getElementById('svgH').value;
+  if (w) {
+    if (code.match(/width="[^"]*"/)) {
+      code = code.replace(/width="[^"]*"/, 'width="' + w + '"');
+    } else {
+      code = code.replace('<svg', '<svg width="' + w + '"');
+    }
+  }
+  if (h) {
+    if (code.match(/height="[^"]*"/)) {
+      code = code.replace(/height="[^"]*"/, 'height="' + h + '"');
+    } else {
+      code = code.replace('<svg', '<svg height="' + h + '"');
+    }
+  }
+  svgInput.value = code;
+  updatePreview();
+}
+
+function copySvg() {
+  navigator.clipboard.writeText(svgInput.value).then(function() { showToast(); });
+}
+
+function downloadSvg() {
+  var blob = new Blob([svgInput.value], { type: 'image/svg+xml' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'optimized.svg';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function showToast() {
+  var t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
+// Dark mode
+if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+document.getElementById('darkToggle').addEventListener('click', function() {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+});
+
+lucide.createIcons();
+</script>
+</body>
+</html>

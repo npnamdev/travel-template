@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tra Cứu IP — IP Lookup</title>
+<meta name="description" content="Tra cứu địa chỉ IP công cộng. Xem thông tin vị trí, ISP, múi giờ.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white'%3E🌐%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#eef2ff;--surface:#fff;--surface2:#e0e7ff;--surface3:#c7d2fe;
+  --border:#a5b4fc;--border2:#818cf8;
+  --text:#1e1b4b;--text2:#4338ca;--text3:#6366f1;--text-muted:#64748b;
+  --primary:#6366f1;--primary-hover:#4f46e5;--primary-light:#a5b4fc;
+  --accent:#06b6d4;
+  --r:12px;--r2:16px;--r3:20px;
+  --shadow:0 1px 3px rgba(99,102,241,.08),0 4px 16px rgba(99,102,241,.06);
+  --shadow2:0 4px 24px rgba(99,102,241,.15);
+  --font:'DM Sans',sans-serif;--mono:'Space Mono',monospace;
+}
+.dark{
+  --bg:#0c0a1a;--surface:#16132b;--surface2:#1e1a38;--surface3:#282350;
+  --border:#312c5e;--border2:#4338ca;
+  --text:#e0e7ff;--text2:#a5b4fc;--text3:#818cf8;--text-muted:#94a3b8;
+  --primary:#818cf8;--primary-hover:#6366f1;--primary-light:#3730a3;
+  --accent:#22d3ee;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  --shadow2:0 4px 24px rgba(0,0,0,.35);
+}
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;transition:background .3s,color .3s}
+
+.theme-toggle{
+  position:fixed;top:16px;right:16px;z-index:100;
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);transition:all .3s;color:var(--text)
+}
+.theme-toggle:hover{background:var(--surface2);transform:scale(1.05)}
+.theme-toggle svg{width:20px;height:20px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+
+.card{width:100%;max-width:560px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:32px;box-shadow:var(--shadow2)}
+
+.header{text-align:center;margin-bottom:28px}
+.header-icon{
+  width:64px;height:64px;border-radius:18px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:12px;box-shadow:0 4px 20px rgba(99,102,241,.3);
+}
+.header-icon svg{width:32px;height:32px;color:#fff}
+.header h1{font-size:1.6rem;font-weight:700;color:var(--text)}
+.header p{font-size:.85rem;color:var(--text-muted);margin-top:4px}
+
+.search-bar{display:flex;gap:10px;margin-bottom:24px}
+.search-bar input{
+  flex:1;padding:12px 16px;border:1px solid var(--border);border-radius:var(--r);
+  background:var(--surface2);color:var(--text);font-family:var(--mono);font-size:.9rem;
+  outline:none;transition:border-color .2s;
+}
+.search-bar input:focus{border-color:var(--primary)}
+.btn{
+  padding:12px 20px;border:none;border-radius:var(--r);font-family:var(--font);font-weight:600;
+  font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .2s;
+}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--text-muted);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface2)}
+.btn-sm{padding:8px 14px;font-size:.8rem}
+
+.ip-display{
+  text-align:center;padding:24px;margin-bottom:24px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);
+}
+.ip-label{font-size:.8rem;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.ip-value{font-family:var(--mono);font-size:2rem;font-weight:700;color:var(--primary);word-break:break-all}
+.ip-actions{margin-top:12px;display:flex;gap:8px;justify-content:center}
+
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.info-item{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+  padding:14px;transition:all .2s;
+}
+.info-item:hover{border-color:var(--border2)}
+.info-label{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.info-label i{width:14px;height:14px}
+.info-value{font-size:.95rem;font-weight:600;color:var(--text);word-break:break-word}
+
+.loading{text-align:center;padding:40px;color:var(--text-muted)}
+.loading .spinner{
+  width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--primary);
+  border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.error-msg{
+  text-align:center;padding:20px;color:#ef4444;background:#fef2f2;
+  border:1px solid #fecaca;border-radius:var(--r);margin-bottom:16px;
+}
+.dark .error-msg{background:#450a0a;border-color:#7f1d1d}
+
+.copy-toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--primary);color:#fff;padding:10px 20px;border-radius:var(--r);
+  font-size:.85rem;font-weight:600;transition:transform .3s;z-index:200;
+}
+.copy-toast.show{transform:translateX(-50%) translateY(0)}
+
+@media(max-width:500px){
+  .info-grid{grid-template-columns:1fr}
+  .ip-value{font-size:1.5rem}
+  .search-bar{flex-direction:column}
+}
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleDark()">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+
+<div class="card">
+  <div class="header">
+    <div class="header-icon"><i data-lucide="globe"></i></div>
+    <h1>Tra Cứu IP</h1>
+    <p>Xem thông tin địa chỉ IP và vị trí</p>
+  </div>
+
+  <div class="search-bar">
+    <input type="text" id="ipInput" placeholder="Nhập IP để tra cứu (để trống = IP của bạn)">
+    <button class="btn btn-primary" onclick="lookupIP()"><i data-lucide="search" style="width:16px;height:16px"></i> Tra cứu</button>
+  </div>
+
+  <div id="resultArea">
+    <div class="loading" id="loadingState">
+      <div class="spinner"></div>
+      <p>Đang tải thông tin IP...</p>
+    </div>
+  </div>
+</div>
+
+<div class="copy-toast" id="copyToast">Đã sao chép!</div>
+
+<script>
+function toggleDark(){
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('math-dark',document.documentElement.classList.contains('dark'));
+  lucide.createIcons();
+}
+if(localStorage.getItem('math-dark')==='true') document.documentElement.classList.add('dark');
+
+function showToast(msg){
+  const t=document.getElementById('copyToast');
+  t.textContent=msg||'Đã sao chép!';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+function copyText(text){
+  navigator.clipboard.writeText(text).then(()=>showToast());
+}
+
+function lookupIP(){
+  const ip=document.getElementById('ipInput').value.trim();
+  const url=ip?'https://ip-api.com/json/'+encodeURIComponent(ip):'https://ip-api.com/json/';
+  const area=document.getElementById('resultArea');
+
+  area.textContent='';
+  const ld=document.createElement('div');ld.className='loading';
+  const sp=document.createElement('div');sp.className='spinner';
+  const lp=document.createElement('p');lp.textContent='Đang tải thông tin IP...';
+  ld.appendChild(sp);ld.appendChild(lp);area.appendChild(ld);
+
+  fetch(url)
+    .then(r=>r.json())
+    .then(data=>{
+      area.textContent='';
+      if(data.status==='fail'){
+        const err=document.createElement('div');err.className='error-msg';
+        err.textContent='Không tìm thấy thông tin: '+(data.message||'Lỗi');
+        area.appendChild(err);
+        return;
+      }
+      renderResult(data);
+    })
+    .catch(()=>{
+      area.textContent='';
+      const errDiv=document.createElement('div');errDiv.className='error-msg';
+      errDiv.textContent='Lỗi kết nối. Vui lòng thử lại.';
+      area.appendChild(errDiv);
+    });
+}
+
+function renderResult(d){
+  const area=document.getElementById('resultArea');
+
+  // IP display
+  const ipDisp=document.createElement('div');ipDisp.className='ip-display';
+  const ipLabel=document.createElement('div');ipLabel.className='ip-label';ipLabel.textContent='Địa chỉ IP';
+  const ipVal=document.createElement('div');ipVal.className='ip-value';ipVal.textContent=d.query;
+  const ipActs=document.createElement('div');ipActs.className='ip-actions';
+  const copyBtn=document.createElement('button');copyBtn.className='btn btn-ghost btn-sm';
+  const copyIcon=document.createElement('i');copyIcon.setAttribute('data-lucide','copy');
+  copyIcon.style.cssText='width:14px;height:14px';
+  copyBtn.appendChild(copyIcon);
+  copyBtn.appendChild(document.createTextNode(' Sao chép IP'));
+  copyBtn.onclick=()=>copyText(d.query);
+  ipActs.appendChild(copyBtn);
+  ipDisp.appendChild(ipLabel);ipDisp.appendChild(ipVal);ipDisp.appendChild(ipActs);
+  area.appendChild(ipDisp);
+
+  // Info grid
+  const grid=document.createElement('div');grid.className='info-grid';
+  const items=[
+    {icon:'map-pin',label:'Thành phố',value:d.city||'N/A'},
+    {icon:'map',label:'Vùng',value:d.regionName||'N/A'},
+    {icon:'flag',label:'Quốc gia',value:(d.country||'N/A')+(d.countryCode?' ('+d.countryCode+')':'')},
+    {icon:'wifi',label:'ISP',value:d.isp||'N/A'},
+    {icon:'clock',label:'Múi giờ',value:d.timezone||'N/A'},
+    {icon:'building',label:'Tổ chức',value:d.org||'N/A'},
+    {icon:'navigation',label:'Tọa độ',value:(d.lat&&d.lon)?d.lat+', '+d.lon:'N/A'},
+    {icon:'hash',label:'AS',value:d.as||'N/A'},
+  ];
+
+  items.forEach(item=>{
+    const el=document.createElement('div');el.className='info-item';
+    const label=document.createElement('div');label.className='info-label';
+    const icon=document.createElement('i');icon.setAttribute('data-lucide',item.icon);
+    icon.style.cssText='width:14px;height:14px';
+    label.appendChild(icon);
+    label.appendChild(document.createTextNode(' '+item.label));
+    const val=document.createElement('div');val.className='info-value';val.textContent=item.value;
+    el.appendChild(label);el.appendChild(val);
+    grid.appendChild(el);
+  });
+  area.appendChild(grid);
+  lucide.createIcons();
+}
+
+document.getElementById('ipInput').addEventListener('keydown',e=>{if(e.key==='Enter')lookupIP()});
+lookupIP();
+lucide.createIcons();
+</script>
+</body>
+</html>

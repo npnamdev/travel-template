@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chuyển Đổi Tiền Tệ — Currency Converter</title>
+<meta name="description" content="Công cụ chuyển đổi tiền tệ trực tuyến. Hỗ trợ USD, EUR, VND, JPY, GBP, KRW, CNY, THB, SGD, AUD với tỷ giá cập nhật.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white'%3E💱%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#eff6ff;--surface:#ffffff;--surface2:#dbeafe;--surface3:#bfdbfe;
+  --border:#93c5fd;--border2:#2563eb;
+  --text:#1e3a5f;--text2:#1d4ed8;--text3:#2563eb;--text-muted:#6b7280;
+  --primary:#2563eb;--primary-hover:#1d4ed8;--primary-light:#dbeafe;
+  --accent:#3b82f6;--accent2:#60a5fa;
+  --r:12px;--r2:16px;--r3:24px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --shadow2:0 4px 24px rgba(0,0,0,.08);
+  --font:'Plus Jakarta Sans',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+}
+
+.dark{
+  --bg:#172554;--surface:#1e3a5f;--surface2:#172554;--surface3:#1e40af;
+  --border:#1e40af;--border2:#60a5fa;
+  --text:#eff6ff;--text2:#93c5fd;--text3:#60a5fa;--text-muted:#93c5fd;
+  --primary:#3b82f6;--primary-hover:#2563eb;--primary-light:#1e3a5f;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+  --shadow2:0 4px 24px rgba(0,0,0,.4);
+}
+
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;transition:background .3s,color .3s}
+
+.theme-toggle{
+  position:fixed;top:16px;right:16px;z-index:100;
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);transition:all .3s;color:var(--text)
+}
+.theme-toggle:hover{background:var(--surface3);border-color:var(--border2);transform:scale(1.05)}
+.theme-toggle svg{width:20px;height:20px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+
+.card{
+  width:100%;max-width:480px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r3);padding:28px;
+  box-shadow:var(--shadow2);
+}
+
+.header{text-align:center;margin-bottom:24px}
+.header-icon{
+  width:56px;height:56px;border-radius:16px;
+  background:linear-gradient(135deg,var(--primary),var(--accent2));
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:12px;box-shadow:0 4px 16px rgba(37,99,235,.3);
+}
+.header-icon svg{width:28px;height:28px;color:#fff}
+.header h1{font-size:1.4rem;font-weight:800;color:var(--text)}
+.header p{font-size:.82rem;color:var(--text-muted);margin-top:4px}
+
+.status-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:600;
+  margin-top:8px
+}
+.status-badge.online{background:#dcfce7;color:#16a34a}
+.status-badge.offline{background:#fef3c7;color:#d97706}
+.dark .status-badge.online{background:#14532d;color:#4ade80}
+.dark .status-badge.offline{background:#78350f;color:#fbbf24}
+.status-dot{width:6px;height:6px;border-radius:50%}
+.status-badge.online .status-dot{background:#16a34a}
+.status-badge.offline .status-dot{background:#d97706}
+
+.converter-block{
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:var(--r2);padding:18px;margin-bottom:8px;
+  transition:border-color .2s
+}
+.converter-block:focus-within{border-color:var(--primary)}
+
+.conv-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.currency-select{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 12px;border:1.5px solid var(--border);border-radius:var(--r);
+  background:var(--surface);cursor:pointer;font-family:var(--font);
+  font-size:.85rem;font-weight:600;color:var(--text);transition:border-color .2s;
+  appearance:none;outline:none
+}
+.currency-select:focus{border-color:var(--primary)}
+.conv-flag{font-size:1.3rem}
+
+.conv-input{
+  width:100%;border:none;background:transparent;color:var(--text);
+  font-family:var(--mono);font-size:1.8rem;font-weight:700;outline:none
+}
+.conv-input::placeholder{color:var(--text-muted);opacity:.5}
+.conv-label{font-size:.72rem;color:var(--text-muted);margin-top:4px;font-weight:500}
+
+.swap-row{display:flex;justify-content:center;margin:4px 0;position:relative;z-index:2}
+.swap-btn{
+  width:44px;height:44px;border:2px solid var(--border);border-radius:50%;
+  background:var(--surface);color:var(--primary);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .3s;box-shadow:var(--shadow)
+}
+.swap-btn:hover{background:var(--primary);color:#fff;transform:rotate(180deg);border-color:var(--primary)}
+.swap-btn svg{width:20px;height:20px}
+
+.rate-display{
+  text-align:center;padding:14px;background:var(--surface2);
+  border-radius:var(--r);margin-top:16px;border:1px solid var(--border)
+}
+.rate-display .rate{font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--text3)}
+.rate-display .rate-label{font-size:.72rem;color:var(--text-muted);margin-top:2px}
+
+.rates-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:18px
+}
+.rate-card{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+  cursor:pointer;transition:all .2s
+}
+.rate-card:hover{border-color:var(--primary);background:var(--primary-light)}
+.rate-flag{font-size:1.1rem}
+.rate-info{flex:1}
+.rate-code{font-size:.75rem;font-weight:700;color:var(--text)}
+.rate-val{font-family:var(--mono);font-size:.72rem;color:var(--text-muted)}
+
+@media(max-width:500px){
+  .rates-grid{grid-template-columns:1fr}
+  .conv-input{font-size:1.4rem}
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Chuyển giao diện">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+
+<div class="card">
+  <div class="header">
+    <div class="header-icon"><i data-lucide="arrow-left-right"></i></div>
+    <h1>Chuyển Đổi Tiền Tệ</h1>
+    <p>Quy đổi nhanh giữa các loại tiền tệ</p>
+    <div class="status-badge offline" id="statusBadge">
+      <div class="status-dot"></div>
+      <span id="statusText">Tỷ giá offline</span>
+    </div>
+  </div>
+
+  <div class="converter-block">
+    <div class="conv-top">
+      <select class="currency-select" id="fromCurrency" onchange="convert()">
+      </select>
+    </div>
+    <input type="text" class="conv-input" id="fromAmount" value="1.000.000" oninput="onFromInput()" placeholder="0">
+    <div class="conv-label" id="fromLabel">Nhập số tiền cần chuyển đổi</div>
+  </div>
+
+  <div class="swap-row">
+    <button class="swap-btn" onclick="swapCurrencies()" aria-label="Đổi chiều">
+      <i data-lucide="arrow-up-down"></i>
+    </button>
+  </div>
+
+  <div class="converter-block">
+    <div class="conv-top">
+      <select class="currency-select" id="toCurrency" onchange="convert()">
+      </select>
+    </div>
+    <input type="text" class="conv-input" id="toAmount" readonly placeholder="0">
+    <div class="conv-label" id="toLabel">Kết quả chuyển đổi</div>
+  </div>
+
+  <div class="rate-display">
+    <div class="rate" id="rateText">-</div>
+    <div class="rate-label" id="rateDate">Đang tải tỷ giá...</div>
+  </div>
+
+  <div class="rates-grid" id="ratesGrid"></div>
+</div>
+
+<script>
+var currencies = {
+  USD: {name: 'Đô la Mỹ', flag: '\uD83C\uDDFA\uD83C\uDDF8'},
+  EUR: {name: 'Euro', flag: '\uD83C\uDDEA\uD83C\uDDFA'},
+  VND: {name: 'Việt Nam Đồng', flag: '\uD83C\uDDFB\uD83C\uDDF3'},
+  JPY: {name: 'Yên Nhật', flag: '\uD83C\uDDEF\uD83C\uDDF5'},
+  GBP: {name: 'Bảng Anh', flag: '\uD83C\uDDEC\uD83C\uDDE7'},
+  KRW: {name: 'Won Hàn Quốc', flag: '\uD83C\uDDF0\uD83C\uDDF7'},
+  CNY: {name: 'Nhân dân tệ', flag: '\uD83C\uDDE8\uD83C\uDDF3'},
+  THB: {name: 'Baht Thái', flag: '\uD83C\uDDF9\uD83C\uDDED'},
+  SGD: {name: 'Đô la Singapore', flag: '\uD83C\uDDF8\uD83C\uDDEC'},
+  AUD: {name: 'Đô la Úc', flag: '\uD83C\uDDE6\uD83C\uDDFA'}
+};
+
+// Hardcoded fallback rates (base: USD, updated April 2026)
+var fallbackRates = {
+  USD: 1,
+  EUR: 0.92,
+  VND: 25450,
+  JPY: 151.5,
+  GBP: 0.79,
+  KRW: 1345,
+  CNY: 7.24,
+  THB: 35.8,
+  SGD: 1.35,
+  AUD: 1.54
+};
+
+var rates = Object.assign({}, fallbackRates);
+var ratesSource = 'offline';
+var ratesDate = 'Tháng 4/2026 (dự phòng)';
+
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+  lucide.createIcons();
+}
+
+if(localStorage.getItem('math-dark')==='true') document.body.classList.add('dark');
+
+function populateSelects(){
+  var fromSel = document.getElementById('fromCurrency');
+  var toSel = document.getElementById('toCurrency');
+  var codes = Object.keys(currencies);
+
+  codes.forEach(function(code){
+    var c = currencies[code];
+    var opt1 = document.createElement('option');
+    opt1.value = code;
+    opt1.textContent = c.flag + ' ' + code;
+    fromSel.appendChild(opt1);
+
+    var opt2 = document.createElement('option');
+    opt2.value = code;
+    opt2.textContent = c.flag + ' ' + code;
+    toSel.appendChild(opt2);
+  });
+
+  fromSel.value = 'VND';
+  toSel.value = 'USD';
+}
+
+function parseAmount(s){
+  return parseFloat(String(s).replace(/\./g,'').replace(/,/g,'.').replace(/[^\d.]/g,'')) || 0;
+}
+
+function formatAmount(n, code){
+  if(code === 'VND' || code === 'KRW' || code === 'JPY'){
+    return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+  // For other currencies show 2 decimals
+  var parts = n.toFixed(2).split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return parts.join(',');
+}
+
+function onFromInput(){
+  var el = document.getElementById('fromAmount');
+  var fromCode = document.getElementById('fromCurrency').value;
+  // Format VND-style for VND/JPY/KRW
+  if(fromCode === 'VND' || fromCode === 'KRW' || fromCode === 'JPY'){
+    var v = el.value.replace(/\./g,'').replace(/[^\d]/g,'');
+    if(v) el.value = parseInt(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+  convert();
+}
+
+function convert(){
+  var fromCode = document.getElementById('fromCurrency').value;
+  var toCode = document.getElementById('toCurrency').value;
+  var amount = parseAmount(document.getElementById('fromAmount').value);
+
+  var inUSD = amount / rates[fromCode];
+  var result = inUSD * rates[toCode];
+
+  document.getElementById('toAmount').value = formatAmount(result, toCode);
+
+  var rate = rates[toCode] / rates[fromCode];
+  var rateFormatted = rate < 0.01 ? rate.toFixed(6) : rate < 1 ? rate.toFixed(4) : rate.toFixed(2);
+  document.getElementById('rateText').textContent = '1 ' + fromCode + ' = ' + rateFormatted + ' ' + toCode;
+
+  document.getElementById('fromLabel').textContent = currencies[fromCode].flag + ' ' + currencies[fromCode].name;
+  document.getElementById('toLabel').textContent = currencies[toCode].flag + ' ' + currencies[toCode].name;
+}
+
+function swapCurrencies(){
+  var fromSel = document.getElementById('fromCurrency');
+  var toSel = document.getElementById('toCurrency');
+  var temp = fromSel.value;
+  fromSel.value = toSel.value;
+  toSel.value = temp;
+
+  var fromAmt = document.getElementById('fromAmount');
+  var toAmt = document.getElementById('toAmount');
+  var toCode = toSel.value;
+  fromAmt.value = toAmt.value;
+  convert();
+}
+
+function renderRatesGrid(){
+  var grid = document.getElementById('ratesGrid');
+  grid.textContent = '';
+  var codes = Object.keys(currencies);
+  codes.forEach(function(code){
+    if(code === 'USD') return;
+    var card = document.createElement('div');
+    card.className = 'rate-card';
+    card.onclick = function(){
+      document.getElementById('fromCurrency').value = 'USD';
+      document.getElementById('toCurrency').value = code;
+      document.getElementById('fromAmount').value = '1';
+      convert();
+    };
+
+    var flagSpan = document.createElement('span');
+    flagSpan.className = 'rate-flag';
+    flagSpan.textContent = currencies[code].flag;
+
+    var info = document.createElement('div');
+    info.className = 'rate-info';
+
+    var codeEl = document.createElement('div');
+    codeEl.className = 'rate-code';
+    codeEl.textContent = code;
+
+    var valEl = document.createElement('div');
+    valEl.className = 'rate-val';
+    valEl.textContent = '1 USD = ' + (rates[code] < 1 ? rates[code].toFixed(4) : rates[code].toFixed(2)) + ' ' + code;
+
+    info.appendChild(codeEl);
+    info.appendChild(valEl);
+    card.appendChild(flagSpan);
+    card.appendChild(info);
+    grid.appendChild(card);
+  });
+}
+
+function fetchRates(){
+  fetch('https://api.exchangerate-api.com/v4/latest/USD')
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      if(data && data.rates){
+        var codes = Object.keys(currencies);
+        codes.forEach(function(code){
+          if(data.rates[code]) rates[code] = data.rates[code];
+        });
+        ratesSource = 'online';
+        ratesDate = data.date || 'Hôm nay';
+        var badge = document.getElementById('statusBadge');
+        badge.className = 'status-badge online';
+        document.getElementById('statusText').textContent = 'Tỷ giá trực tuyến';
+        document.getElementById('rateDate').textContent = 'Cập nhật: ' + ratesDate;
+        convert();
+        renderRatesGrid();
+      }
+    })
+    .catch(function(){
+      document.getElementById('rateDate').textContent = 'Dùng tỷ giá dự phòng - ' + ratesDate;
+    });
+}
+
+window.addEventListener('DOMContentLoaded', function(){
+  populateSelects();
+  convert();
+  renderRatesGrid();
+  fetchRates();
+  lucide.createIcons();
+});
+</script>
+</body>
+</html>

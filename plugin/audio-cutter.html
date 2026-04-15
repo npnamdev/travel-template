@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cắt Nhạc MP3 — Audio Cutter</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <style>
+    :root {
+      --bg: #f5f3ff;
+      --bg-card: #fff;
+      --bg-card-hover: #faf8ff;
+      --text: #1e1b4b;
+      --text-sub: #6b6394;
+      --primary: #7c3aed;
+      --primary-light: rgba(124,58,237,0.08);
+      --primary-glow: rgba(124,58,237,0.15);
+      --border: rgba(124,58,237,0.1);
+      --shadow: 0 1px 3px rgba(124,58,237,0.04), 0 8px 32px rgba(124,58,237,0.06);
+      --shadow-hover: 0 4px 12px rgba(124,58,237,0.1), 0 16px 48px rgba(124,58,237,0.14);
+      --accent: #a855f7;
+      --accent-light: rgba(168,85,247,0.08);
+      --wave-bg: #ede9fe;
+      --wave-color: #7c3aed;
+      --wave-select: rgba(124,58,237,0.2);
+    }
+
+    body.dark {
+      --bg: #0a0817;
+      --bg-card: #16132e;
+      --bg-card-hover: #1e1a3c;
+      --text: #ede9fe;
+      --text-sub: #9b93c4;
+      --primary: #a78bfa;
+      --primary-light: rgba(167,139,250,0.1);
+      --primary-glow: rgba(167,139,250,0.15);
+      --border: rgba(167,139,250,0.08);
+      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 32px rgba(0,0,0,0.4);
+      --shadow-hover: 0 4px 12px rgba(167,139,250,0.15), 0 16px 48px rgba(0,0,0,0.5);
+      --accent: #c084fc;
+      --accent-light: rgba(192,132,252,0.1);
+      --wave-bg: #1e1a3c;
+      --wave-color: #a78bfa;
+      --wave-select: rgba(167,139,250,0.25);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: -100px;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -250px;
+      right: -150px;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(168,85,247,0.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+    }
+
+    .header h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .header p {
+      color: var(--text-sub);
+      font-size: 0.85rem;
+      margin-top: 2px;
+    }
+
+    .dark-toggle {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .dark-toggle:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+      transition: all 0.3s;
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title i { color: var(--primary); }
+
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: var(--primary-light);
+    }
+
+    .upload-zone:hover {
+      border-color: var(--primary);
+      background: var(--primary-glow);
+    }
+
+    .upload-zone i { color: var(--primary); margin-bottom: 12px; }
+    .upload-zone p { color: var(--text-sub); font-size: 0.9rem; }
+    .upload-zone .hint { font-size: 0.8rem; margin-top: 8px; opacity: 0.6; }
+
+    input[type="file"] { display: none; }
+
+    .waveform-wrap {
+      position: relative;
+      margin: 16px 0;
+      cursor: crosshair;
+      user-select: none;
+    }
+
+    #waveformCanvas {
+      width: 100%;
+      height: 140px;
+      border-radius: 12px;
+      display: block;
+      background: var(--wave-bg);
+    }
+
+    .marker {
+      position: absolute;
+      top: 0;
+      width: 4px;
+      height: 100%;
+      border-radius: 2px;
+      cursor: ew-resize;
+      z-index: 5;
+    }
+
+    .marker-start {
+      background: #22c55e;
+      box-shadow: 0 0 8px rgba(34,197,94,0.5);
+    }
+
+    .marker-end {
+      background: #ef4444;
+      box-shadow: 0 0 8px rgba(239,68,68,0.5);
+    }
+
+    .marker-label {
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .marker-start .marker-label {
+      background: rgba(34,197,94,0.15);
+      color: #22c55e;
+    }
+
+    .marker-end .marker-label {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+    }
+
+    .playhead {
+      position: absolute;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background: var(--primary);
+      z-index: 4;
+      pointer-events: none;
+      display: none;
+    }
+
+    .info-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .info-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .controls-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: none;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(124,58,237,0.3);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 6px 24px rgba(124,58,237,0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+
+    .btn-icon {
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .file-info {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .file-info strong { color: var(--text); }
+
+    @media (max-width: 600px) {
+      .container { padding: 16px 12px; }
+      .header h1 { font-size: 1.25rem; }
+      #waveformCanvas { height: 100px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <div class="header-icon">
+          <i data-lucide="scissors" style="width:26px;height:26px"></i>
+        </div>
+        <div>
+          <h1>Cắt Nhạc MP3</h1>
+          <p>Cắt và tải xuống đoạn nhạc yêu thích của bạn</p>
+        </div>
+      </div>
+      <button class="dark-toggle" onclick="toggleDark()" title="Chế độ tối">
+        <i data-lucide="moon" style="width:20px;height:20px"></i>
+      </button>
+    </div>
+
+    <div class="card" id="uploadCard">
+      <div class="card-title"><i data-lucide="music" style="width:18px;height:18px"></i> Tải Âm Thanh Lên</div>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <i data-lucide="upload" style="width:48px;height:48px"></i>
+        <p>Nhấn để chọn hoặc kéo thả tệp âm thanh</p>
+        <p class="hint">Hỗ trợ: MP3, WAV, OGG</p>
+      </div>
+      <input type="file" id="fileInput" accept="audio/mp3,audio/wav,audio/ogg,audio/mpeg,.mp3,.wav,.ogg" />
+      <div class="file-info" id="fileInfo" style="display:none">
+        <i data-lucide="file-audio" style="width:16px;height:16px"></i>
+        <span id="fileName"></span>
+      </div>
+    </div>
+
+    <div class="card" id="editorCard" style="display:none">
+      <div class="card-title"><i data-lucide="audio-waveform" style="width:18px;height:18px"></i> Biên Tập Âm Thanh</div>
+
+      <div class="info-row" id="infoRow">
+        <div class="info-badge" id="totalDuration">
+          <i data-lucide="clock" style="width:14px;height:14px"></i> Tổng: 0:00
+        </div>
+        <div class="info-badge" id="selectedDuration">
+          <i data-lucide="scissors" style="width:14px;height:14px"></i> Chọn: 0:00
+        </div>
+        <div class="info-badge" id="startTimeLabel">
+          <i data-lucide="skip-back" style="width:14px;height:14px"></i> Bắt đầu: 0:00
+        </div>
+        <div class="info-badge" id="endTimeLabel">
+          <i data-lucide="skip-forward" style="width:14px;height:14px"></i> Kết thúc: 0:00
+        </div>
+      </div>
+
+      <div class="waveform-wrap" id="waveformWrap">
+        <canvas id="waveformCanvas"></canvas>
+        <div class="marker marker-start" id="markerStart">
+          <div class="marker-label">BẮT ĐẦU</div>
+        </div>
+        <div class="marker marker-end" id="markerEnd">
+          <div class="marker-label">KẾT THÚC</div>
+        </div>
+        <div class="playhead" id="playhead"></div>
+      </div>
+
+      <div class="controls-bar">
+        <button class="btn btn-primary btn-icon" id="playBtn" onclick="togglePlay()">
+          <i data-lucide="play" style="width:20px;height:20px" id="playIcon"></i>
+        </button>
+        <button class="btn btn-secondary" onclick="playSelection()">
+          <i data-lucide="repeat" style="width:16px;height:16px"></i> Nghe đoạn chọn
+        </button>
+        <button class="btn btn-primary" onclick="exportAudio()">
+          <i data-lucide="download" style="width:16px;height:16px"></i> Tải đoạn cắt (WAV)
+        </button>
+        <button class="btn btn-secondary" onclick="resetAll()">
+          <i data-lucide="rotate-ccw" style="width:16px;height:16px"></i> Đổi tệp
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Dark mode
+    function toggleDark() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+      lucide.createIcons();
+    }
+    if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+
+    var audioCtx = null;
+    var audioBuffer = null;
+    var sourceNode = null;
+    var isPlaying = false;
+    var animFrame = null;
+    var playStartTime = 0;
+    var playOffset = 0;
+    var selectionStartRatio = 0;
+    var selectionEndRatio = 1;
+    var dragging = null;
+
+    var fileInput = document.getElementById('fileInput');
+    var uploadZone = document.getElementById('uploadZone');
+    var uploadCard = document.getElementById('uploadCard');
+    var editorCard = document.getElementById('editorCard');
+    var canvas = document.getElementById('waveformCanvas');
+    var ctx = canvas.getContext('2d');
+    var markerStart = document.getElementById('markerStart');
+    var markerEnd = document.getElementById('markerEnd');
+    var playhead = document.getElementById('playhead');
+    var waveformWrap = document.getElementById('waveformWrap');
+
+    // Drag and drop
+    uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); uploadZone.style.borderColor = 'var(--primary)'; });
+    uploadZone.addEventListener('dragleave', function() { uploadZone.style.borderColor = ''; });
+    uploadZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      uploadZone.style.borderColor = '';
+      var f = e.dataTransfer.files[0];
+      if (f && f.type.startsWith('audio/')) loadAudioFile(f);
+    });
+
+    fileInput.addEventListener('change', function() {
+      if (fileInput.files[0]) loadAudioFile(fileInput.files[0]);
+    });
+
+    function loadAudioFile(file) {
+      document.getElementById('fileName').textContent = file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+      document.getElementById('fileInfo').style.display = 'flex';
+      uploadZone.style.display = 'none';
+
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        audioCtx.decodeAudioData(e.target.result, function(buffer) {
+          audioBuffer = buffer;
+          selectionStartRatio = 0;
+          selectionEndRatio = 1;
+          editorCard.style.display = 'block';
+          drawWaveform();
+          updateMarkers();
+          updateInfoLabels();
+          lucide.createIcons();
+        }, function() {
+          alert('Không thể đọc tệp âm thanh này.');
+        });
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function drawWaveform() {
+      var dpr = window.devicePixelRatio || 1;
+      var rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+
+      var w = rect.width;
+      var h = rect.height;
+      var data = audioBuffer.getChannelData(0);
+      var step = Math.ceil(data.length / w);
+
+      // Background
+      var cs = getComputedStyle(document.documentElement);
+      ctx.fillStyle = cs.getPropertyValue('--wave-bg').trim() || '#ede9fe';
+      ctx.fillRect(0, 0, w, h);
+
+      // Selection highlight
+      var selX1 = selectionStartRatio * w;
+      var selX2 = selectionEndRatio * w;
+      ctx.fillStyle = cs.getPropertyValue('--wave-select').trim() || 'rgba(124,58,237,0.2)';
+      ctx.fillRect(selX1, 0, selX2 - selX1, h);
+
+      // Waveform bars
+      var waveColor = cs.getPropertyValue('--wave-color').trim() || '#7c3aed';
+      var mid = h / 2;
+
+      for (var i = 0; i < w; i++) {
+        var min = 1.0, max = -1.0;
+        for (var j = 0; j < step; j++) {
+          var datum = data[(i * step) + j];
+          if (datum === undefined) break;
+          if (datum < min) min = datum;
+          if (datum > max) max = datum;
+        }
+
+        var ratio = i / w;
+        var inSelection = ratio >= selectionStartRatio && ratio <= selectionEndRatio;
+
+        ctx.fillStyle = inSelection ? waveColor : (waveColor + '44');
+        var barH = Math.max(1, ((max - min) / 2) * h * 0.85);
+        ctx.fillRect(i, mid - barH, 1, barH * 2);
+      }
+    }
+
+    function updateMarkers() {
+      var w = waveformWrap.offsetWidth;
+      markerStart.style.left = (selectionStartRatio * w - 2) + 'px';
+      markerEnd.style.left = (selectionEndRatio * w - 2) + 'px';
+    }
+
+    function updateInfoLabels() {
+      if (!audioBuffer) return;
+      var dur = audioBuffer.duration;
+      var s = selectionStartRatio * dur;
+      var e = selectionEndRatio * dur;
+
+      document.getElementById('totalDuration').textContent = 'Tổng: ' + formatTime(dur);
+      document.getElementById('selectedDuration').textContent = 'Chọn: ' + formatTime(e - s);
+      document.getElementById('startTimeLabel').textContent = 'Bắt đầu: ' + formatTime(s);
+      document.getElementById('endTimeLabel').textContent = 'Kết thúc: ' + formatTime(e);
+    }
+
+    function formatTime(sec) {
+      var m = Math.floor(sec / 60);
+      var s = Math.floor(sec % 60);
+      var ms = Math.floor((sec % 1) * 10);
+      return m + ':' + (s < 10 ? '0' : '') + s + '.' + ms;
+    }
+
+    // Marker dragging
+    function startDrag(which, e) {
+      e.preventDefault();
+      dragging = which;
+      document.addEventListener('mousemove', onDrag);
+      document.addEventListener('mouseup', stopDrag);
+      document.addEventListener('touchmove', onDrag, { passive: false });
+      document.addEventListener('touchend', stopDrag);
+    }
+
+    function onDrag(e) {
+      if (!dragging) return;
+      e.preventDefault();
+      var rect = waveformWrap.getBoundingClientRect();
+      var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      var ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+
+      if (dragging === 'start') {
+        selectionStartRatio = Math.min(ratio, selectionEndRatio - 0.01);
+      } else {
+        selectionEndRatio = Math.max(ratio, selectionStartRatio + 0.01);
+      }
+
+      drawWaveform();
+      updateMarkers();
+      updateInfoLabels();
+    }
+
+    function stopDrag() {
+      dragging = null;
+      document.removeEventListener('mousemove', onDrag);
+      document.removeEventListener('mouseup', stopDrag);
+      document.removeEventListener('touchmove', onDrag);
+      document.removeEventListener('touchend', stopDrag);
+    }
+
+    markerStart.addEventListener('mousedown', function(e) { startDrag('start', e); });
+    markerStart.addEventListener('touchstart', function(e) { startDrag('start', e); });
+    markerEnd.addEventListener('mousedown', function(e) { startDrag('end', e); });
+    markerEnd.addEventListener('touchstart', function(e) { startDrag('end', e); });
+
+    // Click on waveform to set playhead
+    waveformWrap.addEventListener('click', function(e) {
+      if (e.target === markerStart || e.target === markerEnd) return;
+      var rect = waveformWrap.getBoundingClientRect();
+      var ratio = (e.clientX - rect.left) / rect.width;
+      if (audioBuffer && !isPlaying) {
+        playOffset = ratio * audioBuffer.duration;
+      }
+    });
+
+    function togglePlay() {
+      if (isPlaying) {
+        stopAudio();
+      } else {
+        playFromOffset(0, audioBuffer.duration);
+      }
+    }
+
+    function playSelection() {
+      if (!audioBuffer) return;
+      stopAudio();
+      var startSec = selectionStartRatio * audioBuffer.duration;
+      var endSec = selectionEndRatio * audioBuffer.duration;
+      playFromOffset(startSec, endSec);
+    }
+
+    function playFromOffset(startSec, endSec) {
+      if (!audioBuffer || !audioCtx) return;
+      stopAudio();
+
+      sourceNode = audioCtx.createBufferSource();
+      sourceNode.buffer = audioBuffer;
+      sourceNode.connect(audioCtx.destination);
+
+      var duration = endSec - startSec;
+      sourceNode.start(0, startSec, duration);
+      playStartTime = audioCtx.currentTime;
+      playOffset = startSec;
+      isPlaying = true;
+
+      playhead.style.display = 'block';
+      updatePlayhead(endSec);
+
+      sourceNode.onended = function() {
+        isPlaying = false;
+        playhead.style.display = 'none';
+        cancelAnimationFrame(animFrame);
+        lucide.createIcons();
+      };
+      lucide.createIcons();
+    }
+
+    function updatePlayhead(endSec) {
+      if (!isPlaying) return;
+      var elapsed = audioCtx.currentTime - playStartTime;
+      var currentTime = playOffset + elapsed;
+      var ratio = currentTime / audioBuffer.duration;
+      var w = waveformWrap.offsetWidth;
+      playhead.style.left = (ratio * w) + 'px';
+
+      if (currentTime < endSec) {
+        animFrame = requestAnimationFrame(function() { updatePlayhead(endSec); });
+      }
+    }
+
+    function stopAudio() {
+      if (sourceNode) {
+        try { sourceNode.stop(); } catch(e) {}
+        sourceNode = null;
+      }
+      isPlaying = false;
+      playhead.style.display = 'none';
+      cancelAnimationFrame(animFrame);
+    }
+
+    function exportAudio() {
+      if (!audioBuffer) return;
+
+      var startSec = selectionStartRatio * audioBuffer.duration;
+      var endSec = selectionEndRatio * audioBuffer.duration;
+      var duration = endSec - startSec;
+      var sampleRate = audioBuffer.sampleRate;
+      var numChannels = audioBuffer.numberOfChannels;
+      var startSample = Math.floor(startSec * sampleRate);
+      var numSamples = Math.floor(duration * sampleRate);
+
+      var offCtx = new OfflineAudioContext(numChannels, numSamples, sampleRate);
+      var source = offCtx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(offCtx.destination);
+      source.start(0, startSec, duration);
+
+      offCtx.startRendering().then(function(rendered) {
+        var wav = audioBufferToWav(rendered);
+        var blob = new Blob([wav], { type: 'audio/wav' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'audio-cut-' + Date.now() + '.wav';
+        a.click();
+      });
+    }
+
+    function audioBufferToWav(buffer) {
+      var numChannels = buffer.numberOfChannels;
+      var sampleRate = buffer.sampleRate;
+      var length = buffer.length;
+
+      // Interleave channels
+      var interleaved;
+      if (numChannels === 1) {
+        interleaved = buffer.getChannelData(0);
+      } else {
+        interleaved = new Float32Array(length * numChannels);
+        for (var ch = 0; ch < numChannels; ch++) {
+          var channelData = buffer.getChannelData(ch);
+          for (var i = 0; i < length; i++) {
+            interleaved[i * numChannels + ch] = channelData[i];
+          }
+        }
+      }
+
+      var dataLength = interleaved.length * 2;
+      var arrayBuffer = new ArrayBuffer(44 + dataLength);
+      var view = new DataView(arrayBuffer);
+
+      // WAV header
+      writeString(view, 0, 'RIFF');
+      view.setUint32(4, 36 + dataLength, true);
+      writeString(view, 8, 'WAVE');
+      writeString(view, 12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, numChannels, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * numChannels * 2, true);
+      view.setUint16(32, numChannels * 2, true);
+      view.setUint16(34, 16, true);
+      writeString(view, 36, 'data');
+      view.setUint32(40, dataLength, true);
+
+      // Write samples
+      var offset = 44;
+      for (var i = 0; i < interleaved.length; i++) {
+        var s = Math.max(-1, Math.min(1, interleaved[i]));
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        offset += 2;
+      }
+
+      return arrayBuffer;
+    }
+
+    function writeString(view, offset, string) {
+      for (var i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    }
+
+    function resetAll() {
+      stopAudio();
+      audioBuffer = null;
+      uploadZone.style.display = '';
+      document.getElementById('fileInfo').style.display = 'none';
+      editorCard.style.display = 'none';
+      fileInput.value = '';
+    }
+
+    // Redraw on resize
+    window.addEventListener('resize', function() {
+      if (audioBuffer) {
+        drawWaveform();
+        updateMarkers();
+      }
+    });
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>

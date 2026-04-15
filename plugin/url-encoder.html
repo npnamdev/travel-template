@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mã Hoá URL — URL Encoder/Decoder</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #ecfeff;
+      --bg-card: #fff;
+      --text: #164e63;
+      --text-sub: #6b8a94;
+      --primary: #0891b2;
+      --primary-light: rgba(8,145,178,0.08);
+      --primary-glow: rgba(8,145,178,0.15);
+      --border: rgba(8,145,178,0.1);
+      --shadow: 0 1px 3px rgba(8,145,178,0.04), 0 8px 32px rgba(8,145,178,0.06);
+      --accent: #06b6d4;
+    }
+    body.dark {
+      --bg: #0a1419;
+      --bg-card: #0f2027;
+      --text: #cffafe;
+      --text-sub: #67a0b0;
+      --primary: #22d3ee;
+      --primary-light: rgba(34,211,238,0.1);
+      --primary-glow: rgba(34,211,238,0.15);
+      --border: rgba(34,211,238,0.08);
+      --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.3);
+      --accent: #67e8f9;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px; left: -100px;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(8,145,178,0.08) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; position: relative; z-index: 1; }
+    .header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;
+    }
+    .header h1 {
+      font-size: 1.8rem; font-weight: 700;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .header h1 i { color: var(--primary); }
+    .header p { color: var(--text-sub); margin-top: 0.25rem; font-size: 0.95rem; }
+    .dark-toggle {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+      width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text); box-shadow: var(--shadow); transition: all 0.3s;
+    }
+    .dark-toggle:hover { transform: scale(1.1); }
+    .mode-tabs {
+      display: flex; gap: 0.5rem; margin-bottom: 1.5rem;
+    }
+    .mode-tab {
+      padding: 0.6rem 1.5rem; border-radius: 12px; border: 1px solid var(--border);
+      background: var(--bg-card); color: var(--text-sub); font-family: inherit;
+      font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.3s;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .mode-tab.active {
+      background: var(--primary); color: #fff; border-color: var(--primary);
+      box-shadow: 0 4px 16px rgba(8,145,178,0.3);
+    }
+    .card {
+      background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border);
+      box-shadow: var(--shadow); overflow: hidden; margin-bottom: 1.5rem;
+    }
+    .card-label {
+      padding: 0.75rem 1rem; font-weight: 600; font-size: 0.9rem;
+      border-bottom: 1px solid var(--border); color: var(--primary);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    textarea {
+      width: 100%; min-height: 150px; padding: 1rem; border: none;
+      background: transparent; color: var(--text);
+      font-family: 'Outfit', monospace; font-size: 0.9rem;
+      resize: vertical; outline: none;
+    }
+    textarea::placeholder { color: var(--text-sub); opacity: 0.6; }
+    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 1.5rem; border-radius: 12px; border: none;
+      font-family: inherit; font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .btn-primary {
+      background: var(--primary); color: #fff;
+      box-shadow: 0 4px 16px rgba(8,145,178,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(8,145,178,0.4); }
+    .btn-secondary {
+      background: var(--primary-light); color: var(--primary); border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--primary-glow); }
+    .func-select {
+      padding: 0.6rem 1rem; border-radius: 12px; border: 1px solid var(--border);
+      background: var(--bg-card); color: var(--text); font-family: inherit;
+      font-size: 0.9rem; font-weight: 500; outline: none; cursor: pointer;
+    }
+    .toast {
+      position: fixed; bottom: 2rem; right: 2rem;
+      background: var(--primary); color: #fff;
+      padding: 0.75rem 1.5rem; border-radius: 12px;
+      font-weight: 600; font-size: 0.9rem;
+      box-shadow: 0 8px 32px rgba(8,145,178,0.3);
+      transform: translateY(100px); opacity: 0; transition: all 0.4s;
+      z-index: 100;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    @media (max-width: 768px) {
+      .header h1 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1><i data-lucide="link"></i> Mã Hoá URL</h1>
+        <p>URL Encoder/Decoder -- Mã hoá và giải mã URL nhanh chóng</p>
+      </div>
+      <button class="dark-toggle" onclick="toggleDark()" title="Chuyển giao diện">
+        <i data-lucide="moon"></i>
+      </button>
+    </div>
+
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="tabEncode" onclick="setMode('encode')">
+        <i data-lucide="lock" style="width:16px;height:16px"></i> Encode
+      </button>
+      <button class="mode-tab" id="tabDecode" onclick="setMode('decode')">
+        <i data-lucide="unlock" style="width:16px;height:16px"></i> Decode
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-label"><i data-lucide="text-cursor-input" style="width:16px;height:16px"></i> <span id="inputLabel">Văn bản cần mã hoá</span></div>
+      <textarea id="inputText" placeholder="Nhập văn bản hoặc URL vào đây..."></textarea>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" onclick="process()">
+        <i data-lucide="zap" style="width:18px;height:18px"></i> <span id="processLabel">Mã Hoá</span>
+      </button>
+      <select class="func-select" id="funcType">
+        <option value="component">encodeURIComponent</option>
+        <option value="uri">encodeURI</option>
+      </select>
+      <button class="btn btn-secondary" onclick="copyResult()">
+        <i data-lucide="copy" style="width:18px;height:18px"></i> Sao chép
+      </button>
+      <button class="btn btn-secondary" onclick="clearAll()">
+        <i data-lucide="trash-2" style="width:18px;height:18px"></i> Xoá
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-label"><i data-lucide="check-circle" style="width:16px;height:16px"></i> <span id="outputLabel">Kết quả mã hoá</span></div>
+      <textarea id="outputText" readonly placeholder="Kết quả sẽ hiển thị ở đây..."></textarea>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    var currentMode = 'encode';
+
+    function toggleDark() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+      lucide.createIcons();
+    }
+    if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById('tabEncode').className = 'mode-tab' + (mode === 'encode' ? ' active' : '');
+      document.getElementById('tabDecode').className = 'mode-tab' + (mode === 'decode' ? ' active' : '');
+      document.getElementById('inputLabel').textContent = mode === 'encode' ? 'Văn bản cần mã hoá' : 'URL cần giải mã';
+      document.getElementById('outputLabel').textContent = mode === 'encode' ? 'Kết quả mã hoá' : 'Kết quả giải mã';
+      document.getElementById('processLabel').textContent = mode === 'encode' ? 'Mã Hoá' : 'Giải Mã';
+    }
+
+    function process() {
+      var input = document.getElementById('inputText').value;
+      var func = document.getElementById('funcType').value;
+      var result = '';
+      try {
+        if (currentMode === 'encode') {
+          result = func === 'component' ? encodeURIComponent(input) : encodeURI(input);
+        } else {
+          result = func === 'component' ? decodeURIComponent(input) : decodeURI(input);
+        }
+        document.getElementById('outputText').value = result;
+      } catch(e) {
+        document.getElementById('outputText').value = 'Lỗi: ' + e.message;
+      }
+    }
+
+    function copyResult() {
+      var text = document.getElementById('outputText').value;
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(function() { showToast('Đã sao chép!'); });
+    }
+
+    function clearAll() {
+      document.getElementById('inputText').value = '';
+      document.getElementById('outputText').value = '';
+    }
+
+    function showToast(msg) {
+      var t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(function() { t.classList.remove('show'); }, 2000);
+    }
+
+    // Auto-detect mode on paste
+    document.getElementById('inputText').addEventListener('input', function() {
+      var val = this.value.trim();
+      if (val.match(/%[0-9A-Fa-f]{2}/)) {
+        setMode('decode');
+      }
+    });
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>

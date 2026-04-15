@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đọc Văn Bản — Text to Speech</title>
+<meta name="description" content="Chuyển văn bản thành giọng nói với Web Speech API. Hỗ trợ nhiều ngôn ngữ, điều chỉnh tốc độ, cao độ, âm lượng.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%237c3aed'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white'%3E🔊%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#faf5ff;--surface:#ffffff;--surface2:#f5f3ff;--surface3:#ede9fe;
+  --border:#ddd6fe;--border2:#7c3aed;
+  --text:#3b0764;--text2:#5b21b6;--text3:#7c3aed;--text-muted:#6b7280;
+  --primary:#7c3aed;--primary-hover:#6d28d9;--primary-light:#ede9fe;
+  --accent:#a855f7;--accent2:#c084fc;
+  --r:12px;--r2:16px;--r3:24px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.05);
+  --shadow2:0 4px 24px rgba(0,0,0,.08);
+  --font:'Sora',sans-serif;
+}
+
+.dark{
+  --bg:#1e1033;--surface:#2d1b4e;--surface2:#1e1033;--surface3:#3b2667;
+  --border:#4c1d95;--border2:#a78bfa;
+  --text:#f5f3ff;--text2:#ddd6fe;--text3:#c4b5fd;--text-muted:#a78bfa;
+  --primary:#a78bfa;--primary-hover:#8b5cf6;--primary-light:#3b2667;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+  --shadow2:0 4px 24px rgba(0,0,0,.4);
+}
+
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px;transition:background .3s,color .3s}
+
+.theme-toggle{
+  position:fixed;top:16px;right:16px;z-index:100;
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);transition:all .3s;color:var(--text)
+}
+.theme-toggle:hover{background:var(--surface3);border-color:var(--border2);transform:scale(1.05)}
+.theme-toggle svg{width:20px;height:20px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+
+.card{
+  width:100%;max-width:560px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r3);padding:28px;
+  box-shadow:var(--shadow2);margin-top:20px;
+}
+
+.header{text-align:center;margin-bottom:24px}
+.header-icon{
+  width:56px;height:56px;border-radius:16px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:12px;box-shadow:0 4px 16px rgba(124,58,237,.3);
+}
+.header-icon svg{width:28px;height:28px;color:#fff}
+.header h1{font-size:1.4rem;font-weight:700;color:var(--text)}
+.header p{font-size:.82rem;color:var(--text-muted);margin-top:4px}
+
+/* Equalizer */
+.equalizer{display:flex;align-items:flex-end;justify-content:center;gap:3px;height:50px;margin-bottom:20px;opacity:.3;transition:opacity .3s}
+.equalizer.active{opacity:1}
+.eq-bar{width:4px;background:linear-gradient(to top,var(--primary),var(--accent));border-radius:2px;transition:height .1s}
+
+@keyframes eqBounce1{0%,100%{height:8px}50%{height:40px}}
+@keyframes eqBounce2{0%,100%{height:14px}50%{height:32px}}
+@keyframes eqBounce3{0%,100%{height:6px}50%{height:48px}}
+@keyframes eqBounce4{0%,100%{height:20px}50%{height:28px}}
+@keyframes eqBounce5{0%,100%{height:10px}50%{height:44px}}
+
+.equalizer.active .eq-bar:nth-child(5n+1){animation:eqBounce1 .4s ease-in-out infinite}
+.equalizer.active .eq-bar:nth-child(5n+2){animation:eqBounce2 .5s ease-in-out infinite}
+.equalizer.active .eq-bar:nth-child(5n+3){animation:eqBounce3 .35s ease-in-out infinite}
+.equalizer.active .eq-bar:nth-child(5n+4){animation:eqBounce4 .55s ease-in-out infinite}
+.equalizer.active .eq-bar:nth-child(5n+5){animation:eqBounce5 .45s ease-in-out infinite}
+
+/* Textarea */
+.textarea-wrap{position:relative;margin-bottom:16px}
+.textarea-wrap textarea{
+  width:100%;min-height:140px;padding:14px;
+  border:1px solid var(--border);border-radius:var(--r2);
+  background:var(--surface2);color:var(--text);font-family:var(--font);
+  font-size:.9rem;line-height:1.6;resize:vertical;outline:none;transition:border-color .2s;
+}
+.textarea-wrap textarea:focus{border-color:var(--border2)}
+.textarea-wrap textarea::placeholder{color:var(--text-muted)}
+
+/* Highlighted text display */
+.text-display{
+  display:none;width:100%;min-height:140px;padding:14px;
+  border:1px solid var(--border);border-radius:var(--r2);
+  background:var(--surface2);color:var(--text);font-family:var(--font);
+  font-size:.9rem;line-height:1.6;overflow-y:auto;max-height:200px;
+}
+.text-display.visible{display:block}
+.text-display .word-highlight{background:var(--primary);color:#fff;border-radius:3px;padding:0 2px}
+
+.text-info{display:flex;justify-content:space-between;font-size:.75rem;color:var(--text-muted);margin-bottom:16px}
+
+/* Controls */
+label.control-label{display:block;font-size:.8rem;font-weight:600;color:var(--text2);margin-bottom:6px}
+.select-wrap{margin-bottom:14px}
+.select-wrap select{
+  width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r);
+  background:var(--surface2);color:var(--text);font-family:var(--font);font-size:.85rem;
+  outline:none;cursor:pointer;
+}
+.select-wrap select:focus{border-color:var(--border2)}
+
+.slider-group{margin-bottom:14px}
+.slider-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.slider-header span{font-size:.8rem;font-weight:600;color:var(--text2)}
+.slider-header em{font-style:normal;font-size:.75rem;color:var(--primary);font-weight:700}
+input[type=range]{
+  width:100%;height:6px;-webkit-appearance:none;appearance:none;
+  border-radius:3px;background:var(--surface3);outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:var(--primary);cursor:pointer;box-shadow:0 2px 6px rgba(124,58,237,.3);
+}
+
+.btn-row{display:flex;gap:8px;margin-top:20px}
+.btn{padding:12px 20px;border:none;border-radius:var(--r);font-family:var(--font);font-weight:600;font-size:.85rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;flex:1}
+.btn svg{width:16px;height:16px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--border2);background:var(--surface3)}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-danger:hover{background:#dc2626}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+.status-bar{margin-top:12px;font-size:.8rem;color:var(--text-muted);text-align:center;min-height:20px}
+.status-bar.speaking{color:var(--primary);font-weight:600}
+
+@media(max-width:480px){
+  body{padding:12px}
+  .card{padding:18px;border-radius:var(--r2)}
+  .btn-row{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Chuyển giao diện">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+
+<div class="card">
+  <div class="header">
+    <div class="header-icon"><i data-lucide="audio-lines"></i></div>
+    <h1>Đọc Văn Bản</h1>
+    <p>Chuyển văn bản thành giọng nói</p>
+  </div>
+
+  <!-- Equalizer -->
+  <div class="equalizer" id="equalizer"></div>
+
+  <!-- Text Input -->
+  <div class="textarea-wrap">
+    <textarea id="textInput" placeholder="Nhập văn bản cần đọc tại đây..." oninput="updateInfo()"></textarea>
+  </div>
+  <div class="text-display" id="textDisplay"></div>
+
+  <div class="text-info">
+    <span id="charCount">0 ký tự</span>
+    <span id="readTime">~0 phút đọc</span>
+  </div>
+
+  <!-- Voice selector -->
+  <div class="select-wrap">
+    <label class="control-label">Giọng đọc</label>
+    <select id="voiceSelect"></select>
+  </div>
+
+  <!-- Sliders -->
+  <div class="slider-group">
+    <div class="slider-header"><span>Tốc độ</span><em id="rateValue">1x</em></div>
+    <input type="range" id="rateSlider" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('rateValue').textContent=this.value+'x'">
+  </div>
+
+  <div class="slider-group">
+    <div class="slider-header"><span>Cao độ</span><em id="pitchValue">1x</em></div>
+    <input type="range" id="pitchSlider" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('pitchValue').textContent=this.value+'x'">
+  </div>
+
+  <div class="slider-group">
+    <div class="slider-header"><span>Âm lượng</span><em id="volumeValue">100%</em></div>
+    <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1" oninput="document.getElementById('volumeValue').textContent=Math.round(this.value*100)+'%'">
+  </div>
+
+  <!-- Buttons -->
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btnPlay" onclick="speakText()"><i data-lucide="play"></i> Đọc</button>
+    <button class="btn btn-secondary" id="btnPause" onclick="pauseResume()" disabled><i data-lucide="pause"></i> Tạm dừng</button>
+    <button class="btn btn-danger" id="btnStop" onclick="stopSpeaking()" disabled><i data-lucide="square"></i> Dừng</button>
+  </div>
+
+  <div class="status-bar" id="statusBar"></div>
+</div>
+
+<script>
+// Theme
+function toggleTheme(){
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('math-dark', document.documentElement.classList.contains('dark'));
+  lucide.createIcons();
+}
+if(localStorage.getItem('math-dark')==='true') document.documentElement.classList.add('dark');
+
+// Build equalizer bars
+(function(){
+  var eq = document.getElementById('equalizer');
+  for(var i=0;i<30;i++){
+    var bar = document.createElement('div');
+    bar.className='eq-bar';
+    bar.style.height = (6 + Math.random()*10)+'px';
+    eq.appendChild(bar);
+  }
+})();
+
+// Voices
+var voices = [];
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+  var select = document.getElementById('voiceSelect');
+  while(select.firstChild) select.removeChild(select.firstChild);
+  var viVoices = [];
+  var otherVoices = [];
+  voices.forEach(function(v, i){
+    if(v.lang.startsWith('vi')) viVoices.push({v:v,i:i});
+    else otherVoices.push({v:v,i:i});
+  });
+  var sorted = viVoices.concat(otherVoices);
+  sorted.forEach(function(item){
+    var opt = document.createElement('option');
+    opt.value = item.i;
+    opt.textContent = item.v.name + ' (' + item.v.lang + ')';
+    if(item.v.lang.startsWith('vi')) opt.textContent = '🇻🇳 ' + opt.textContent;
+    select.appendChild(opt);
+  });
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+// Text info
+function updateInfo(){
+  var text = document.getElementById('textInput').value;
+  var chars = text.length;
+  var words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  var minutes = Math.max(1, Math.ceil(words / 150));
+  document.getElementById('charCount').textContent = chars + ' ký tự';
+  document.getElementById('readTime').textContent = '~' + minutes + ' phút đọc';
+}
+
+// Speech
+var utterance = null;
+var isPaused = false;
+var wordIndex = 0;
+var wordsArray = [];
+
+function speakText(){
+  var text = document.getElementById('textInput').value.trim();
+  if(!text) return;
+
+  speechSynthesis.cancel();
+
+  utterance = new SpeechSynthesisUtterance(text);
+  var voiceIdx = parseInt(document.getElementById('voiceSelect').value);
+  if(voices[voiceIdx]) utterance.voice = voices[voiceIdx];
+  utterance.rate = parseFloat(document.getElementById('rateSlider').value);
+  utterance.pitch = parseFloat(document.getElementById('pitchSlider').value);
+  utterance.volume = parseFloat(document.getElementById('volumeSlider').value);
+
+  // Prepare words for highlighting
+  wordsArray = text.split(/(\s+)/);
+  wordIndex = 0;
+
+  utterance.onboundary = function(e){
+    if(e.name === 'word'){
+      // Find word index by char offset
+      var charPos = 0;
+      var display = document.getElementById('textDisplay');
+      while(display.firstChild) display.removeChild(display.firstChild);
+      var foundIdx = -1;
+      for(var i=0;i<wordsArray.length;i++){
+        if(charPos === e.charIndex && wordsArray[i].trim()){
+          foundIdx = i;
+          break;
+        }
+        charPos += wordsArray[i].length;
+      }
+      // Rebuild display
+      for(var j=0;j<wordsArray.length;j++){
+        var span = document.createElement('span');
+        span.textContent = wordsArray[j];
+        if(j === foundIdx){
+          span.className = 'word-highlight';
+        }
+        display.appendChild(span);
+      }
+    }
+  };
+
+  utterance.onstart = function(){
+    document.getElementById('equalizer').classList.add('active');
+    document.getElementById('btnPlay').disabled = true;
+    document.getElementById('btnPause').disabled = false;
+    document.getElementById('btnStop').disabled = false;
+    document.getElementById('textInput').style.display='none';
+    var disp = document.getElementById('textDisplay');
+    disp.classList.add('visible');
+    disp.textContent = text;
+    document.getElementById('statusBar').textContent = 'Đang đọc...';
+    document.getElementById('statusBar').className = 'status-bar speaking';
+    isPaused = false;
+    lucide.createIcons();
+  };
+
+  utterance.onend = function(){
+    resetUI();
+  };
+
+  utterance.onerror = function(){
+    resetUI();
+  };
+
+  speechSynthesis.speak(utterance);
+}
+
+function pauseResume(){
+  if(speechSynthesis.paused){
+    speechSynthesis.resume();
+    document.getElementById('equalizer').classList.add('active');
+    document.getElementById('statusBar').textContent = 'Đang đọc...';
+    document.getElementById('btnPause').textContent = '';
+    var pauseBtn = document.getElementById('btnPause');
+    while(pauseBtn.firstChild) pauseBtn.removeChild(pauseBtn.firstChild);
+    var ico = document.createElement('i');
+    ico.setAttribute('data-lucide','pause');
+    pauseBtn.appendChild(ico);
+    pauseBtn.appendChild(document.createTextNode(' Tạm dừng'));
+    isPaused = false;
+    lucide.createIcons();
+  } else {
+    speechSynthesis.pause();
+    document.getElementById('equalizer').classList.remove('active');
+    document.getElementById('statusBar').textContent = 'Đã tạm dừng';
+    var pauseBtn2 = document.getElementById('btnPause');
+    while(pauseBtn2.firstChild) pauseBtn2.removeChild(pauseBtn2.firstChild);
+    var ico2 = document.createElement('i');
+    ico2.setAttribute('data-lucide','play');
+    pauseBtn2.appendChild(ico2);
+    pauseBtn2.appendChild(document.createTextNode(' Tiếp tục'));
+    isPaused = true;
+    lucide.createIcons();
+  }
+}
+
+function stopSpeaking(){
+  speechSynthesis.cancel();
+  resetUI();
+}
+
+function resetUI(){
+  document.getElementById('equalizer').classList.remove('active');
+  document.getElementById('btnPlay').disabled = false;
+  document.getElementById('btnPause').disabled = true;
+  document.getElementById('btnStop').disabled = true;
+  document.getElementById('textInput').style.display='block';
+  document.getElementById('textDisplay').classList.remove('visible');
+  document.getElementById('statusBar').textContent = '';
+  document.getElementById('statusBar').className = 'status-bar';
+  // Reset pause button
+  var pauseBtn = document.getElementById('btnPause');
+  while(pauseBtn.firstChild) pauseBtn.removeChild(pauseBtn.firstChild);
+  var ico = document.createElement('i');
+  ico.setAttribute('data-lucide','pause');
+  pauseBtn.appendChild(ico);
+  pauseBtn.appendChild(document.createTextNode(' Tạm dừng'));
+  isPaused = false;
+  lucide.createIcons();
+}
+
+lucide.createIcons();
+</script>
+</body>
+</html>

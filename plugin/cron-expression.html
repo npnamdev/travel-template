@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cron Expression — Cron Builder</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #fff1f2;
+      --bg-card: #fff;
+      --text: #4c0519;
+      --text-sub: #9f1239;
+      --primary: #e11d48;
+      --primary-light: rgba(225,29,72,0.08);
+      --primary-glow: rgba(225,29,72,0.15);
+      --border: rgba(225,29,72,0.1);
+      --shadow: 0 1px 3px rgba(225,29,72,0.04), 0 8px 32px rgba(225,29,72,0.06);
+    }
+    body.dark {
+      --bg: #1a0a10;
+      --bg-card: #2a0f1c;
+      --text: #ffe4e6;
+      --text-sub: #fb7185;
+      --primary: #fb7185;
+      --primary-light: rgba(251,113,133,0.1);
+      --primary-glow: rgba(251,113,133,0.15);
+      --border: rgba(251,113,133,0.08);
+      --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Lexend', system-ui, sans-serif;
+      background: var(--bg); min-height: 100vh;
+      color: var(--text); transition: background 0.4s, color 0.4s;
+    }
+    body::before {
+      content: ''; position: fixed; bottom: -200px; left: -100px;
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(225,29,72,0.06) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; position: relative; z-index: 1; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .header h1 { font-size: 1.8rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+    .header h1 i { color: var(--primary); }
+    .header p { color: var(--text-sub); margin-top: 0.25rem; font-size: 0.95rem; }
+    .dark-toggle {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+      width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text); box-shadow: var(--shadow); transition: all 0.3s;
+    }
+    .dark-toggle:hover { transform: scale(1.1); }
+    .card {
+      background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border);
+      box-shadow: var(--shadow); overflow: hidden; margin-bottom: 1.5rem;
+    }
+    .card-label {
+      padding: 0.75rem 1rem; font-weight: 600; font-size: 0.9rem;
+      border-bottom: 1px solid var(--border); color: var(--primary);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .card-body { padding: 1rem; }
+    .builder-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem;
+    }
+    @media (max-width: 768px) {
+      .builder-grid { grid-template-columns: repeat(2, 1fr); }
+      .header h1 { font-size: 1.4rem; }
+    }
+    .field-group label {
+      display: block; font-weight: 600; font-size: 0.8rem;
+      margin-bottom: 0.4rem; color: var(--primary);
+    }
+    .field-group select, .field-group input {
+      width: 100%; padding: 0.6rem 0.75rem; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--bg);
+      color: var(--text); font-family: inherit; font-size: 0.9rem;
+      outline: none; transition: border 0.3s;
+    }
+    .field-group select:focus, .field-group input:focus { border-color: var(--primary); }
+    .cron-display {
+      text-align: center; padding: 1.5rem;
+      font-family: 'Lexend', monospace; font-size: 2rem; font-weight: 800;
+      color: var(--primary); letter-spacing: 0.15em;
+    }
+    .raw-input {
+      display: flex; gap: 0.75rem; align-items: center;
+    }
+    .raw-input input { flex: 1; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 1.5rem; border-radius: 12px; border: none;
+      font-family: inherit; font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 16px rgba(225,29,72,0.3); }
+    .btn-primary:hover { transform: translateY(-2px); }
+    .btn-secondary { background: var(--primary-light); color: var(--primary); border: 1px solid var(--border); }
+    .description {
+      padding: 1rem; font-size: 1rem; line-height: 1.6; color: var(--text);
+    }
+    .next-runs { padding: 1rem; }
+    .next-run-item {
+      padding: 0.5rem 0; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;
+    }
+    .next-run-item:last-child { border-bottom: none; }
+    .next-run-num {
+      width: 24px; height: 24px; border-radius: 8px;
+      background: var(--primary-light); color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.75rem;
+    }
+    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1><i data-lucide="timer"></i> Cron Expression</h1>
+        <p>Cron Builder -- Tạo và phân tích biểu thức cron</p>
+      </div>
+      <button class="dark-toggle" onclick="toggleDark()" title="Chuyển giao diện">
+        <i data-lucide="moon"></i>
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-label"><i data-lucide="sliders" style="width:16px;height:16px"></i> Trình tạo trực quan</div>
+      <div class="card-body">
+        <div class="builder-grid">
+          <div class="field-group">
+            <label>Phút</label>
+            <select id="minute" onchange="buildCron()">
+              <option value="*">Mỗi phút (*)</option>
+              <option value="0">0</option>
+              <option value="*/5">Mỗi 5 phút</option>
+              <option value="*/10">Mỗi 10 phút</option>
+              <option value="*/15">Mỗi 15 phút</option>
+              <option value="*/30">Mỗi 30 phút</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Giờ</label>
+            <select id="hour" onchange="buildCron()">
+              <option value="*">Mỗi giờ (*)</option>
+              <option value="0">0 (nửa đêm)</option>
+              <option value="6">6 (sáng)</option>
+              <option value="8">8</option>
+              <option value="12">12 (trưa)</option>
+              <option value="18">18 (chiều)</option>
+              <option value="*/2">Mỗi 2 giờ</option>
+              <option value="*/6">Mỗi 6 giờ</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Ngày</label>
+            <select id="day" onchange="buildCron()">
+              <option value="*">Mỗi ngày (*)</option>
+              <option value="1">Ngày 1</option>
+              <option value="15">Ngày 15</option>
+              <option value="1,15">1 và 15</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Tháng</label>
+            <select id="month" onchange="buildCron()">
+              <option value="*">Mỗi tháng (*)</option>
+              <option value="1">Tháng 1</option>
+              <option value="*/3">Mỗi quý</option>
+              <option value="6">Tháng 6</option>
+              <option value="12">Tháng 12</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Thứ</label>
+            <select id="weekday" onchange="buildCron()">
+              <option value="*">Mỗi ngày (*)</option>
+              <option value="1-5">Thứ 2-6</option>
+              <option value="0,6">Cuối tuần</option>
+              <option value="1">Thứ Hai</option>
+              <option value="5">Thứ Sáu</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label"><i data-lucide="code" style="width:16px;height:16px"></i> Biểu thức Cron</div>
+      <div class="cron-display" id="cronDisplay">* * * * *</div>
+      <div class="card-body">
+        <div class="raw-input">
+          <input type="text" id="rawCron" placeholder="Nhập biểu thức cron, vd: */5 * * * *" value="* * * * *" />
+          <button class="btn btn-primary" onclick="parseCron()"><i data-lucide="search" style="width:16px;height:16px"></i> Phân tích</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label"><i data-lucide="message-square" style="width:16px;height:16px"></i> Mô tả</div>
+      <div class="description" id="description">Chạy mỗi phút, mỗi giờ, mỗi ngày</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label"><i data-lucide="calendar-clock" style="width:16px;height:16px"></i> 5 lần chạy tiếp theo</div>
+      <div class="next-runs" id="nextRuns"></div>
+    </div>
+  </div>
+
+  <script>
+    function toggleDark() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+      lucide.createIcons();
+    }
+    if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+
+    function buildCron() {
+      var parts = [
+        document.getElementById('minute').value,
+        document.getElementById('hour').value,
+        document.getElementById('day').value,
+        document.getElementById('month').value,
+        document.getElementById('weekday').value
+      ];
+      var expr = parts.join(' ');
+      document.getElementById('cronDisplay').textContent = expr;
+      document.getElementById('rawCron').value = expr;
+      updateDescription(parts);
+      updateNextRuns(parts);
+    }
+
+    function parseCron() {
+      var raw = document.getElementById('rawCron').value.trim();
+      var parts = raw.split(/\s+/);
+      if (parts.length !== 5) {
+        document.getElementById('description').textContent = 'Biểu thức không hợp lệ. Cần đúng 5 phần: phút giờ ngày tháng thứ';
+        return;
+      }
+      document.getElementById('cronDisplay').textContent = raw;
+      updateDescription(parts);
+      updateNextRuns(parts);
+    }
+
+    var weekDayNames = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+
+    function descPart(val, unit) {
+      if (val === '*') return 'mỗi ' + unit;
+      if (val.indexOf('*/') === 0) return 'mỗi ' + val.slice(2) + ' ' + unit;
+      if (val.indexOf(',') !== -1) return unit + ' ' + val;
+      if (val.indexOf('-') !== -1) return unit + ' từ ' + val.replace('-', ' đến ');
+      return unit + ' ' + val;
+    }
+
+    function updateDescription(parts) {
+      var desc = [];
+      desc.push(descPart(parts[0], 'phút'));
+      desc.push(descPart(parts[1], 'giờ'));
+      desc.push(descPart(parts[2], 'ngày'));
+      desc.push(descPart(parts[3], 'tháng'));
+      if (parts[4] === '1-5') desc.push('các ngày trong tuần (Thứ 2-6)');
+      else if (parts[4] === '0,6') desc.push('cuối tuần');
+      else if (parts[4] !== '*') desc.push('thứ ' + parts[4]);
+      document.getElementById('description').textContent = desc.join(', ');
+    }
+
+    function expandField(val, min, max) {
+      if (val === '*') {
+        var r = [];
+        for (var i = min; i <= max; i++) r.push(i);
+        return r;
+      }
+      var results = [];
+      var segments = val.split(',');
+      for (var s = 0; s < segments.length; s++) {
+        var seg = segments[s].trim();
+        if (seg.indexOf('*/') === 0) {
+          var step = parseInt(seg.slice(2));
+          for (var i = min; i <= max; i += step) results.push(i);
+        } else if (seg.indexOf('-') !== -1) {
+          var rng = seg.split('-');
+          for (var i = parseInt(rng[0]); i <= parseInt(rng[1]); i++) results.push(i);
+        } else {
+          results.push(parseInt(seg));
+        }
+      }
+      return results;
+    }
+
+    function updateNextRuns(parts) {
+      var minutes = expandField(parts[0], 0, 59);
+      var hours = expandField(parts[1], 0, 23);
+      var days = expandField(parts[2], 1, 31);
+      var months = expandField(parts[3], 1, 12);
+      var weekdays = expandField(parts[4], 0, 6);
+
+      var runs = [];
+      var now = new Date();
+      var check = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes() + 1, 0);
+
+      for (var attempt = 0; attempt < 525600 && runs.length < 5; attempt++) {
+        var m = check.getMonth() + 1;
+        var d = check.getDate();
+        var w = check.getDay();
+        var h = check.getHours();
+        var mn = check.getMinutes();
+
+        if (months.indexOf(m) !== -1 &&
+            days.indexOf(d) !== -1 &&
+            weekdays.indexOf(w) !== -1 &&
+            hours.indexOf(h) !== -1 &&
+            minutes.indexOf(mn) !== -1) {
+          runs.push(new Date(check));
+        }
+        check = new Date(check.getTime() + 60000);
+      }
+
+      var container = document.getElementById('nextRuns');
+      container.textContent = '';
+      for (var i = 0; i < runs.length; i++) {
+        var item = document.createElement('div');
+        item.className = 'next-run-item';
+        var num = document.createElement('div');
+        num.className = 'next-run-num';
+        num.textContent = i + 1;
+        var span = document.createElement('span');
+        span.textContent = runs[i].toLocaleString('vi-VN', { weekday:'long', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+        item.appendChild(num);
+        item.appendChild(span);
+        container.appendChild(item);
+      }
+      if (runs.length === 0) {
+        container.textContent = 'Không tìm thấy lần chạy tiếp theo trong năm tới.';
+      }
+    }
+
+    buildCron();
+    lucide.createIcons();
+  </script>
+</body>
+</html>

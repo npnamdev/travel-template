@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gộp PDF — Merge PDF</title>
+<meta name="description" content="Gộp nhiều file PDF thành một file duy nhất. Hỗ trợ kéo thả, sắp xếp thứ tự.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%237c3aed'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='14' fill='white'%3E📑%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f5f3ff;--surface:#fff;--surface2:#f5f3ff;--surface3:#ede9fe;
+  --border:#c4b5fd;--border2:#7c3aed;
+  --text:#1e1b4b;--text2:#5b21b6;--text3:#7c3aed;--text-muted:#6b7280;
+  --primary:#7c3aed;--primary-hover:#6d28d9;--primary-light:#ede9fe;
+  --accent:#ec4899;
+  --r:12px;--r2:16px;--r3:24px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.05);
+  --shadow2:0 4px 24px rgba(0,0,0,.1);
+  --font:'Sora',sans-serif;
+}
+.dark{
+  --bg:#13091f;--surface:#1e1035;--surface2:#13091f;--surface3:#2d1a50;
+  --border:#4c1d95;--border2:#8b5cf6;
+  --text:#ede9fe;--text2:#c4b5fd;--text3:#a78bfa;--text-muted:#9ca3af;
+  --primary:#8b5cf6;--primary-hover:#7c3aed;--primary-light:#2e1065;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+  --shadow2:0 4px 24px rgba(0,0,0,.4);
+}
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding:24px;transition:background .3s,color .3s}
+
+.theme-toggle{
+  position:fixed;top:16px;right:16px;z-index:100;
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);transition:all .3s;color:var(--text)
+}
+.theme-toggle:hover{background:var(--surface3);border-color:var(--border2);transform:scale(1.05)}
+.theme-toggle svg{width:20px;height:20px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+
+.container{max-width:700px;margin:0 auto}
+.header{text-align:center;margin-bottom:28px;padding-top:20px}
+.header-icon{
+  width:60px;height:60px;border-radius:16px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:12px;box-shadow:0 4px 20px rgba(124,58,237,.3);
+}
+.header-icon svg{width:28px;height:28px;color:#fff}
+.header h1{font-size:1.6rem;font-weight:800;color:var(--text)}
+.header p{font-size:.85rem;color:var(--text-muted);margin-top:4px}
+
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r3);padding:24px;
+  box-shadow:var(--shadow2);margin-bottom:20px;
+}
+
+.upload-zone{
+  border:2px dashed var(--border);border-radius:var(--r2);
+  padding:48px 24px;text-align:center;cursor:pointer;
+  transition:all .3s;position:relative;
+}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--primary);background:var(--primary-light)}
+.upload-zone svg{width:48px;height:48px;color:var(--primary);margin-bottom:12px}
+.upload-zone h3{font-size:1.1rem;font-weight:600;margin-bottom:4px}
+.upload-zone p{font-size:.8rem;color:var(--text-muted)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+.btn{
+  padding:12px 24px;border:none;border-radius:var(--r);font-family:var(--font);
+  font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn svg{width:18px;height:18px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-secondary{background:var(--surface3);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--primary)}
+.btn-danger{background:#ef4444;color:#fff;padding:8px 12px;font-size:.8rem}
+.btn-danger:hover{background:#dc2626}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+
+.pdf-list{margin-top:16px}
+.pdf-item{
+  display:flex;align-items:center;gap:12px;padding:14px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+  margin-bottom:8px;cursor:grab;transition:all .2s;
+}
+.pdf-item:hover{border-color:var(--primary)}
+.pdf-item.dragging{opacity:.4;border-style:dashed}
+.pdf-item.drag-over{border-color:var(--primary);background:var(--primary-light)}
+.pdf-item .grip{color:var(--text-muted);flex-shrink:0}
+.pdf-item .grip svg{width:18px;height:18px}
+.pdf-item .pdf-icon{
+  width:40px;height:40px;border-radius:10px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.pdf-item .pdf-icon svg{width:20px;height:20px;color:#fff}
+.pdf-item-info{flex:1;min-width:0}
+.pdf-item-info .name{font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pdf-item-info .meta{font-size:.75rem;color:var(--text-muted);margin-top:2px}
+.pdf-item .remove-pdf{
+  background:none;border:none;cursor:pointer;color:var(--text-muted);padding:6px;flex-shrink:0;
+  border-radius:8px;transition:all .2s;
+}
+.pdf-item .remove-pdf:hover{color:#ef4444;background:rgba(239,68,68,.1)}
+.pdf-item .remove-pdf svg{width:18px;height:18px}
+
+.summary{
+  display:flex;gap:20px;padding:16px;background:var(--surface2);
+  border-radius:var(--r);margin-top:16px;border:1px solid var(--border);
+}
+.summary-item{text-align:center;flex:1}
+.summary-item .val{font-size:1.4rem;font-weight:800;color:var(--primary)}
+.summary-item .lbl{font-size:.75rem;color:var(--text-muted);margin-top:2px}
+
+.progress-bar{
+  width:100%;height:6px;background:var(--surface3);border-radius:3px;
+  overflow:hidden;margin:12px 0;display:none;
+}
+.progress-bar .fill{height:100%;background:var(--primary);border-radius:3px;transition:width .3s;width:0}
+
+.hidden{display:none}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinning{animation:spin 1s linear infinite}
+
+@media(max-width:600px){
+  .summary{flex-direction:column;gap:10px}
+}
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+
+<div class="container">
+  <div class="header">
+    <div class="header-icon"><i data-lucide="merge"></i></div>
+    <h1>Gộp PDF</h1>
+    <p>Gộp nhiều file PDF thành một file duy nhất</p>
+  </div>
+
+  <div class="card">
+    <div class="upload-zone" id="uploadZone">
+      <i data-lucide="upload-cloud"></i>
+      <h3>Kéo thả các file PDF vào đây</h3>
+      <p>hoặc nhấn để chọn nhiều file PDF</p>
+      <input type="file" accept=".pdf" multiple id="fileInput">
+    </div>
+
+    <div id="pdfList" class="pdf-list"></div>
+
+    <div id="addMoreRow" class="hidden" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-secondary" onclick="document.getElementById('addMoreInput').click()">
+        <i data-lucide="plus"></i> Thêm file
+      </button>
+      <button class="btn btn-danger" onclick="clearAll()">
+        <i data-lucide="trash-2"></i> Xóa tất cả
+      </button>
+      <input type="file" accept=".pdf" multiple id="addMoreInput" style="display:none">
+    </div>
+
+    <div id="summaryBox" class="hidden">
+      <div class="summary">
+        <div class="summary-item">
+          <div class="val" id="totalFiles">0</div>
+          <div class="lbl">File PDF</div>
+        </div>
+        <div class="summary-item">
+          <div class="val" id="totalPages">0</div>
+          <div class="lbl">Tổng số trang</div>
+        </div>
+        <div class="summary-item">
+          <div class="val" id="totalSize">0</div>
+          <div class="lbl">Tổng dung lượng</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
+    <p id="statusText" style="font-size:.82rem;color:var(--text-muted);margin-top:6px;display:none"></p>
+
+    <div class="btn-row">
+      <button class="btn btn-primary hidden" id="mergeBtn" onclick="mergePDFs()">
+        <i data-lucide="merge"></i> Gộp PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+var pdfFiles=[];
+var dragSrcIndex=null;
+
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  localStorage.setItem('math-dark',document.body.classList.contains('dark'));
+  lucide.createIcons();
+}
+if(localStorage.getItem('math-dark')==='true') document.body.classList.add('dark');
+
+var uploadZone=document.getElementById('uploadZone');
+var fileInput=document.getElementById('fileInput');
+var addMoreInput=document.getElementById('addMoreInput');
+
+['dragover','dragenter'].forEach(function(evt){
+  uploadZone.addEventListener(evt,function(e){e.preventDefault();uploadZone.classList.add('dragover')});
+});
+['dragleave','drop'].forEach(function(evt){
+  uploadZone.addEventListener(evt,function(e){e.preventDefault();uploadZone.classList.remove('dragover')});
+});
+uploadZone.addEventListener('drop',function(e){
+  var files=Array.from(e.dataTransfer.files).filter(function(f){return f.type==='application/pdf'});
+  handleFiles(files);
+});
+fileInput.addEventListener('change',function(e){handleFiles(Array.from(e.target.files))});
+addMoreInput.addEventListener('change',function(e){handleFiles(Array.from(e.target.files));e.target.value=''});
+
+async function handleFiles(files){
+  for(var i=0;i<files.length;i++){
+    var f=files[i];
+    if(f.type!=='application/pdf') continue;
+    var arrayBuf=await f.arrayBuffer();
+    var pageCount=0;
+    try{
+      var pdfDoc=await PDFLib.PDFDocument.load(arrayBuf);
+      pageCount=pdfDoc.getPageCount();
+    }catch(err){
+      pageCount=0;
+    }
+    pdfFiles.push({name:f.name,size:f.size,data:new Uint8Array(arrayBuf),pageCount:pageCount});
+  }
+  renderList();
+}
+
+function renderList(){
+  var list=document.getElementById('pdfList');
+  list.textContent='';
+  if(pdfFiles.length===0){
+    document.getElementById('addMoreRow').classList.add('hidden');
+    document.getElementById('summaryBox').classList.add('hidden');
+    document.getElementById('mergeBtn').classList.add('hidden');
+    uploadZone.classList.remove('hidden');
+    return;
+  }
+  uploadZone.classList.add('hidden');
+  document.getElementById('addMoreRow').classList.remove('hidden');
+  document.getElementById('addMoreRow').style.display='flex';
+  document.getElementById('summaryBox').classList.remove('hidden');
+  document.getElementById('mergeBtn').classList.remove('hidden');
+
+  var totalPg=0, totalSz=0;
+  pdfFiles.forEach(function(pf,idx){
+    totalPg+=pf.pageCount;
+    totalSz+=pf.size;
+
+    var item=document.createElement('div');
+    item.className='pdf-item fade-in';
+    item.draggable=true;
+    item.setAttribute('data-index',idx);
+
+    item.addEventListener('dragstart',function(e){
+      dragSrcIndex=idx;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+    });
+    item.addEventListener('dragend',function(){item.classList.remove('dragging')});
+    item.addEventListener('dragover',function(e){e.preventDefault();item.classList.add('drag-over')});
+    item.addEventListener('dragleave',function(){item.classList.remove('drag-over')});
+    item.addEventListener('drop',function(e){
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      if(dragSrcIndex!==null && dragSrcIndex!==idx){
+        var moved=pdfFiles.splice(dragSrcIndex,1)[0];
+        pdfFiles.splice(idx,0,moved);
+        renderList();
+      }
+    });
+
+    var grip=document.createElement('span');
+    grip.className='grip';
+    var gripIcon=document.createElement('i');
+    gripIcon.setAttribute('data-lucide','grip-vertical');
+    grip.appendChild(gripIcon);
+    item.appendChild(grip);
+
+    var iconDiv=document.createElement('div');
+    iconDiv.className='pdf-icon';
+    var fIcon=document.createElement('i');
+    fIcon.setAttribute('data-lucide','file-text');
+    iconDiv.appendChild(fIcon);
+    item.appendChild(iconDiv);
+
+    var info=document.createElement('div');
+    info.className='pdf-item-info';
+    var nameEl=document.createElement('div');
+    nameEl.className='name';
+    nameEl.textContent=(idx+1)+'. '+pf.name;
+    var metaEl=document.createElement('div');
+    metaEl.className='meta';
+    metaEl.textContent=pf.pageCount+' trang — '+(pf.size/1024).toFixed(0)+' KB';
+    info.appendChild(nameEl);
+    info.appendChild(metaEl);
+    item.appendChild(info);
+
+    var removeBtn=document.createElement('button');
+    removeBtn.className='remove-pdf';
+    removeBtn.setAttribute('data-index',idx);
+    removeBtn.onclick=function(){pdfFiles.splice(idx,1);renderList()};
+    var removeIcon=document.createElement('i');
+    removeIcon.setAttribute('data-lucide','x');
+    removeBtn.appendChild(removeIcon);
+    item.appendChild(removeBtn);
+
+    list.appendChild(item);
+  });
+
+  document.getElementById('totalFiles').textContent=pdfFiles.length;
+  document.getElementById('totalPages').textContent=totalPg;
+  document.getElementById('totalSize').textContent=(totalSz/1024/1024).toFixed(2)+' MB';
+  lucide.createIcons();
+}
+
+function clearAll(){
+  pdfFiles=[];
+  renderList();
+  fileInput.value='';
+}
+
+async function mergePDFs(){
+  if(pdfFiles.length<2){
+    alert('Cần ít nhất 2 file PDF để gộp!');
+    return;
+  }
+  var mergeBtn=document.getElementById('mergeBtn');
+  mergeBtn.disabled=true;
+  var bar=document.getElementById('progressBar');
+  bar.style.display='';
+  var fill=document.getElementById('progressFill');
+  var status=document.getElementById('statusText');
+  status.style.display='';
+
+  var merged=await PDFLib.PDFDocument.create();
+
+  for(var i=0;i<pdfFiles.length;i++){
+    status.textContent='Đang gộp file '+(i+1)+'/'+pdfFiles.length+': '+pdfFiles[i].name;
+    fill.style.width=Math.round(((i+1)/pdfFiles.length)*100)+'%';
+    var srcDoc=await PDFLib.PDFDocument.load(pdfFiles[i].data);
+    var pages=await merged.copyPages(srcDoc,srcDoc.getPageIndices());
+    pages.forEach(function(page){merged.addPage(page)});
+  }
+
+  status.textContent='Đang tạo file...';
+  var pdfBytes=await merged.save();
+  var blob=new Blob([pdfBytes],{type:'application/pdf'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='merged.pdf';
+  a.click();
+  URL.revokeObjectURL(a.href);
+
+  status.textContent='Hoàn tất! File đã được tải xuống.';
+  mergeBtn.disabled=false;
+}
+
+lucide.createIcons();
+</script>
+</body>
+</html>

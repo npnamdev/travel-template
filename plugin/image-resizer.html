@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thay Đổi Kích Thước Ảnh — Image Resizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+:root {
+  --bg: #fff7ed;
+  --bg-card: #ffffff;
+  --bg-card-alt: #fff1e0;
+  --text: #431407;
+  --text-sub: #9a3412;
+  --primary: #f97316;
+  --primary-dark: #ea580c;
+  --primary-light: rgba(249,115,22,0.1);
+  --primary-glow: rgba(249,115,22,0.2);
+  --border: rgba(249,115,22,0.15);
+  --shadow: 0 2px 8px rgba(249,115,22,0.06), 0 12px 40px rgba(249,115,22,0.08);
+  --shadow-hover: 0 8px 24px rgba(249,115,22,0.12), 0 20px 60px rgba(249,115,22,0.15);
+  --success: #16a34a;
+  --accent: #fb923c;
+  --accent2: #fdba74;
+  --radius: 16px;
+}
+body.dark {
+  --bg: #0c0a09;
+  --bg-card: #1c1917;
+  --bg-card-alt: #292524;
+  --text: #fed7aa;
+  --text-sub: #fb923c;
+  --primary: #fb923c;
+  --primary-dark: #f97316;
+  --primary-light: rgba(251,146,60,0.12);
+  --primary-glow: rgba(251,146,60,0.15);
+  --border: rgba(251,146,60,0.1);
+  --shadow: 0 2px 8px rgba(0,0,0,0.3), 0 12px 40px rgba(0,0,0,0.4);
+  --shadow-hover: 0 8px 24px rgba(251,146,60,0.15), 0 20px 60px rgba(0,0,0,0.5);
+  --success: #4ade80;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  color: var(--text);
+  transition: background 0.4s, color 0.4s;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  top: -150px; right: -150px;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(249,115,22,0.1) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -200px; left: -100px;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(251,146,60,0.08) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+.top-bar {
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(20px);
+  background: rgba(255,247,237,0.8);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.4s;
+}
+body.dark .top-bar { background: rgba(12,10,9,0.85); }
+
+.top-bar h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.25rem; font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, var(--primary), #dc2626);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.top-bar-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 40px; height: 40px;
+  border-radius: 12px; border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s;
+}
+.icon-btn:hover { background: var(--primary-light); border-color: var(--primary); transform: translateY(-1px); }
+
+.container {
+  max-width: 1100px; margin: 0 auto;
+  padding: 32px 20px; position: relative; z-index: 1;
+}
+
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: var(--bg-card);
+  position: relative; overflow: hidden;
+}
+.upload-zone::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(249,115,22,0.03), rgba(220,38,38,0.03));
+  opacity: 0; transition: opacity 0.3s;
+}
+.upload-zone:hover::before, .upload-zone.dragover::before { opacity: 1; }
+.upload-zone:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+.upload-zone.dragover { border-color: var(--primary); transform: scale(1.01); }
+.upload-zone i { color: var(--primary); margin-bottom: 12px; }
+.upload-zone p { color: var(--text-sub); font-size: 0.95rem; margin-top: 8px; }
+.upload-zone .upload-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 600; color: var(--text); }
+.upload-zone input { display: none; }
+
+.workspace { display: none; margin-top: 24px; }
+.workspace.active { display: block; }
+
+.panels {
+  display: grid; grid-template-columns: 1fr 320px;
+  gap: 24px; margin-top: 20px;
+}
+@media (max-width: 768px) {
+  .panels { grid-template-columns: 1fr; }
+}
+
+.preview-panel {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.preview-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+}
+.preview-header i { color: var(--primary); }
+.preview-body {
+  padding: 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.preview-body img {
+  max-width: 100%; max-height: 400px;
+  border-radius: 8px; object-fit: contain;
+  background: repeating-conic-gradient(#e5e5e5 0% 25%, transparent 0% 50%) 50%/16px 16px;
+}
+body.dark .preview-body img {
+  background: repeating-conic-gradient(#333 0% 25%, transparent 0% 50%) 50%/16px 16px;
+}
+
+.info-badges {
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+}
+.badge {
+  padding: 6px 14px; border-radius: 99px;
+  font-size: 0.8rem; font-weight: 500;
+  background: var(--primary-light); color: var(--primary-dark);
+}
+body.dark .badge { color: var(--accent); }
+.badge.success { background: rgba(22,163,74,0.1); color: var(--success); }
+
+.controls-panel {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.control-title {
+  font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 1rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.control-title i { color: var(--primary); }
+
+.input-group { display: flex; flex-direction: column; gap: 6px; }
+.input-group label { font-size: 0.85rem; font-weight: 500; color: var(--text-sub); }
+.input-row { display: flex; gap: 8px; align-items: center; }
+.input-row input {
+  flex: 1; padding: 10px 14px;
+  border-radius: 10px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text);
+  font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem;
+  transition: border 0.2s;
+}
+.input-row input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+.input-row span { font-size: 0.8rem; color: var(--text-sub); white-space: nowrap; }
+
+.lock-btn {
+  width: 40px; height: 40px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--primary); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.lock-btn.locked { background: var(--primary); color: white; }
+.lock-btn:hover { transform: scale(1.05); }
+
+.unit-toggle {
+  display: flex; border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.unit-toggle button {
+  flex: 1; padding: 8px 16px; border: none;
+  background: var(--bg); color: var(--text-sub);
+  font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.unit-toggle button.active {
+  background: var(--primary); color: white;
+}
+
+.btn-primary {
+  padding: 12px 24px; border-radius: 12px; border: none;
+  background: linear-gradient(135deg, var(--primary), #dc2626);
+  color: white; font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; transition: all 0.3s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(249,115,22,0.3); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-secondary {
+  padding: 10px 20px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--text); font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: var(--primary); background: var(--primary-light); }
+
+.size-presets {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+}
+.preset-btn {
+  padding: 8px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--text); font-size: 0.8rem; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.preset-btn:hover { border-color: var(--primary); background: var(--primary-light); transform: translateY(-1px); }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.animate-in { animation: fadeIn 0.4s ease-out; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1><i data-lucide="scaling" style="width:22px;height:22px"></i> Thay Đổi Kích Thước Ảnh</h1>
+  <div class="top-bar-actions">
+    <button class="icon-btn" onclick="resetAll()" title="Làm mới"><i data-lucide="rotate-ccw" style="width:18px;height:18px"></i></button>
+    <button class="icon-btn" id="darkToggle" title="Chế độ tối"><i data-lucide="moon" style="width:18px;height:18px"></i></button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="upload-zone" id="uploadZone">
+    <i data-lucide="image-up" style="width:48px;height:48px"></i>
+    <p class="upload-title">Kéo thả ảnh vào đây</p>
+    <p>hoặc nhấn để chọn file (PNG, JPG, WEBP)</p>
+    <input type="file" id="fileInput" accept="image/*">
+  </div>
+
+  <div class="workspace" id="workspace">
+    <div class="panels animate-in">
+      <div class="preview-panel">
+        <div class="preview-header"><i data-lucide="eye" style="width:18px;height:18px"></i> Xem trước</div>
+        <div class="preview-body">
+          <img id="previewImg" src="" alt="Preview">
+          <div class="info-badges">
+            <span class="badge" id="origSize">Gốc: 0 x 0</span>
+            <span class="badge" id="newSize">Mới: 0 x 0</span>
+            <span class="badge success" id="fileSize">~0 KB</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls-panel">
+        <div class="control-title"><i data-lucide="settings-2" style="width:18px;height:18px"></i> Cài đặt</div>
+
+        <div class="input-group">
+          <label>Đơn vị</label>
+          <div class="unit-toggle">
+            <button class="active" onclick="setUnit('px')">px</button>
+            <button onclick="setUnit('%')">%</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Chiều rộng</label>
+          <div class="input-row">
+            <input type="number" id="widthInput" min="1" oninput="onWidthChange()">
+            <span id="unitLabelW">px</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Chiều cao</label>
+          <div class="input-row">
+            <input type="number" id="heightInput" min="1" oninput="onHeightChange()">
+            <span id="unitLabelH">px</span>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="lock-btn locked" id="lockBtn" onclick="toggleLock()">
+            <i data-lucide="lock" style="width:18px;height:18px" id="lockIcon"></i>
+          </button>
+          <span style="font-size:0.85rem;color:var(--text-sub)">Giữ tỉ lệ</span>
+        </div>
+
+        <div class="input-group">
+          <label>Kích thước nhanh</label>
+          <div class="size-presets">
+            <button class="preset-btn" onclick="applyPreset(1920,1080)">1920x1080</button>
+            <button class="preset-btn" onclick="applyPreset(1280,720)">1280x720</button>
+            <button class="preset-btn" onclick="applyPreset(800,600)">800x600</button>
+            <button class="preset-btn" onclick="applyPreset(500,500)">500x500</button>
+            <button class="preset-btn" onclick="applyPreset(256,256)">256x256</button>
+            <button class="preset-btn" onclick="applyPreset(128,128)">128x128</button>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="resizeImage()">
+          <i data-lucide="download" style="width:18px;height:18px"></i> Tải ảnh đã resize
+        </button>
+        <button class="btn-secondary" onclick="resetAll()">Chọn ảnh khác</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let originalImg = null;
+let aspectRatio = 1;
+let locked = true;
+let unit = 'px';
+let origW = 0, origH = 0;
+
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+const workspace = document.getElementById('workspace');
+const previewImg = document.getElementById('previewImg');
+const widthInput = document.getElementById('widthInput');
+const heightInput = document.getElementById('heightInput');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      originalImg = img;
+      origW = img.width; origH = img.height;
+      aspectRatio = origW / origH;
+      previewImg.src = e.target.result;
+      widthInput.value = origW;
+      heightInput.value = origH;
+      document.getElementById('origSize').textContent = `Gốc: ${origW} x ${origH}`;
+      updateInfo();
+      uploadZone.style.display = 'none';
+      workspace.classList.add('active');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function setUnit(u) {
+  unit = u;
+  document.querySelectorAll('.unit-toggle button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('unitLabelW').textContent = u;
+  document.getElementById('unitLabelH').textContent = u;
+  if (u === '%') {
+    widthInput.value = 100;
+    heightInput.value = 100;
+  } else {
+    widthInput.value = origW;
+    heightInput.value = origH;
+  }
+  updateInfo();
+}
+
+function getActualDims() {
+  let w = parseFloat(widthInput.value) || 0;
+  let h = parseFloat(heightInput.value) || 0;
+  if (unit === '%') {
+    w = Math.round(origW * w / 100);
+    h = Math.round(origH * h / 100);
+  }
+  return { w: Math.round(w), h: Math.round(h) };
+}
+
+function onWidthChange() {
+  if (locked && originalImg) {
+    let w = parseFloat(widthInput.value) || 0;
+    if (unit === '%') {
+      heightInput.value = widthInput.value;
+    } else {
+      heightInput.value = Math.round(w / aspectRatio);
+    }
+  }
+  updateInfo();
+}
+
+function onHeightChange() {
+  if (locked && originalImg) {
+    let h = parseFloat(heightInput.value) || 0;
+    if (unit === '%') {
+      widthInput.value = heightInput.value;
+    } else {
+      widthInput.value = Math.round(h * aspectRatio);
+    }
+  }
+  updateInfo();
+}
+
+function toggleLock() {
+  locked = !locked;
+  const btn = document.getElementById('lockBtn');
+  btn.classList.toggle('locked', locked);
+  document.getElementById('lockIcon').setAttribute('data-lucide', locked ? 'lock' : 'unlock');
+  lucide.createIcons();
+}
+
+function updateInfo() {
+  const { w, h } = getActualDims();
+  document.getElementById('newSize').textContent = `Mới: ${w} x ${h}`;
+  const est = Math.round(w * h * 3 / 1024);
+  document.getElementById('fileSize').textContent = `~${est > 1024 ? (est/1024).toFixed(1)+' MB' : est+' KB'}`;
+}
+
+function applyPreset(w, h) {
+  unit = 'px';
+  document.querySelectorAll('.unit-toggle button').forEach(b => b.classList.remove('active'));
+  document.querySelector('.unit-toggle button:first-child').classList.add('active');
+  document.getElementById('unitLabelW').textContent = 'px';
+  document.getElementById('unitLabelH').textContent = 'px';
+  widthInput.value = w; heightInput.value = h;
+  locked = false;
+  document.getElementById('lockBtn').classList.remove('locked');
+  document.getElementById('lockIcon').setAttribute('data-lucide', 'unlock');
+  lucide.createIcons();
+  updateInfo();
+}
+
+function resizeImage() {
+  if (!originalImg) return;
+  const { w, h } = getActualDims();
+  if (w < 1 || h < 1) return;
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(originalImg, 0, 0, w, h);
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `resized_${w}x${h}.png`;
+    a.click(); URL.revokeObjectURL(url);
+  }, 'image/png');
+}
+
+function resetAll() {
+  originalImg = null;
+  uploadZone.style.display = '';
+  workspace.classList.remove('active');
+  fileInput.value = '';
+}
+
+// Dark mode
+const darkToggle = document.getElementById('darkToggle');
+if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+darkToggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+});
+
+lucide.createIcons();
+</script>
+</body>
+</html>

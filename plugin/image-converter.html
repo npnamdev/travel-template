@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chuyển Định Dạng Ảnh — Image Format Converter</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <style>
+    :root {
+      --bg: #f0fdfa;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f5fffe;
+      --text: #042f2e;
+      --text-sub: #5a7f7d;
+      --primary: #0d9488;
+      --primary-light: rgba(13,148,136,0.08);
+      --primary-glow: rgba(13,148,136,0.15);
+      --border: rgba(13,148,136,0.1);
+      --shadow: 0 1px 3px rgba(13,148,136,0.04), 0 8px 32px rgba(13,148,136,0.06);
+      --shadow-hover: 0 4px 12px rgba(13,148,136,0.1), 0 16px 48px rgba(13,148,136,0.14);
+      --success: #22c55e;
+      --danger: #ef4444;
+    }
+
+    body.dark {
+      --bg: #06120f;
+      --bg-card: #0d1f1c;
+      --bg-card-hover: #142c28;
+      --text: #ccfbf1;
+      --text-sub: #7fb3ad;
+      --primary: #2dd4bf;
+      --primary-light: rgba(45,212,191,0.1);
+      --primary-glow: rgba(45,212,191,0.12);
+      --border: rgba(45,212,191,0.08);
+      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 32px rgba(0,0,0,0.4);
+      --shadow-hover: 0 4px 12px rgba(13,148,136,0.2), 0 16px 48px rgba(0,0,0,0.5);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: -100px;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(13,148,136,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0d9488, #2dd4bf);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 16px rgba(13,148,136,0.3);
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), #2dd4bf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header p { font-size: 0.85rem; color: var(--text-sub); }
+
+    .dark-toggle {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+    .dark-toggle:hover { background: var(--primary-light); }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .upload-zone i { color: var(--primary); margin-bottom: 12px; }
+    .upload-zone .main-text { font-weight: 700; color: var(--text); font-size: 1rem; }
+    .upload-zone p { color: var(--text-sub); font-size: 0.9rem; margin-top: 8px; }
+
+    input[type="file"] { display: none; }
+
+    .settings-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: end;
+      margin-top: 20px;
+    }
+
+    .control-group { flex: 1; min-width: 160px; }
+    .control-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-sub);
+    }
+
+    select, input[type="range"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+    select:focus { border-color: var(--primary); }
+    input[type="range"] { padding: 0; accent-color: var(--primary); }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #0d9488, #2dd4bf);
+      color: white;
+      box-shadow: 0 4px 16px rgba(13,148,136,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(13,148,136,0.4); }
+
+    .btn-success {
+      background: linear-gradient(135deg, #22c55e, #4ade80);
+      color: white;
+    }
+    .btn-success:hover { transform: translateY(-2px); }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--primary);
+    }
+    .btn-outline:hover { background: var(--primary-light); }
+
+    .btn-sm {
+      padding: 8px 16px;
+      font-size: 0.8rem;
+      border-radius: 8px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .file-list {
+      margin-top: 20px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 10px;
+      transition: all 0.3s;
+      background: var(--bg);
+    }
+    .file-item:hover { background: var(--bg-card-hover); border-color: var(--primary); }
+
+    .file-thumb {
+      width: 56px;
+      height: 56px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .file-info { flex: 1; min-width: 0; }
+    .file-info .name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .file-info .meta {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      margin-top: 4px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-before { background: var(--primary-light); color: var(--primary); }
+    .badge-after { background: rgba(34,197,94,0.1); color: var(--success); }
+
+    .file-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .hidden { display: none !important; }
+
+    .stats {
+      display: flex;
+      gap: 16px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .stat-box {
+      padding: 12px 20px;
+      border-radius: 10px;
+      background: var(--primary-light);
+    }
+    .stat-box .val { font-weight: 800; font-size: 1.1rem; color: var(--primary); }
+    .stat-box .lbl { font-size: 0.8rem; color: var(--text-sub); }
+
+    .remove-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid rgba(239,68,68,0.2);
+      background: rgba(239,68,68,0.08);
+      color: var(--danger);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .remove-btn:hover { background: rgba(239,68,68,0.15); }
+
+    .arrow-icon { color: var(--text-sub); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <div class="logo"><i data-lucide="repeat-2" style="width:24px;height:24px"></i></div>
+        <div>
+          <h1>Chuyển Định Dạng Ảnh</h1>
+          <p>Chuyển đổi hàng loạt giữa PNG, JPG, WebP, BMP</p>
+        </div>
+      </div>
+      <button class="dark-toggle" onclick="toggleDark()" title="Chế độ tối">
+        <i data-lucide="moon" style="width:20px;height:20px"></i>
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <i data-lucide="images" style="width:48px;height:48px"></i>
+        <p class="main-text">Kéo thả hoặc nhấp để chọn ảnh</p>
+        <p>Hỗ trợ nhiều ảnh cùng lúc &mdash; PNG, JPG, WebP, BMP, GIF</p>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" multiple />
+    </div>
+
+    <div class="card hidden" id="settingsCard">
+      <h3 style="margin-bottom:16px;display:flex;align-items:center;gap:8px">
+        <i data-lucide="sliders-horizontal" style="width:20px;height:20px;color:var(--primary)"></i>
+        Cài đặt chuyển đổi
+      </h3>
+
+      <div class="settings-row">
+        <div class="control-group">
+          <label>Định dạng đầu ra</label>
+          <select id="outputFormat">
+            <option value="image/png">PNG</option>
+            <option value="image/jpeg">JPG / JPEG</option>
+            <option value="image/webp" selected>WebP</option>
+            <option value="image/bmp">BMP</option>
+          </select>
+        </div>
+        <div class="control-group" id="qualityGroup">
+          <label>Chất lượng: <span id="qualityVal">85</span>%</label>
+          <input type="range" id="quality" min="10" max="100" value="85" oninput="document.getElementById('qualityVal').textContent=this.value" />
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="convertAll()">
+          <i data-lucide="zap" style="width:18px;height:18px"></i> Chuyển đổi tất cả
+        </button>
+        <button class="btn btn-success hidden" id="downloadAllBtn" onclick="downloadAll()">
+          <i data-lucide="download" style="width:18px;height:18px"></i> Tải tất cả
+        </button>
+      </div>
+
+      <div id="statsArea" class="stats hidden"></div>
+
+      <div class="file-list" id="fileList"></div>
+    </div>
+  </div>
+
+  <script>
+    function toggleDark() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+      lucide.createIcons();
+    }
+    if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const settingsCard = document.getElementById('settingsCard');
+    const fileListEl = document.getElementById('fileList');
+    const outputFormat = document.getElementById('outputFormat');
+    const qualityGroup = document.getElementById('qualityGroup');
+
+    let files = [];
+
+    uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); uploadZone.classList.add('dragover'); });
+    uploadZone.addEventListener('dragleave', function() { uploadZone.classList.remove('dragover'); });
+    uploadZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    fileInput.addEventListener('change', function(e) { handleFiles(e.target.files); });
+
+    outputFormat.addEventListener('change', function() {
+      var fmt = outputFormat.value;
+      if (fmt === 'image/png' || fmt === 'image/bmp') {
+        qualityGroup.classList.add('hidden');
+      } else {
+        qualityGroup.classList.remove('hidden');
+      }
+    });
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    function getExt(mime) {
+      var map = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/bmp': 'bmp', 'image/gif': 'gif' };
+      return map[mime] || 'png';
+    }
+
+    function handleFiles(fileObjs) {
+      Array.from(fileObjs).forEach(function(file) {
+        if (!file.type.startsWith('image/')) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var img = new Image();
+          img.onload = function() {
+            files.push({
+              name: file.name,
+              origSize: file.size,
+              origType: file.type,
+              img: img,
+              convertedUrl: null,
+              convertedSize: 0,
+              convertedBlob: null
+            });
+            settingsCard.classList.remove('hidden');
+            renderList();
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderList() {
+      // Clear existing items
+      while (fileListEl.firstChild) {
+        fileListEl.removeChild(fileListEl.firstChild);
+      }
+
+      files.forEach(function(f, i) {
+        var item = document.createElement('div');
+        item.className = 'file-item';
+
+        var thumb = document.createElement('img');
+        thumb.className = 'file-thumb';
+        thumb.src = f.img.src;
+        thumb.alt = f.name;
+        item.appendChild(thumb);
+
+        var info = document.createElement('div');
+        info.className = 'file-info';
+
+        var nameEl = document.createElement('div');
+        nameEl.className = 'name';
+        nameEl.textContent = f.name;
+        info.appendChild(nameEl);
+
+        var meta = document.createElement('div');
+        meta.className = 'meta';
+
+        var badgeBefore = document.createElement('span');
+        badgeBefore.className = 'badge badge-before';
+        badgeBefore.textContent = getExt(f.origType).toUpperCase() + ' ' + formatSize(f.origSize);
+        meta.appendChild(badgeBefore);
+
+        if (f.convertedUrl) {
+          var arrowSpan = document.createElement('span');
+          arrowSpan.className = 'arrow-icon';
+          arrowSpan.textContent = '\u2192';
+          meta.appendChild(arrowSpan);
+
+          var badgeAfter = document.createElement('span');
+          badgeAfter.className = 'badge badge-after';
+          badgeAfter.textContent = getExt(outputFormat.value).toUpperCase() + ' ' + formatSize(f.convertedSize);
+          meta.appendChild(badgeAfter);
+        }
+
+        info.appendChild(meta);
+        item.appendChild(info);
+
+        var actions = document.createElement('div');
+        actions.className = 'file-actions';
+
+        if (f.convertedUrl) {
+          var dlBtn = document.createElement('button');
+          dlBtn.className = 'btn btn-outline btn-sm';
+          dlBtn.setAttribute('data-index', i);
+          dlBtn.addEventListener('click', function() { downloadOne(parseInt(this.getAttribute('data-index'))); });
+          var dlIcon = document.createElement('i');
+          dlIcon.setAttribute('data-lucide', 'download');
+          dlIcon.style.width = '14px';
+          dlIcon.style.height = '14px';
+          dlBtn.appendChild(dlIcon);
+          actions.appendChild(dlBtn);
+        }
+
+        var rmBtn = document.createElement('button');
+        rmBtn.className = 'remove-btn';
+        rmBtn.setAttribute('data-index', i);
+        rmBtn.addEventListener('click', function() { removeFile(parseInt(this.getAttribute('data-index'))); });
+        var rmIcon = document.createElement('i');
+        rmIcon.setAttribute('data-lucide', 'x');
+        rmIcon.style.width = '14px';
+        rmIcon.style.height = '14px';
+        rmBtn.appendChild(rmIcon);
+        actions.appendChild(rmBtn);
+
+        item.appendChild(actions);
+        fileListEl.appendChild(item);
+      });
+
+      lucide.createIcons();
+    }
+
+    function removeFile(i) {
+      files.splice(i, 1);
+      if (files.length === 0) {
+        settingsCard.classList.add('hidden');
+        document.getElementById('downloadAllBtn').classList.add('hidden');
+        document.getElementById('statsArea').classList.add('hidden');
+      }
+      renderList();
+    }
+
+    function convertAll() {
+      var fmt = outputFormat.value;
+      var q = parseInt(document.getElementById('quality').value) / 100;
+      var totalOrig = 0, totalNew = 0;
+      var done = 0;
+
+      files.forEach(function(f) {
+        var canvas = document.createElement('canvas');
+        canvas.width = f.img.naturalWidth;
+        canvas.height = f.img.naturalHeight;
+        var ctx = canvas.getContext('2d');
+
+        if (fmt === 'image/jpeg' || fmt === 'image/bmp') {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        ctx.drawImage(f.img, 0, 0);
+
+        canvas.toBlob(function(blob) {
+          f.convertedBlob = blob;
+          f.convertedUrl = URL.createObjectURL(blob);
+          f.convertedSize = blob.size;
+          totalOrig += f.origSize;
+          totalNew += f.convertedSize;
+          done++;
+
+          if (done === files.length) {
+            document.getElementById('downloadAllBtn').classList.remove('hidden');
+            var statsArea = document.getElementById('statsArea');
+            statsArea.classList.remove('hidden');
+
+            while (statsArea.firstChild) statsArea.removeChild(statsArea.firstChild);
+
+            var stats = [
+              { val: files.length, lbl: 'Ảnh' },
+              { val: formatSize(totalOrig), lbl: 'Kích thước gốc' },
+              { val: formatSize(totalNew), lbl: 'Sau chuyển đổi' }
+            ];
+
+            stats.forEach(function(s) {
+              var box = document.createElement('div');
+              box.className = 'stat-box';
+              var valEl = document.createElement('div');
+              valEl.className = 'val';
+              valEl.textContent = s.val;
+              var lblEl = document.createElement('div');
+              lblEl.className = 'lbl';
+              lblEl.textContent = s.lbl;
+              var wrapper = document.createElement('div');
+              wrapper.appendChild(valEl);
+              wrapper.appendChild(lblEl);
+              box.appendChild(wrapper);
+              statsArea.appendChild(box);
+            });
+
+            renderList();
+          }
+        }, fmt, (fmt === 'image/png' || fmt === 'image/bmp') ? undefined : q);
+      });
+    }
+
+    function downloadOne(i) {
+      var f = files[i];
+      if (!f.convertedUrl) return;
+      var a = document.createElement('a');
+      var base = f.name.replace(/\.[^.]+$/, '');
+      a.download = base + '.' + getExt(outputFormat.value);
+      a.href = f.convertedUrl;
+      a.click();
+    }
+
+    function downloadAll() {
+      files.forEach(function(f, i) {
+        if (f.convertedUrl) {
+          setTimeout(function() { downloadOne(i); }, i * 200);
+        }
+      });
+    }
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>

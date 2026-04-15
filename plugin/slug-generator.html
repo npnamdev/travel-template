@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tạo Slug URL — Slug Generator</title>
+<meta name="description" content="Công cụ tạo slug URL thân thiện từ tiếng Việt. Tự động loại bỏ dấu, chuyển thành URL-friendly slug.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23059669'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='14' fill='white'%3E/url%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inconsolata:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#ecfdf5;--surface:#fff;--surface2:#d1fae5;--surface3:#a7f3d0;
+  --border:#6ee7b7;--border2:#10b981;
+  --text:#022c22;--text2:#047857;--text3:#059669;--text-muted:#64748b;
+  --primary:#059669;--primary-hover:#047857;--primary-light:#6ee7b7;
+  --accent:#34d399;
+  --r:12px;--r2:16px;--r3:20px;
+  --shadow:0 1px 3px rgba(5,150,105,.08),0 4px 16px rgba(5,150,105,.06);
+  --shadow2:0 4px 24px rgba(5,150,105,.12);
+  --font:'Sora',sans-serif;
+  --mono:'Inconsolata',monospace;
+}
+.dark{
+  --bg:#021a13;--surface:#072318;--surface2:#0a3324;--surface3:#0f4a35;
+  --border:#0f4a35;--border2:#059669;
+  --text:#d1fae5;--text2:#34d399;--text3:#10b981;--text-muted:#94a3b8;
+  --primary:#10b981;--primary-hover:#059669;--primary-light:#0f4a35;
+  --accent:#34d399;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  --shadow2:0 4px 24px rgba(0,0,0,.3);
+}
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px;transition:background .3s,color .3s}
+.theme-toggle{position:fixed;top:16px;right:16px;z-index:100;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:all .3s;color:var(--text)}
+.theme-toggle:hover{background:var(--surface2);border-color:var(--border2);transform:scale(1.05)}
+.theme-toggle svg{width:20px;height:20px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+.card{width:100%;max-width:680px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:32px;box-shadow:var(--shadow2);margin-top:20px}
+.header{text-align:center;margin-bottom:24px}
+.header-icon{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--accent));display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;box-shadow:0 4px 16px rgba(5,150,105,.3)}
+.header-icon svg{width:28px;height:28px;color:#fff}
+.header h1{font-size:1.5rem;font-weight:700;letter-spacing:-.3px}
+.header p{font-size:.85rem;color:var(--text-muted);margin-top:4px}
+label.section{font-weight:600;font-size:.9rem;margin:16px 0 8px;display:block;color:var(--text2)}
+textarea,input[type=text],input[type=number]{width:100%;padding:14px;border-radius:var(--r2);border:1px solid var(--border);background:var(--surface2);font-family:var(--font);font-size:.9rem;color:var(--text);transition:border-color .2s;outline:none}
+textarea{min-height:100px;resize:vertical;font-family:var(--font)}
+textarea:focus,input:focus{border-color:var(--primary)}
+.options-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0}
+.opt-group label{font-size:.8rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;display:block}
+.opt-group select,.opt-group input{width:100%;padding:10px 12px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:.85rem;outline:none}
+.opt-group select:focus,.opt-group input:focus{border-color:var(--primary)}
+.slug-preview{position:relative;background:var(--surface2);border:2px solid var(--primary);border-radius:var(--r2);padding:20px;padding-right:60px;margin:16px 0;font-family:var(--mono);font-size:1rem;font-weight:600;color:var(--primary);word-break:break-all;min-height:56px;display:flex;align-items:center}
+.slug-preview .placeholder{color:var(--text-muted);font-weight:400;font-size:.85rem}
+.copy-btn{position:absolute;top:50%;right:12px;transform:translateY(-50%);padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font);font-size:.78rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:4px}
+.copy-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+.copy-btn svg{width:14px;height:14px}
+.full-url{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;font-family:var(--mono);font-size:.82rem;color:var(--text-muted);word-break:break-all;margin-top:8px}
+.full-url strong{color:var(--primary)}
+@media(max-width:600px){.card{padding:20px}.options-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+<div class="card">
+  <div class="header">
+    <div class="header-icon"><i data-lucide="link"></i></div>
+    <h1>Tạo Slug URL</h1>
+    <p>Slug Generator — Tạo URL thân thiện từ tiếng Việt</p>
+  </div>
+  <label class="section">Nhập tiêu đề / văn bản</label>
+  <textarea id="input" placeholder="Ví dụ: Hướng dẫn tạo blog với Next.js năm 2024"></textarea>
+  <div class="options-grid">
+    <div class="opt-group">
+      <label>Ký tự nối</label>
+      <select id="separator" onchange="generateSlug()">
+        <option value="-">Gạch ngang (-)</option>
+        <option value="_">Gạch dưới (_)</option>
+      </select>
+    </div>
+    <div class="opt-group">
+      <label>Độ dài tối đa</label>
+      <input type="number" id="maxLen" value="0" min="0" placeholder="0 = không giới hạn" onchange="generateSlug()">
+    </div>
+    <div class="opt-group">
+      <label>Tiền tố</label>
+      <input type="text" id="prefix" placeholder="vd: blog/" oninput="generateSlug()">
+    </div>
+  </div>
+  <label class="section">Slug</label>
+  <div class="slug-preview" id="slugPreview">
+    <span class="placeholder">Slug sẽ hiển thị ở đây...</span>
+    <button class="copy-btn" id="copyBtn" onclick="copySlug()"><i data-lucide="copy"></i> Sao chép</button>
+  </div>
+  <div class="full-url" id="fullUrl">https://example.com/<strong id="urlSlug">...</strong></div>
+</div>
+<script>
+function toggleTheme(){document.documentElement.classList.toggle('dark');localStorage.setItem('math-dark',document.documentElement.classList.contains('dark'))}
+if(localStorage.getItem('math-dark')==='true')document.documentElement.classList.add('dark');
+
+var viMap={
+  'à':'a','á':'a','ả':'a','ã':'a','ạ':'a',
+  'ă':'a','ắ':'a','ằ':'a','ẳ':'a','ẵ':'a','ặ':'a',
+  'â':'a','ấ':'a','ầ':'a','ẩ':'a','ẫ':'a','ậ':'a',
+  'è':'e','é':'e','ẻ':'e','ẽ':'e','ẹ':'e',
+  'ê':'e','ế':'e','ề':'e','ể':'e','ễ':'e','ệ':'e',
+  'ì':'i','í':'i','ỉ':'i','ĩ':'i','ị':'i',
+  'ò':'o','ó':'o','ỏ':'o','õ':'o','ọ':'o',
+  'ô':'o','ố':'o','ồ':'o','ổ':'o','ỗ':'o','ộ':'o',
+  'ơ':'o','ớ':'o','ờ':'o','ở':'o','ỡ':'o','ợ':'o',
+  'ù':'u','ú':'u','ủ':'u','ũ':'u','ụ':'u',
+  'ư':'u','ứ':'u','ừ':'u','ử':'u','ữ':'u','ự':'u',
+  'ỳ':'y','ý':'y','ỷ':'y','ỹ':'y','ỵ':'y',
+  'đ':'d',
+  'À':'A','Á':'A','Ả':'A','Ã':'A','Ạ':'A',
+  'Ă':'A','Ắ':'A','Ằ':'A','Ẳ':'A','Ẵ':'A','Ặ':'A',
+  'Â':'A','Ấ':'A','Ầ':'A','Ẩ':'A','Ẫ':'A','Ậ':'A',
+  'È':'E','É':'E','Ẻ':'E','Ẽ':'E','Ẹ':'E',
+  'Ê':'E','Ế':'E','Ề':'E','Ể':'E','Ễ':'E','Ệ':'E',
+  'Ì':'I','Í':'I','Ỉ':'I','Ĩ':'I','Ị':'I',
+  'Ò':'O','Ó':'O','Ỏ':'O','Õ':'O','Ọ':'O',
+  'Ô':'O','Ố':'O','Ồ':'O','Ổ':'O','Ỗ':'O','Ộ':'O',
+  'Ơ':'O','Ớ':'O','Ờ':'O','Ở':'O','Ỡ':'O','Ợ':'O',
+  'Ù':'U','Ú':'U','Ủ':'U','Ũ':'U','Ụ':'U',
+  'Ư':'U','Ứ':'U','Ừ':'U','Ử':'U','Ữ':'U','Ự':'U',
+  'Ỳ':'Y','Ý':'Y','Ỷ':'Y','Ỹ':'Y','Ỵ':'Y',
+  'Đ':'D'
+};
+
+function removeDiacritics(str){
+  return str.split('').map(function(c){return viMap[c]||c}).join('');
+}
+
+function generateSlug(){
+  var text=document.getElementById('input').value;
+  var sep=document.getElementById('separator').value;
+  var maxLen=parseInt(document.getElementById('maxLen').value)||0;
+  var prefix=document.getElementById('prefix').value.trim();
+
+  if(!text.trim()){
+    var preview=document.getElementById('slugPreview');
+    while(preview.firstChild&&preview.firstChild!==document.getElementById('copyBtn')){
+      preview.removeChild(preview.firstChild);
+    }
+    var ph=document.createElement('span');
+    ph.className='placeholder';
+    ph.textContent='Slug sẽ hiển thị ở đây...';
+    preview.insertBefore(ph,document.getElementById('copyBtn'));
+    document.getElementById('urlSlug').textContent='...';
+    return;
+  }
+
+  var slug=removeDiacritics(text);
+  slug=slug.toLowerCase();
+  slug=slug.replace(/[^a-z0-9\s-]/g,'');
+  slug=slug.replace(/\s+/g,sep);
+  slug=slug.replace(new RegExp('['+sep.replace(/[-]/g,'\\-')+']+','g'),sep);
+  slug=slug.replace(new RegExp('^['+sep.replace(/[-]/g,'\\-')+']+|['+sep.replace(/[-]/g,'\\-')+']+$','g'),'');
+
+  if(maxLen>0&&slug.length>maxLen){
+    slug=slug.substring(0,maxLen);
+    slug=slug.replace(new RegExp('['+sep.replace(/[-]/g,'\\-')+']+$','g'),'');
+  }
+
+  var fullSlug=prefix?prefix+slug:slug;
+
+  var preview=document.getElementById('slugPreview');
+  var copyBtnEl=document.getElementById('copyBtn');
+  while(preview.firstChild&&preview.firstChild!==copyBtnEl){
+    preview.removeChild(preview.firstChild);
+  }
+  var textNode=document.createTextNode(fullSlug);
+  preview.insertBefore(textNode,copyBtnEl);
+
+  document.getElementById('urlSlug').textContent=fullSlug;
+}
+
+document.getElementById('input').addEventListener('input',generateSlug);
+
+function copySlug(){
+  var preview=document.getElementById('slugPreview');
+  var text='';
+  for(var i=0;i<preview.childNodes.length;i++){
+    var node=preview.childNodes[i];
+    if(node.nodeType===3)text+=node.textContent;
+  }
+  text=text.trim();
+  if(!text)return;
+  navigator.clipboard.writeText(text).then(function(){
+    var btn=document.getElementById('copyBtn');
+    btn.textContent='';
+    var icon=document.createElement('i');
+    icon.setAttribute('data-lucide','check');
+    btn.appendChild(icon);
+    btn.appendChild(document.createTextNode(' Đã chép!'));
+    lucide.createIcons();
+    setTimeout(function(){
+      btn.textContent='';
+      var icon2=document.createElement('i');
+      icon2.setAttribute('data-lucide','copy');
+      btn.appendChild(icon2);
+      btn.appendChild(document.createTextNode(' Sao chép'));
+      lucide.createIcons();
+    },1500);
+  });
+}
+
+lucide.createIcons();
+</script>
+</body>
+</html>

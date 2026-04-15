@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tạo Hoá Đơn — Invoice Generator</title>
+<meta name="description" content="Tạo hoá đơn chuyên nghiệp trực tuyến. Hỗ trợ VND, USD, thuế VAT, xuất PDF in ấn.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23475569'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white'%3E🧾%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#f8fafc;--surface:#ffffff;--surface2:#f1f5f9;--surface3:#e2e8f0;
+  --border:#cbd5e1;--border2:#475569;
+  --text:#0f172a;--text2:#334155;--text3:#475569;--text-muted:#94a3b8;
+  --primary:#475569;--primary-hover:#334155;--primary-light:#f1f5f9;
+  --accent:#3b82f6;--accent2:#6366f1;
+  --r:10px;--r2:14px;--r3:20px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --shadow2:0 4px 24px rgba(0,0,0,.07);
+  --font:'DM Sans',sans-serif;
+}
+
+.dark{
+  --bg:#0f172a;--surface:#1e293b;--surface2:#0f172a;--surface3:#334155;
+  --border:#475569;--border2:#94a3b8;
+  --text:#f1f5f9;--text2:#cbd5e1;--text3:#94a3b8;--text-muted:#64748b;
+  --primary:#94a3b8;--primary-hover:#cbd5e1;--primary-light:#1e293b;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  --shadow2:0 4px 24px rgba(0,0,0,.3);
+}
+
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px;transition:background .3s,color .3s}
+
+.theme-toggle{
+  position:fixed;top:16px;right:16px;z-index:100;
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);transition:all .3s;color:var(--text)
+}
+.theme-toggle:hover{background:var(--surface3);border-color:var(--border2);transform:scale(1.05)}
+.theme-toggle svg{width:20px;height:20px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+
+.card{
+  width:100%;max-width:720px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r3);padding:28px;
+  box-shadow:var(--shadow2);margin-top:20px;
+}
+
+.header{text-align:center;margin-bottom:24px}
+.header-icon{
+  width:56px;height:56px;border-radius:16px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:12px;box-shadow:0 4px 16px rgba(71,85,105,.3);
+}
+.header-icon svg{width:28px;height:28px;color:#fff}
+.header h1{font-size:1.4rem;font-weight:700;color:var(--text)}
+.header p{font-size:.82rem;color:var(--text-muted);margin-top:4px}
+
+/* Form */
+.section{margin-bottom:20px}
+.section-title{font-size:.8rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.section-title svg{width:15px;height:15px}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-row.full{grid-template-columns:1fr}
+.form-row.triple{grid-template-columns:1fr 1fr 1fr}
+
+.form-group{display:flex;flex-direction:column}
+.form-group label{font-size:.75rem;font-weight:600;color:var(--text2);margin-bottom:4px}
+.form-group input,.form-group textarea,.form-group select{
+  padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);
+  background:var(--surface2);color:var(--text);font-family:var(--font);font-size:.85rem;
+  outline:none;transition:border-color .2s;
+}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:60px}
+
+/* Logo upload */
+.logo-upload{
+  width:80px;height:80px;border:2px dashed var(--border);border-radius:var(--r);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  overflow:hidden;transition:all .2s;background:var(--surface2);flex-shrink:0;
+}
+.logo-upload:hover{border-color:var(--accent)}
+.logo-upload img{width:100%;height:100%;object-fit:contain;display:none}
+.logo-upload svg{width:24px;height:24px;color:var(--text-muted)}
+.logo-upload input{display:none}
+.company-header{display:flex;gap:14px;align-items:flex-start;margin-bottom:10px}
+.company-fields{flex:1}
+
+/* Items table */
+.items-table{width:100%;border-collapse:collapse;margin-bottom:10px}
+.items-table th{
+  font-size:.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;
+  letter-spacing:.3px;padding:8px 6px;text-align:left;border-bottom:2px solid var(--border);
+}
+.items-table td{padding:6px;vertical-align:middle}
+.items-table td input{
+  width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-family:var(--font);font-size:.83rem;
+  outline:none;
+}
+.items-table td input:focus{border-color:var(--accent)}
+.items-table .col-desc{width:40%}
+.items-table .col-qty{width:12%}
+.items-table .col-price{width:22%}
+.items-table .col-amount{width:20%}
+.items-table .col-act{width:6%}
+.items-table .amount-cell{font-weight:600;font-size:.85rem;color:var(--text);padding:8px 10px}
+.btn-remove{
+  width:30px;height:30px;border:none;border-radius:8px;background:transparent;
+  color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.btn-remove:hover{background:#fee2e2;color:#ef4444}
+.btn-remove svg{width:14px;height:14px}
+
+.btn-add-row{
+  display:flex;align-items:center;gap:6px;padding:8px 14px;
+  border:1px dashed var(--border);border-radius:var(--r);
+  background:transparent;color:var(--text-muted);font-family:var(--font);
+  font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;
+}
+.btn-add-row:hover{border-color:var(--accent);color:var(--accent);background:var(--surface2)}
+.btn-add-row svg{width:14px;height:14px}
+
+/* Totals */
+.totals{margin-top:16px;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.total-row{display:flex;align-items:center;gap:20px;font-size:.85rem}
+.total-row .label{color:var(--text-muted);min-width:120px;text-align:right}
+.total-row .value{font-weight:600;min-width:140px;text-align:right;color:var(--text)}
+.total-row.grand{font-size:1.1rem;padding-top:8px;border-top:2px solid var(--primary)}
+.total-row.grand .value{color:var(--accent);font-weight:800}
+.total-row input[type=number]{
+  width:70px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-family:var(--font);font-size:.85rem;
+  outline:none;text-align:right;
+}
+
+/* Action buttons */
+.actions{display:flex;gap:8px;margin-top:24px}
+.btn{padding:12px 20px;border:none;border-radius:var(--r);font-family:var(--font);font-weight:600;font-size:.85rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;flex:1}
+.btn svg{width:16px;height:16px}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--border2);background:var(--surface3)}
+
+/* Print styles */
+@media print{
+  body{background:#fff !important;padding:0 !important}
+  .theme-toggle,.no-print,.actions,.btn-add-row,.btn-remove{display:none !important}
+  .card{max-width:100%;border:none;box-shadow:none;padding:20px;border-radius:0}
+  .form-group input,.form-group textarea,.form-group select,
+  .items-table td input,.total-row input[type=number]{
+    border:none !important;background:transparent !important;padding:4px 0 !important;
+  }
+  .print-invoice-header{display:flex !important}
+  *{color:#000 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+.print-invoice-header{display:none;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:3px solid #475569}
+.print-invoice-header h2{font-size:1.5rem;font-weight:800;color:#475569}
+
+@media(max-width:600px){
+  body{padding:12px}
+  .card{padding:16px;border-radius:var(--r2)}
+  .form-row{grid-template-columns:1fr}
+  .form-row.triple{grid-template-columns:1fr 1fr}
+  .items-table{font-size:.78rem}
+  .totals{align-items:stretch}
+  .total-row{justify-content:space-between}
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle no-print" onclick="toggleTheme()" aria-label="Chuyển giao diện">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+
+<div class="card">
+  <div class="header no-print">
+    <div class="header-icon"><i data-lucide="file-text"></i></div>
+    <h1>Tạo Hoá Đơn</h1>
+    <p>Tạo hoá đơn chuyên nghiệp, in hoặc xuất PDF</p>
+  </div>
+
+  <div class="print-invoice-header">
+    <div>
+      <h2>HOÁ ĐƠN</h2>
+      <div id="printCompanyName" style="font-weight:700;font-size:1.1rem;margin-top:4px"></div>
+    </div>
+    <div style="text-align:right;font-size:.85rem" id="printInvoiceMeta"></div>
+  </div>
+
+  <!-- Company Info -->
+  <div class="section">
+    <div class="section-title"><i data-lucide="building-2"></i> Thông tin công ty</div>
+    <div class="company-header">
+      <div class="logo-upload" id="logoUpload" onclick="document.getElementById('logoInput').click()">
+        <img id="logoPreview" alt="Logo">
+        <i data-lucide="image-plus" id="logoIcon"></i>
+        <input type="file" id="logoInput" accept="image/*" onchange="handleLogo(event)">
+      </div>
+      <div class="company-fields">
+        <div class="form-group" style="margin-bottom:8px">
+          <label>Tên công ty</label>
+          <input type="text" id="companyName" placeholder="Công ty TNHH ABC">
+        </div>
+        <div class="form-group">
+          <label>Địa chỉ</label>
+          <input type="text" id="companyAddress" placeholder="123 Nguyễn Huệ, Q.1, TP.HCM">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client Info -->
+  <div class="section">
+    <div class="section-title"><i data-lucide="user"></i> Thông tin khách hàng</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tên khách hàng</label>
+        <input type="text" id="clientName" placeholder="Nguyễn Văn A">
+      </div>
+      <div class="form-group">
+        <label>Địa chỉ khách hàng</label>
+        <input type="text" id="clientAddress" placeholder="456 Lê Lợi, Q.3, TP.HCM">
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoice Details -->
+  <div class="section">
+    <div class="section-title"><i data-lucide="hash"></i> Chi tiết hoá đơn</div>
+    <div class="form-row triple">
+      <div class="form-group">
+        <label>Số hoá đơn</label>
+        <input type="text" id="invoiceNumber" readonly>
+      </div>
+      <div class="form-group">
+        <label>Ngày lập</label>
+        <input type="date" id="invoiceDate">
+      </div>
+      <div class="form-group">
+        <label>Ngày đáo hạn</label>
+        <input type="date" id="dueDate">
+      </div>
+    </div>
+    <div class="form-row triple">
+      <div class="form-group">
+        <label>Đơn vị tiền tệ</label>
+        <select id="currency" onchange="recalcAll()">
+          <option value="VND">VND - Việt Nam Đồng</option>
+          <option value="USD">USD - Đô la Mỹ</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Items -->
+  <div class="section">
+    <div class="section-title"><i data-lucide="list"></i> Danh mục sản phẩm / dịch vụ</div>
+    <div style="overflow-x:auto">
+    <table class="items-table" id="itemsTable">
+      <thead>
+        <tr>
+          <th class="col-desc">Mô tả</th>
+          <th class="col-qty">SL</th>
+          <th class="col-price">Đơn giá</th>
+          <th class="col-amount">Thành tiền</th>
+          <th class="col-act no-print"></th>
+        </tr>
+      </thead>
+      <tbody id="itemsBody"></tbody>
+    </table>
+    </div>
+    <button class="btn-add-row no-print" onclick="addItem()"><i data-lucide="plus"></i> Thêm dòng</button>
+  </div>
+
+  <!-- Totals -->
+  <div class="totals">
+    <div class="total-row">
+      <span class="label">Tạm tính:</span>
+      <span class="value" id="subtotal">0</span>
+    </div>
+    <div class="total-row">
+      <span class="label">Thuế VAT (%):</span>
+      <span class="value" style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+        <input type="number" id="taxRate" value="10" min="0" max="100" onchange="recalcAll()" oninput="recalcAll()">
+        <span>%</span>
+      </span>
+    </div>
+    <div class="total-row">
+      <span class="label">Tiền thuế:</span>
+      <span class="value" id="taxAmount">0</span>
+    </div>
+    <div class="total-row">
+      <span class="label">Giảm giá:</span>
+      <span class="value" style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+        <input type="number" id="discount" value="0" min="0" onchange="recalcAll()" oninput="recalcAll()">
+      </span>
+    </div>
+    <div class="total-row grand">
+      <span class="label">Tổng cộng:</span>
+      <span class="value" id="grandTotal">0</span>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="section" style="margin-top:20px">
+    <div class="section-title"><i data-lucide="message-square"></i> Ghi chú</div>
+    <div class="form-group">
+      <textarea id="notes" placeholder="Thanh toán qua chuyển khoản ngân hàng..."></textarea>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions no-print">
+    <button class="btn btn-primary" onclick="printInvoice()"><i data-lucide="printer"></i> In / Xuất PDF</button>
+    <button class="btn btn-secondary" onclick="resetForm()"><i data-lucide="rotate-ccw"></i> Làm mới</button>
+  </div>
+</div>
+
+<script>
+// Theme
+function toggleTheme(){
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('math-dark', document.documentElement.classList.contains('dark'));
+  lucide.createIcons();
+}
+if(localStorage.getItem('math-dark')==='true') document.documentElement.classList.add('dark');
+
+// Generate invoice number
+function genInvoiceNum(){
+  var d = new Date();
+  var num = 'INV-' + d.getFullYear() +
+    String(d.getMonth()+1).padStart(2,'0') +
+    String(d.getDate()).padStart(2,'0') + '-' +
+    String(Math.floor(Math.random()*9000)+1000);
+  document.getElementById('invoiceNumber').value = num;
+}
+
+// Set today dates
+function initDates(){
+  var today = new Date();
+  var dd = today.toISOString().split('T')[0];
+  document.getElementById('invoiceDate').value = dd;
+  var due = new Date(today);
+  due.setDate(due.getDate()+30);
+  document.getElementById('dueDate').value = due.toISOString().split('T')[0];
+}
+
+// Format currency
+function formatMoney(amount){
+  var cur = document.getElementById('currency').value;
+  if(cur === 'VND'){
+    return Math.round(amount).toLocaleString('vi-VN').replace(/,/g,'.') + ' \u20AB';
+  }
+  return '$' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+// Logo
+function handleLogo(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    var img = document.getElementById('logoPreview');
+    img.src = ev.target.result;
+    img.style.display = 'block';
+    document.getElementById('logoIcon').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+// Items
+var itemCount = 0;
+function addItem(){
+  itemCount++;
+  var tbody = document.getElementById('itemsBody');
+  var tr = document.createElement('tr');
+  tr.id = 'item-' + itemCount;
+
+  var tdDesc = document.createElement('td');
+  var inputDesc = document.createElement('input');
+  inputDesc.type = 'text';
+  inputDesc.placeholder = 'Mô tả sản phẩm/dịch vụ';
+  tdDesc.appendChild(inputDesc);
+  tr.appendChild(tdDesc);
+
+  var tdQty = document.createElement('td');
+  var inputQty = document.createElement('input');
+  inputQty.type = 'number';
+  inputQty.min = '0';
+  inputQty.value = '1';
+  inputQty.className = 'item-qty';
+  inputQty.setAttribute('data-row', itemCount);
+  inputQty.addEventListener('input', function(){ calcRow(this.getAttribute('data-row')); });
+  tdQty.appendChild(inputQty);
+  tr.appendChild(tdQty);
+
+  var tdPrice = document.createElement('td');
+  var inputPrice = document.createElement('input');
+  inputPrice.type = 'number';
+  inputPrice.min = '0';
+  inputPrice.value = '0';
+  inputPrice.className = 'item-price';
+  inputPrice.setAttribute('data-row', itemCount);
+  inputPrice.addEventListener('input', function(){ calcRow(this.getAttribute('data-row')); });
+  tdPrice.appendChild(inputPrice);
+  tr.appendChild(tdPrice);
+
+  var tdAmount = document.createElement('td');
+  tdAmount.className = 'amount-cell';
+  tdAmount.id = 'amount-' + itemCount;
+  tdAmount.textContent = formatMoney(0);
+  tr.appendChild(tdAmount);
+
+  var tdAct = document.createElement('td');
+  tdAct.className = 'no-print';
+  var btnRm = document.createElement('button');
+  btnRm.className = 'btn-remove';
+  btnRm.setAttribute('data-row', itemCount);
+  btnRm.addEventListener('click', function(){ removeItem(this.getAttribute('data-row')); });
+  var rmIcon = document.createElement('i');
+  rmIcon.setAttribute('data-lucide', 'trash-2');
+  btnRm.appendChild(rmIcon);
+  tdAct.appendChild(btnRm);
+  tr.appendChild(tdAct);
+
+  tbody.appendChild(tr);
+  lucide.createIcons();
+  recalcAll();
+}
+
+function removeItem(rowId){
+  var row = document.getElementById('item-' + rowId);
+  if(row) row.remove();
+  recalcAll();
+}
+
+function calcRow(rowId){
+  var row = document.getElementById('item-' + rowId);
+  if(!row) return;
+  var qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+  var price = parseFloat(row.querySelector('.item-price').value) || 0;
+  var amount = qty * price;
+  document.getElementById('amount-' + rowId).textContent = formatMoney(amount);
+  recalcAll();
+}
+
+function recalcAll(){
+  var rows = document.getElementById('itemsBody').querySelectorAll('tr');
+  var subtotal = 0;
+  rows.forEach(function(row){
+    var qty = parseFloat(row.querySelector('.item-qty') ? row.querySelector('.item-qty').value : 0) || 0;
+    var price = parseFloat(row.querySelector('.item-price') ? row.querySelector('.item-price').value : 0) || 0;
+    var amount = qty * price;
+    var amountCell = row.querySelector('.amount-cell');
+    if(amountCell) amountCell.textContent = formatMoney(amount);
+    subtotal += amount;
+  });
+
+  var taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+  var discount = parseFloat(document.getElementById('discount').value) || 0;
+  var taxAmount = subtotal * (taxRate / 100);
+  var grandTotal = subtotal + taxAmount - discount;
+  if(grandTotal < 0) grandTotal = 0;
+
+  document.getElementById('subtotal').textContent = formatMoney(subtotal);
+  document.getElementById('taxAmount').textContent = formatMoney(taxAmount);
+  document.getElementById('grandTotal').textContent = formatMoney(grandTotal);
+}
+
+function printInvoice(){
+  // Update print header
+  document.getElementById('printCompanyName').textContent = document.getElementById('companyName').value;
+  var meta = document.getElementById('printInvoiceMeta');
+  while(meta.firstChild) meta.removeChild(meta.firstChild);
+
+  var lines = [
+    'Số: ' + document.getElementById('invoiceNumber').value,
+    'Ngày: ' + document.getElementById('invoiceDate').value,
+    'Đáo hạn: ' + document.getElementById('dueDate').value
+  ];
+  lines.forEach(function(line){
+    var div = document.createElement('div');
+    div.textContent = line;
+    meta.appendChild(div);
+  });
+
+  window.print();
+}
+
+function resetForm(){
+  document.getElementById('companyName').value = '';
+  document.getElementById('companyAddress').value = '';
+  document.getElementById('clientName').value = '';
+  document.getElementById('clientAddress').value = '';
+  document.getElementById('notes').value = '';
+  document.getElementById('taxRate').value = '10';
+  document.getElementById('discount').value = '0';
+  document.getElementById('logoPreview').style.display = 'none';
+  document.getElementById('logoIcon').style.display = 'block';
+  var tbody = document.getElementById('itemsBody');
+  while(tbody.firstChild) tbody.removeChild(tbody.firstChild);
+  itemCount = 0;
+  genInvoiceNum();
+  initDates();
+  addItem();
+  recalcAll();
+}
+
+// Init
+genInvoiceNum();
+initDates();
+addItem();
+addItem();
+recalcAll();
+lucide.createIcons();
+</script>
+</body>
+</html>

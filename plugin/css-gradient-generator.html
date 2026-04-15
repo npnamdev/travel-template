@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tạo Gradient CSS — CSS Gradient Generator</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #faf5ff;
+      --bg-card: #ffffff;
+      --bg-input: #f9f5ff;
+      --text: #1a0a2e;
+      --text-sub: #7c6898;
+      --primary: #a855f7;
+      --primary-light: rgba(168,85,247,0.08);
+      --primary-glow: rgba(168,85,247,0.15);
+      --border: rgba(168,85,247,0.1);
+      --shadow: 0 1px 3px rgba(168,85,247,0.04), 0 8px 32px rgba(168,85,247,0.06);
+    }
+
+    body.dark {
+      --bg: #0a0515;
+      --bg-card: #150d25;
+      --bg-input: #1a1030;
+      --text: #ead5ff;
+      --text-sub: #9a7fbf;
+      --primary: #c084fc;
+      --primary-light: rgba(192,132,252,0.1);
+      --primary-glow: rgba(192,132,252,0.12);
+      --border: rgba(192,132,252,0.08);
+      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Sora', system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+    }
+
+    .logo { display: flex; align-items: center; gap: 12px; }
+
+    .logo-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, #ec4899, #a855f7, #3b82f6, #10b981);
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      color: white; box-shadow: 0 4px 16px rgba(168,85,247,0.3);
+    }
+
+    .logo h1 {
+      font-size: 1.5rem; font-weight: 800;
+      background: linear-gradient(135deg, #ec4899, #a855f7, #3b82f6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .logo p { font-size: 0.8rem; color: var(--text-sub); }
+
+    .btn-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      border: 1px solid var(--border); background: var(--bg-card);
+      color: var(--text-sub); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .btn-icon:hover { background: var(--primary-light); color: var(--primary); transform: translateY(-1px); }
+
+    .main-grid { display: grid; grid-template-columns: 1fr 360px; gap: 20px; }
+    @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--bg-card); border-radius: 16px;
+      border: 1px solid var(--border); box-shadow: var(--shadow);
+      padding: 20px; transition: all 0.3s;
+    }
+
+    .card-title {
+      font-size: 0.85rem; font-weight: 600; color: var(--text-sub);
+      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card-title i { width: 16px; height: 16px; color: var(--primary); }
+
+    .preview-box {
+      width: 100%; height: 280px; border-radius: 16px;
+      border: 2px solid var(--border); transition: all 0.3s;
+      position: relative; overflow: hidden;
+    }
+
+    .preview-box::after {
+      content: 'XEM TRƯỚC'; position: absolute; bottom: 12px; right: 16px;
+      font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.5);
+      letter-spacing: 0.1em;
+    }
+
+    .control-group { margin-bottom: 16px; }
+
+    .control-label {
+      font-size: 0.8rem; font-weight: 600; color: var(--text-sub);
+      margin-bottom: 6px; display: block;
+    }
+
+    .type-btns { display: flex; gap: 6px; }
+
+    .type-btn {
+      flex: 1; padding: 10px; border-radius: 10px;
+      border: 2px solid var(--border); background: var(--bg-input);
+      color: var(--text-sub); font-family: 'Sora', sans-serif;
+      font-weight: 600; font-size: 0.82rem; cursor: pointer;
+      transition: all 0.2s; text-align: center;
+    }
+    .type-btn.active {
+      background: var(--primary); color: white; border-color: var(--primary);
+      box-shadow: 0 2px 10px rgba(168,85,247,0.3);
+    }
+    .type-btn:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+
+    .angle-row { display: flex; align-items: center; gap: 10px; }
+    .angle-row input[type="range"] { flex: 1; }
+    .angle-val { font-weight: 700; color: var(--primary); font-size: 0.9rem; min-width: 45px; text-align: right; }
+
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none; height: 6px;
+      border-radius: 3px; background: var(--border); outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 20px; height: 20px;
+      border-radius: 50%; background: var(--primary); cursor: pointer;
+      box-shadow: 0 2px 8px rgba(168,85,247,0.3);
+    }
+
+    .stops-bar-wrap { position: relative; height: 40px; margin: 16px 0 8px; }
+
+    .stops-bar {
+      width: 100%; height: 28px; border-radius: 10px;
+      border: 2px solid var(--border); cursor: pointer; position: relative;
+    }
+
+    .stop-handle {
+      position: absolute; top: -4px; width: 20px; height: 36px;
+      border-radius: 6px; border: 3px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3); cursor: grab;
+      transform: translateX(-10px); transition: box-shadow 0.2s; z-index: 2;
+    }
+    .stop-handle:hover { box-shadow: 0 2px 16px rgba(0,0,0,0.4); }
+    .stop-handle.active { box-shadow: 0 0 0 3px var(--primary), 0 2px 16px rgba(0,0,0,0.4); z-index: 3; }
+
+    .stop-controls {
+      display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap;
+    }
+
+    .stop-color-input {
+      width: 44px; height: 36px; border: 2px solid var(--border);
+      border-radius: 8px; cursor: pointer; padding: 2px;
+    }
+
+    .stop-pos {
+      width: 60px; padding: 8px; border-radius: 8px;
+      border: 2px solid var(--border); background: var(--bg-input);
+      font-family: 'Sora', sans-serif; font-size: 0.82rem;
+      color: var(--text); text-align: center;
+    }
+
+    .btn-sm {
+      padding: 8px 14px; border-radius: 8px; border: none;
+      font-family: 'Sora', sans-serif; font-weight: 600; font-size: 0.78rem;
+      cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .btn-sm i { width: 14px; height: 14px; }
+    .btn-add { background: var(--primary); color: white; }
+    .btn-add:hover { transform: translateY(-1px); }
+    .btn-del { background: rgba(239,68,68,0.1); color: #ef4444; }
+    .btn-del:hover { background: #ef4444; color: white; }
+
+    .css-output {
+      background: var(--bg-input); border: 2px solid var(--border);
+      border-radius: 12px; padding: 14px;
+      font-family: monospace; font-size: 0.82rem; color: var(--primary);
+      line-height: 1.6; word-break: break-all; position: relative; min-height: 60px;
+    }
+
+    .btn-copy {
+      position: absolute; top: 8px; right: 8px;
+      padding: 6px 12px; border-radius: 8px; border: none;
+      background: var(--primary); color: white;
+      font-family: 'Sora', sans-serif; font-weight: 600; font-size: 0.75rem;
+      cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .btn-copy:hover { transform: translateY(-1px); }
+    .btn-copy i { width: 14px; height: 14px; }
+
+    .presets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+    .preset {
+      height: 52px; border-radius: 10px; border: 2px solid transparent;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .preset:hover { transform: scale(1.05); border-color: var(--primary); }
+
+    .gap-16 { display: flex; flex-direction: column; gap: 16px; }
+
+    .toast {
+      position: fixed; bottom: 30px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      padding: 12px 24px; background: #10b981; color: white;
+      border-radius: 12px; font-weight: 600; font-size: 0.85rem;
+      box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+      transition: transform 0.3s ease; z-index: 100;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-in { animation: fadeIn 0.4s ease-out; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-icon"><i data-lucide="paintbrush" style="width:24px;height:24px"></i></div>
+        <div>
+          <h1>Tạo Gradient CSS</h1>
+          <p>CSS Gradient Generator - Trình tạo gradient trực quan</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-icon" id="darkToggle" title="Chế độ tối"><i data-lucide="moon" style="width:18px;height:18px"></i></button>
+      </div>
+    </header>
+
+    <div class="main-grid">
+      <div class="gap-16">
+        <div class="card animate-in">
+          <div class="card-title"><i data-lucide="eye"></i> Xem trước</div>
+          <div class="preview-box" id="previewBox"></div>
+        </div>
+
+        <div class="card animate-in" style="animation-delay:0.1s">
+          <div class="card-title"><i data-lucide="code"></i> Code CSS</div>
+          <div class="css-output" id="cssOutput">
+            <button class="btn-copy" onclick="copyCSS()"><i data-lucide="copy"></i> Sao chép</button>
+            <span id="cssText"></span>
+          </div>
+        </div>
+
+        <div class="card animate-in" style="animation-delay:0.2s">
+          <div class="card-title"><i data-lucide="grid-3x3"></i> Gradient có sẵn</div>
+          <div class="presets-grid" id="presetsGrid"></div>
+        </div>
+      </div>
+
+      <div class="gap-16">
+        <div class="card animate-in" style="animation-delay:0.1s">
+          <div class="card-title"><i data-lucide="settings"></i> Cài đặt</div>
+
+          <div class="control-group">
+            <span class="control-label">Loại Gradient</span>
+            <div class="type-btns" id="typeBtnsWrap">
+              <button class="type-btn active" data-type="linear">Linear</button>
+              <button class="type-btn" data-type="radial">Radial</button>
+              <button class="type-btn" data-type="conic">Conic</button>
+            </div>
+          </div>
+
+          <div class="control-group" id="angleGroup">
+            <span class="control-label">Góc: <span class="angle-val" id="angleVal">135</span>°</span>
+            <div class="angle-row">
+              <input type="range" id="angleSlider" min="0" max="360" value="135" />
+            </div>
+          </div>
+
+          <div class="control-group" id="posGroup" style="display:none">
+            <span class="control-label">Vị trí</span>
+            <div class="type-btns" id="positionBtns">
+              <button class="type-btn active" data-pos="center">Giữa</button>
+              <button class="type-btn" data-pos="top left">Trái trên</button>
+              <button class="type-btn" data-pos="bottom right">Phải dưới</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card animate-in" style="animation-delay:0.15s">
+          <div class="card-title"><i data-lucide="droplets"></i> Điểm dừng màu</div>
+          <div class="stops-bar-wrap">
+            <div class="stops-bar" id="stopsBar"></div>
+          </div>
+          <div id="stopsList"></div>
+          <div style="margin-top:12px">
+            <button class="btn-sm btn-add" id="addStopBtn"><i data-lucide="plus"></i> Thêm màu</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast">Đã sao chép!</div>
+  </div>
+
+  <script>
+    var state = {
+      type: 'linear',
+      angle: 135,
+      position: 'center',
+      stops: [
+        { color: '#ec4899', pos: 0 },
+        { color: '#a855f7', pos: 50 },
+        { color: '#3b82f6', pos: 100 }
+      ],
+      activeStop: 0
+    };
+
+    var presets = [
+      [{ color: '#667eea', pos: 0 }, { color: '#764ba2', pos: 100 }],
+      [{ color: '#f093fb', pos: 0 }, { color: '#f5576c', pos: 100 }],
+      [{ color: '#4facfe', pos: 0 }, { color: '#00f2fe', pos: 100 }],
+      [{ color: '#43e97b', pos: 0 }, { color: '#38f9d7', pos: 100 }],
+      [{ color: '#fa709a', pos: 0 }, { color: '#fee140', pos: 100 }],
+      [{ color: '#a18cd1', pos: 0 }, { color: '#fbc2eb', pos: 100 }],
+      [{ color: '#fccb90', pos: 0 }, { color: '#d57eeb', pos: 100 }],
+      [{ color: '#e0c3fc', pos: 0 }, { color: '#8ec5fc', pos: 100 }],
+      [{ color: '#f5576c', pos: 0 }, { color: '#ffd803', pos: 100 }],
+      [{ color: '#0250c5', pos: 0 }, { color: '#d43f8d', pos: 100 }],
+      [{ color: '#20bf55', pos: 0 }, { color: '#01baef', pos: 100 }],
+      [{ color: '#ff6a00', pos: 0 }, { color: '#ee0979', pos: 100 }],
+    ];
+
+    function buildGradientCSS(stops, type, angle, position) {
+      var parts = [];
+      for (var i = 0; i < stops.length; i++) {
+        parts.push(stops[i].color + ' ' + stops[i].pos + '%');
+      }
+      var colorStops = parts.join(', ');
+      if (type === 'linear') return 'linear-gradient(' + angle + 'deg, ' + colorStops + ')';
+      if (type === 'radial') return 'radial-gradient(circle at ' + position + ', ' + colorStops + ')';
+      return 'conic-gradient(from ' + angle + 'deg at ' + position + ', ' + colorStops + ')';
+    }
+
+    function updatePreview() {
+      var css = buildGradientCSS(state.stops, state.type, state.angle, state.position);
+      document.getElementById('previewBox').style.background = css;
+      document.getElementById('cssText').textContent = 'background: ' + css + ';';
+      updateStopsBar();
+    }
+
+    function updateStopsBar() {
+      var bar = document.getElementById('stopsBar');
+      var parts = [];
+      for (var s = 0; s < state.stops.length; s++) {
+        parts.push(state.stops[s].color + ' ' + state.stops[s].pos + '%');
+      }
+      bar.style.background = 'linear-gradient(90deg, ' + parts.join(', ') + ')';
+
+      // Clear old handles
+      while (bar.firstChild) bar.removeChild(bar.firstChild);
+
+      for (var i = 0; i < state.stops.length; i++) {
+        var handle = document.createElement('div');
+        handle.className = 'stop-handle' + (i === state.activeStop ? ' active' : '');
+        handle.style.left = state.stops[i].pos + '%';
+        handle.style.background = state.stops[i].color;
+        handle.setAttribute('data-idx', String(i));
+        bar.appendChild(handle);
+        bindHandleDrag(handle, i);
+      }
+    }
+
+    function bindHandleDrag(handle, idx) {
+      handle.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        state.activeStop = idx;
+        renderStopControls();
+        updateStopsBar();
+        var bar = document.getElementById('stopsBar');
+
+        function onMove(ev) {
+          var rect = bar.getBoundingClientRect();
+          var pct = Math.round(Math.max(0, Math.min(100, ((ev.clientX - rect.left) / rect.width) * 100)));
+          state.stops[idx].pos = pct;
+          updatePreview();
+          renderStopControls();
+        }
+        function onUp() {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+
+      handle.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        state.activeStop = idx;
+        renderStopControls();
+        updateStopsBar();
+        var bar = document.getElementById('stopsBar');
+
+        function onMove(ev) {
+          var touch = ev.touches[0];
+          var rect = bar.getBoundingClientRect();
+          var pct = Math.round(Math.max(0, Math.min(100, ((touch.clientX - rect.left) / rect.width) * 100)));
+          state.stops[idx].pos = pct;
+          updatePreview();
+          renderStopControls();
+        }
+        function onEnd() {
+          document.removeEventListener('touchmove', onMove);
+          document.removeEventListener('touchend', onEnd);
+        }
+        document.addEventListener('touchmove', onMove);
+        document.addEventListener('touchend', onEnd);
+      });
+    }
+
+    function renderStopControls() {
+      var list = document.getElementById('stopsList');
+      // Clear children
+      while (list.firstChild) list.removeChild(list.firstChild);
+
+      for (var i = 0; i < state.stops.length; i++) {
+        var row = document.createElement('div');
+        row.className = 'stop-controls';
+        if (i === state.activeStop) {
+          row.style.borderLeft = '3px solid var(--primary)';
+          row.style.paddingLeft = '8px';
+        }
+
+        var colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.className = 'stop-color-input';
+        colorInput.value = state.stops[i].color;
+        colorInput.setAttribute('data-idx', String(i));
+        colorInput.addEventListener('input', function() {
+          var ci = parseInt(this.getAttribute('data-idx'));
+          state.stops[ci].color = this.value;
+          updatePreview();
+        });
+
+        var posInput = document.createElement('input');
+        posInput.type = 'number';
+        posInput.className = 'stop-pos';
+        posInput.value = state.stops[i].pos;
+        posInput.min = '0';
+        posInput.max = '100';
+        posInput.setAttribute('data-idx', String(i));
+        posInput.addEventListener('input', function() {
+          var pi = parseInt(this.getAttribute('data-idx'));
+          state.stops[pi].pos = parseInt(this.value) || 0;
+          updatePreview();
+        });
+
+        var pctLabel = document.createTextNode('%');
+
+        row.appendChild(colorInput);
+        row.appendChild(posInput);
+        row.appendChild(pctLabel);
+
+        if (state.stops.length > 2) {
+          var delBtn = document.createElement('button');
+          delBtn.className = 'btn-sm btn-del';
+          delBtn.setAttribute('data-delidx', String(i));
+          delBtn.textContent = 'X';
+          delBtn.addEventListener('click', function() {
+            var di = parseInt(this.getAttribute('data-delidx'));
+            state.stops.splice(di, 1);
+            if (state.activeStop >= state.stops.length) state.activeStop = state.stops.length - 1;
+            renderStopControls();
+            updatePreview();
+          });
+          row.appendChild(delBtn);
+        }
+
+        list.appendChild(row);
+      }
+    }
+
+    document.getElementById('addStopBtn').addEventListener('click', function() {
+      var hex = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+      state.stops.push({ color: hex, pos: 100 });
+      for (var i = 0; i < state.stops.length; i++) {
+        state.stops[i].pos = Math.round((i / (state.stops.length - 1)) * 100);
+      }
+      state.activeStop = state.stops.length - 1;
+      renderStopControls();
+      updatePreview();
+    });
+
+    // Type buttons
+    var typeBtnsWrap = document.getElementById('typeBtnsWrap');
+    typeBtnsWrap.addEventListener('click', function(e) {
+      var btn = e.target.closest('.type-btn');
+      if (!btn || !btn.hasAttribute('data-type')) return;
+      var btns = typeBtnsWrap.querySelectorAll('.type-btn');
+      for (var j = 0; j < btns.length; j++) btns[j].classList.remove('active');
+      btn.classList.add('active');
+      state.type = btn.getAttribute('data-type');
+      document.getElementById('angleGroup').style.display = (state.type === 'radial') ? 'none' : '';
+      document.getElementById('posGroup').style.display = (state.type === 'linear') ? 'none' : '';
+      updatePreview();
+    });
+
+    // Position buttons
+    var posWrap = document.getElementById('positionBtns');
+    posWrap.addEventListener('click', function(e) {
+      var btn = e.target.closest('.type-btn');
+      if (!btn || !btn.hasAttribute('data-pos')) return;
+      var btns = posWrap.querySelectorAll('.type-btn');
+      for (var j = 0; j < btns.length; j++) btns[j].classList.remove('active');
+      btn.classList.add('active');
+      state.position = btn.getAttribute('data-pos');
+      updatePreview();
+    });
+
+    // Angle slider
+    document.getElementById('angleSlider').addEventListener('input', function() {
+      state.angle = parseInt(this.value);
+      document.getElementById('angleVal').textContent = state.angle;
+      updatePreview();
+    });
+
+    // Presets
+    function buildPresets() {
+      var grid = document.getElementById('presetsGrid');
+      for (var i = 0; i < presets.length; i++) {
+        var div = document.createElement('div');
+        div.className = 'preset';
+        var parts = [];
+        for (var j = 0; j < presets[i].length; j++) {
+          parts.push(presets[i][j].color + ' ' + presets[i][j].pos + '%');
+        }
+        div.style.background = 'linear-gradient(135deg,' + parts.join(', ') + ')';
+        div.setAttribute('data-pidx', String(i));
+        div.addEventListener('click', function() {
+          var idx = parseInt(this.getAttribute('data-pidx'));
+          state.stops = [];
+          for (var k = 0; k < presets[idx].length; k++) {
+            state.stops.push({ color: presets[idx][k].color, pos: presets[idx][k].pos });
+          }
+          state.activeStop = 0;
+          renderStopControls();
+          updatePreview();
+        });
+        grid.appendChild(div);
+      }
+    }
+
+    function copyCSS() {
+      var css = document.getElementById('cssText').textContent;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(css).then(function() { showToast(); });
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = css;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast();
+      }
+    }
+
+    function showToast() {
+      var toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(function() { toast.classList.remove('show'); }, 2000);
+    }
+
+    // Dark mode
+    if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+    document.getElementById('darkToggle').addEventListener('click', function() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+    });
+
+    buildPresets();
+    renderStopControls();
+    updatePreview();
+    lucide.createIcons();
+  </script>
+</body>
+</html>

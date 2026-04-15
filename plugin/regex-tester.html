@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kiểm Tra Regex — Regex Tester</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #f5f3ff;
+      --bg-card: #ffffff;
+      --bg-input: #faf8ff;
+      --text: #1e1033;
+      --text-sub: #6b5b8a;
+      --primary: #7c3aed;
+      --primary-light: rgba(124,58,237,0.08);
+      --primary-glow: rgba(124,58,237,0.18);
+      --accent: #a78bfa;
+      --border: rgba(124,58,237,0.12);
+      --match-bg: rgba(124,58,237,0.2);
+      --match-border: #7c3aed;
+      --shadow: 0 1px 3px rgba(124,58,237,0.04), 0 8px 32px rgba(124,58,237,0.06);
+      --shadow-hover: 0 4px 12px rgba(124,58,237,0.1), 0 16px 48px rgba(124,58,237,0.14);
+    }
+
+    body.dark {
+      --bg: #0c0616;
+      --bg-card: #16102a;
+      --bg-input: #1c1535;
+      --text: #e8e0ff;
+      --text-sub: #9585b5;
+      --primary: #a78bfa;
+      --primary-light: rgba(167,139,250,0.1);
+      --primary-glow: rgba(167,139,250,0.15);
+      --accent: #c4b5fd;
+      --border: rgba(167,139,250,0.08);
+      --match-bg: rgba(167,139,250,0.25);
+      --match-border: #a78bfa;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 32px rgba(0,0,0,0.4);
+      --shadow-hover: 0 4px 12px rgba(167,139,250,0.15), 0 16px 48px rgba(0,0,0,0.5);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #7c3aed, #a78bfa);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 16px rgba(124,58,237,0.3);
+    }
+
+    .logo h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #7c3aed, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo p {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-sub);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      transition: all 0.3s;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title i { width: 16px; height: 16px; color: var(--primary); }
+
+    .regex-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .regex-input-wrap {
+      flex: 1;
+      min-width: 200px;
+      display: flex;
+      align-items: center;
+      background: var(--bg-input);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 0 14px;
+      transition: border-color 0.2s;
+    }
+
+    .regex-input-wrap:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-glow);
+    }
+
+    .regex-slash {
+      color: var(--primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .regex-input-wrap input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 12px 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--text);
+      outline: none;
+    }
+
+    .flags-group {
+      display: flex;
+      gap: 4px;
+    }
+
+    .flag-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-sub);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .flag-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(124,58,237,0.3);
+    }
+
+    .flag-btn:hover:not(.active) {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .test-textarea {
+      width: 100%;
+      min-height: 160px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg-input);
+      padding: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--text);
+      outline: none;
+      resize: vertical;
+      transition: border-color 0.2s;
+      line-height: 1.7;
+    }
+
+    .test-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-glow);
+    }
+
+    .highlight-area {
+      width: 100%;
+      min-height: 160px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg-input);
+      padding: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--text);
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-all;
+      overflow: auto;
+    }
+
+    .highlight-area mark {
+      background: var(--match-bg);
+      border: 1px solid var(--match-border);
+      border-radius: 3px;
+      padding: 1px 2px;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .stat-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--primary-light);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .stat-badge .num {
+      background: var(--primary);
+      color: white;
+      border-radius: 10px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+    }
+
+    .groups-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.85rem;
+    }
+
+    .groups-table th {
+      text-align: left;
+      padding: 8px 10px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+      border-radius: 6px;
+    }
+
+    .groups-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+    }
+
+    .groups-table tr:hover td {
+      background: var(--primary-light);
+    }
+
+    .match-index {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .sidebar .card + .card { margin-top: 16px; }
+
+    .cheat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .cheat-item:last-child { border-bottom: none; }
+
+    .cheat-item:hover { padding-left: 6px; }
+
+    .cheat-pattern {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--primary);
+      font-weight: 600;
+      background: var(--primary-light);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .cheat-desc {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      text-align: right;
+    }
+
+    .error-msg {
+      color: #ef4444;
+      font-size: 0.82rem;
+      padding: 8px 12px;
+      background: rgba(239,68,68,0.08);
+      border-radius: 8px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .error-msg.show { display: block; }
+
+    .gap-12 { display: flex; flex-direction: column; gap: 16px; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-in { animation: fadeIn 0.4s ease-out; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-icon"><i data-lucide="regex" style="width:24px;height:24px"></i></div>
+        <div>
+          <h1>Kiểm Tra Regex</h1>
+          <p>Regex Tester - Kiểm tra biểu thức chính quy</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-icon" onclick="clearAll()" title="Xoá tất cả"><i data-lucide="trash-2" style="width:18px;height:18px"></i></button>
+        <button class="btn-icon" id="darkToggle" title="Chế độ tối"><i data-lucide="moon" style="width:18px;height:18px"></i></button>
+      </div>
+    </header>
+
+    <div class="main-grid">
+      <div class="gap-12">
+        <div class="card animate-in">
+          <div class="card-title"><i data-lucide="code-2"></i> Biểu thức Regex</div>
+          <div class="regex-row">
+            <div class="regex-input-wrap">
+              <span class="regex-slash">/</span>
+              <input type="text" id="regexInput" placeholder="Nhập regex tại đây..." />
+              <span class="regex-slash">/</span>
+            </div>
+            <div class="flags-group">
+              <button class="flag-btn active" data-flag="g">g</button>
+              <button class="flag-btn" data-flag="i">i</button>
+              <button class="flag-btn" data-flag="m">m</button>
+              <button class="flag-btn" data-flag="s">s</button>
+            </div>
+          </div>
+          <div class="error-msg" id="errorMsg"></div>
+        </div>
+
+        <div class="card animate-in" style="animation-delay:0.1s">
+          <div class="card-title"><i data-lucide="text"></i> Chuỗi kiểm tra</div>
+          <textarea class="test-textarea" id="testString" placeholder="Nhập chuỗi cần kiểm tra tại đây..."></textarea>
+        </div>
+
+        <div class="card animate-in" style="animation-delay:0.2s">
+          <div class="card-title"><i data-lucide="highlighter"></i> Kết quả khớp</div>
+          <div class="highlight-area" id="highlightArea">Kết quả sẽ hiển thị tại đây...</div>
+          <div class="stats-row" id="statsRow"></div>
+        </div>
+
+        <div class="card animate-in" style="animation-delay:0.3s" id="groupsCard">
+          <div class="card-title"><i data-lucide="table"></i> Bảng nhóm bắt (Capture Groups)</div>
+          <div style="overflow-x:auto">
+            <table class="groups-table" id="groupsTable">
+              <thead><tr><th>#</th><th>Khớp</th><th>Nhóm</th><th>Vị trí</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <div class="card animate-in" style="animation-delay:0.15s">
+          <div class="card-title"><i data-lucide="book-open"></i> Mẫu Regex phổ biến</div>
+          <div id="cheatSheet"></div>
+        </div>
+
+        <div class="card animate-in" style="animation-delay:0.25s">
+          <div class="card-title"><i data-lucide="info"></i> Ký tự đặc biệt</div>
+          <div id="specialChars"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var commonPatterns = [
+      { pattern: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}', desc: 'Email' },
+      { pattern: '(0[0-9]{9,10})', desc: 'SĐT Việt Nam' },
+      { pattern: 'https?:\\/\\/[\\w\\-._~:/?#\\[\\]@!$&\'()*+,;=%]+', desc: 'URL' },
+      { pattern: '\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b', desc: 'Địa chỉ IP' },
+      { pattern: '#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\\b', desc: 'Mã màu HEX' },
+      { pattern: '\\d{4}-\\d{2}-\\d{2}', desc: 'Ngày YYYY-MM-DD' },
+      { pattern: '<[^>]+>', desc: 'Thẻ HTML' },
+      { pattern: '\\b[A-Z][a-z]+\\b', desc: 'Từ viết hoa' },
+    ];
+
+    var specialCharsList = [
+      { pattern: '.', desc: 'Ký tự bất kỳ' },
+      { pattern: '\\d', desc: 'Chữ số [0-9]' },
+      { pattern: '\\w', desc: 'Ký tự chữ/số' },
+      { pattern: '\\s', desc: 'Khoảng trắng' },
+      { pattern: '^', desc: 'Đầu chuỗi' },
+      { pattern: '$', desc: 'Cuối chuỗi' },
+      { pattern: '*', desc: 'Lặp 0+ lần' },
+      { pattern: '+', desc: 'Lặp 1+ lần' },
+      { pattern: '?', desc: 'Tuỳ chọn (0/1)' },
+      { pattern: '()', desc: 'Nhóm bắt' },
+      { pattern: '[]', desc: 'Tập ký tự' },
+      { pattern: '|', desc: 'Hoặc' },
+    ];
+
+    function buildCheatSheet() {
+      var el = document.getElementById('cheatSheet');
+      var html = '';
+      for (var i = 0; i < commonPatterns.length; i++) {
+        var p = commonPatterns[i];
+        var display = p.pattern.length > 25 ? p.pattern.slice(0,25) + '...' : p.pattern;
+        html += '<div class="cheat-item" data-idx="' + i + '">' +
+          '<span class="cheat-desc">' + p.desc + '</span>' +
+          '<span class="cheat-pattern" title="Nhấn để dùng">' + display + '</span>' +
+          '</div>';
+      }
+      el.innerHTML = html;
+      el.addEventListener('click', function(e) {
+        var item = e.target.closest('.cheat-item');
+        if (item) {
+          var idx = parseInt(item.getAttribute('data-idx'));
+          document.getElementById('regexInput').value = commonPatterns[idx].pattern;
+          runTest();
+        }
+      });
+
+      var el2 = document.getElementById('specialChars');
+      var html2 = '';
+      for (var j = 0; j < specialCharsList.length; j++) {
+        var s = specialCharsList[j];
+        html2 += '<div class="cheat-item">' +
+          '<span class="cheat-pattern">' + s.pattern + '</span>' +
+          '<span class="cheat-desc">' + s.desc + '</span>' +
+          '</div>';
+      }
+      el2.innerHTML = html2;
+    }
+
+    function getFlags() {
+      var btns = document.querySelectorAll('.flag-btn.active');
+      var flags = '';
+      for (var i = 0; i < btns.length; i++) flags += btns[i].getAttribute('data-flag');
+      return flags;
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function runTest() {
+      var pattern = document.getElementById('regexInput').value;
+      var testStr = document.getElementById('testString').value;
+      var errorMsg = document.getElementById('errorMsg');
+      var highlightArea = document.getElementById('highlightArea');
+      var statsRow = document.getElementById('statsRow');
+      var groupsCard = document.getElementById('groupsCard');
+      var tbody = document.getElementById('groupsTable').querySelector('tbody');
+
+      errorMsg.classList.remove('show');
+      errorMsg.textContent = '';
+      tbody.innerHTML = '';
+      groupsCard.style.display = 'none';
+
+      if (!pattern || !testStr) {
+        highlightArea.innerHTML = escapeHtml(testStr) || 'Kết quả sẽ hiển thị tại đây...';
+        statsRow.innerHTML = '';
+        return;
+      }
+
+      var regex;
+      try {
+        regex = new RegExp(pattern, getFlags());
+      } catch(e) {
+        errorMsg.textContent = 'Lỗi Regex: ' + e.message;
+        errorMsg.classList.add('show');
+        highlightArea.innerHTML = escapeHtml(testStr);
+        statsRow.innerHTML = '';
+        return;
+      }
+
+      var matches = [];
+      var match;
+      var isGlobal = regex.global;
+
+      if (isGlobal) {
+        while ((match = regex.exec(testStr)) !== null) {
+          matches.push({ full: match[0], index: match.index, groups: Array.prototype.slice.call(match, 1) });
+          if (match[0].length === 0) regex.lastIndex++;
+        }
+      } else {
+        match = regex.exec(testStr);
+        if (match) {
+          matches.push({ full: match[0], index: match.index, groups: Array.prototype.slice.call(match, 1) });
+        }
+      }
+
+      if (matches.length === 0) {
+        highlightArea.innerHTML = escapeHtml(testStr);
+        statsRow.innerHTML = '<div class="stat-badge">Không tìm thấy kết quả khớp</div>';
+        return;
+      }
+
+      var result = '';
+      var lastIdx = 0;
+      for (var i = 0; i < matches.length; i++) {
+        var m = matches[i];
+        result += escapeHtml(testStr.slice(lastIdx, m.index));
+        result += '<mark>' + escapeHtml(m.full) + '</mark>';
+        lastIdx = m.index + m.full.length;
+      }
+      result += escapeHtml(testStr.slice(lastIdx));
+      highlightArea.innerHTML = result;
+
+      statsRow.innerHTML =
+        '<div class="stat-badge">Kết quả khớp <span class="num">' + matches.length + '</span></div>' +
+        '<div class="stat-badge">Tổng ký tự <span class="num">' + testStr.length + '</span></div>';
+
+      var hasGroups = false;
+      for (var k = 0; k < matches.length; k++) {
+        if (matches[k].groups.length > 0) { hasGroups = true; break; }
+      }
+      if (hasGroups) {
+        groupsCard.style.display = 'block';
+        for (var j = 0; j < matches.length; j++) {
+          var mg = matches[j];
+          var row = document.createElement('tr');
+          var groupsHtml = '';
+          for (var g = 0; g < mg.groups.length; g++) {
+            groupsHtml += '<span style="color:var(--primary)">[' + (g+1) + ']</span> ' + escapeHtml(mg.groups[g] || '(trống)') + '<br>';
+          }
+          row.innerHTML =
+            '<td class="match-index">' + (j+1) + '</td>' +
+            '<td>' + escapeHtml(mg.full) + '</td>' +
+            '<td>' + groupsHtml + '</td>' +
+            '<td>' + mg.index + '</td>';
+          tbody.appendChild(row);
+        }
+      }
+    }
+
+    // Flag toggles
+    var flagBtns = document.querySelectorAll('.flag-btn');
+    for (var fi = 0; fi < flagBtns.length; fi++) {
+      flagBtns[fi].addEventListener('click', function() {
+        this.classList.toggle('active');
+        runTest();
+      });
+    }
+
+    document.getElementById('regexInput').addEventListener('input', runTest);
+    document.getElementById('testString').addEventListener('input', runTest);
+
+    function clearAll() {
+      document.getElementById('regexInput').value = '';
+      document.getElementById('testString').value = '';
+      runTest();
+    }
+
+    // Dark mode
+    function initDark() {
+      if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+    }
+
+    document.getElementById('darkToggle').addEventListener('click', function() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+    });
+
+    initDark();
+    buildCheatSheet();
+    lucide.createIcons();
+  </script>
+</body>
+</html>

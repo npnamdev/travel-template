@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chuyển Đổi Chữ — Text Case Converter</title>
+<meta name="description" content="Công cụ chuyển đổi kiểu chữ: UPPERCASE, lowercase, Title Case, camelCase, snake_case, kebab-case và nhiều hơn nữa.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23c026d3'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white'%3EAa%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#fdf2f8;--surface:#fff;--surface2:#fce7f3;--surface3:#fbcfe8;
+  --border:#f0abfc;--border2:#d946ef;
+  --text:#1a0a1e;--text2:#a21caf;--text3:#c026d3;--text-muted:#6b7280;
+  --primary:#c026d3;--primary-hover:#a21caf;--primary-light:#f0abfc;
+  --accent:#e879f9;
+  --r:12px;--r2:16px;--r3:20px;
+  --shadow:0 1px 3px rgba(192,38,211,.08),0 4px 16px rgba(192,38,211,.06);
+  --shadow2:0 4px 24px rgba(192,38,211,.12);
+  --font:'Space Grotesk',sans-serif;
+  --mono:'Fira Code',monospace;
+}
+.dark{
+  --bg:#120a14;--surface:#1e1022;--surface2:#2a1530;--surface3:#3b1d42;
+  --border:#4a2255;--border2:#c026d3;
+  --text:#f5d0fe;--text2:#e879f9;--text3:#d946ef;--text-muted:#94a3b8;
+  --primary:#d946ef;--primary-hover:#c026d3;--primary-light:#701a75;
+  --accent:#e879f9;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  --shadow2:0 4px 24px rgba(0,0,0,.3);
+}
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px;transition:background .3s,color .3s}
+.theme-toggle{
+  position:fixed;top:16px;right:16px;z-index:100;
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);transition:all .3s;color:var(--text)
+}
+.theme-toggle:hover{background:var(--surface2);border-color:var(--border2);transform:scale(1.05)}
+.theme-toggle svg{width:20px;height:20px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+.card{
+  width:100%;max-width:720px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r3);padding:32px;
+  box-shadow:var(--shadow2);margin-top:20px;
+}
+.header{text-align:center;margin-bottom:24px}
+.header-icon{
+  width:56px;height:56px;border-radius:16px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:12px;box-shadow:0 4px 16px rgba(192,38,211,.3);
+}
+.header-icon svg{width:28px;height:28px;color:#fff}
+.header h1{font-size:1.5rem;font-weight:700;color:var(--text);letter-spacing:-.3px}
+.header p{font-size:.85rem;color:var(--text-muted);margin-top:4px}
+textarea{
+  width:100%;min-height:120px;padding:16px;border-radius:var(--r2);
+  border:1px solid var(--border);background:var(--surface2);
+  font-family:var(--mono);font-size:.9rem;color:var(--text);resize:vertical;
+  transition:border-color .2s;outline:none;
+}
+textarea:focus{border-color:var(--primary)}
+.stats{display:flex;gap:16px;margin:12px 0;font-size:.8rem;color:var(--text-muted);flex-wrap:wrap}
+.stats span{background:var(--surface2);padding:4px 10px;border-radius:8px;border:1px solid var(--border)}
+.btn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin:16px 0}
+.btn{
+  padding:10px 14px;border-radius:var(--r);border:1px solid var(--border);
+  background:var(--surface2);color:var(--text);font-family:var(--font);
+  font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn:hover{border-color:var(--primary);background:var(--surface3);color:var(--primary)}
+.btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+label.section{font-weight:600;font-size:.9rem;margin:16px 0 8px;display:block;color:var(--text2)}
+.result-box{
+  position:relative;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:16px;padding-top:40px;min-height:80px;
+  font-family:var(--mono);font-size:.88rem;color:var(--text);
+  white-space:pre-wrap;word-break:break-all;margin-top:8px;
+}
+.copy-btn{
+  position:absolute;top:8px;right:8px;padding:6px 12px;border-radius:8px;
+  border:1px solid var(--border);background:var(--surface);color:var(--text);
+  font-family:var(--font);font-size:.78rem;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;gap:4px;
+}
+.copy-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+.copy-btn svg{width:14px;height:14px}
+@media(max-width:600px){.card{padding:20px}.btn-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+<div class="card">
+  <div class="header">
+    <div class="header-icon"><i data-lucide="case-sensitive"></i></div>
+    <h1>Chuyển Đổi Chữ</h1>
+    <p>Text Case Converter — Chuyển đổi nhanh các kiểu viết chữ</p>
+  </div>
+  <label class="section">Nhập văn bản</label>
+  <textarea id="input" placeholder="Nhập hoặc dán văn bản vào đây..."></textarea>
+  <div class="stats">
+    <span id="charCount">0 ký tự</span>
+    <span id="wordCount">0 từ</span>
+    <span id="lineCount">0 dòng</span>
+  </div>
+  <label class="section">Chọn kiểu chuyển đổi</label>
+  <div class="btn-grid">
+    <button class="btn" onclick="convert('upper')">UPPERCASE</button>
+    <button class="btn" onclick="convert('lower')">lowercase</button>
+    <button class="btn" onclick="convert('title')">Title Case</button>
+    <button class="btn" onclick="convert('sentence')">Sentence case</button>
+    <button class="btn" onclick="convert('camel')">camelCase</button>
+    <button class="btn" onclick="convert('pascal')">PascalCase</button>
+    <button class="btn" onclick="convert('snake')">snake_case</button>
+    <button class="btn" onclick="convert('kebab')">kebab-case</button>
+    <button class="btn" onclick="convert('constant')">CONSTANT_CASE</button>
+    <button class="btn" onclick="convert('dot')">dot.case</button>
+  </div>
+  <label class="section">Kết quả</label>
+  <div class="result-box" id="result">
+    <button class="copy-btn" id="copyBtn" onclick="copyResult()"><i data-lucide="copy"></i> Sao chép</button>
+    <span id="resultText"></span>
+  </div>
+</div>
+<script>
+function toggleTheme(){
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('math-dark',document.documentElement.classList.contains('dark'));
+}
+if(localStorage.getItem('math-dark')==='true')document.documentElement.classList.add('dark');
+
+const input=document.getElementById('input');
+const resultText=document.getElementById('resultText');
+const copyBtn=document.getElementById('copyBtn');
+let lastMode='upper';
+
+input.addEventListener('input',function(){
+  updateStats();
+  convert(lastMode);
+});
+
+function updateStats(){
+  const t=input.value;
+  document.getElementById('charCount').textContent=t.length+' ký tự';
+  document.getElementById('wordCount').textContent=(t.trim()?t.trim().split(/\s+/).length:0)+' từ';
+  document.getElementById('lineCount').textContent=(t?t.split('\n').length:0)+' dòng';
+}
+
+function splitWords(str){
+  return str.replace(/([a-z])([A-Z])/g,'$1 $2')
+    .replace(/[_\-\.]+/g,' ')
+    .replace(/\s+/g,' ')
+    .trim().split(' ').filter(function(w){return w});
+}
+
+function convert(mode){
+  lastMode=mode;
+  document.querySelectorAll('.btn-grid .btn').forEach(function(b){b.classList.remove('active')});
+  var btns=document.querySelectorAll('.btn-grid .btn');
+  var modes=['upper','lower','title','sentence','camel','pascal','snake','kebab','constant','dot'];
+  var idx=modes.indexOf(mode);
+  if(idx>=0&&btns[idx])btns[idx].classList.add('active');
+
+  var t=input.value;
+  if(!t){resultText.textContent='';return}
+  var r='';
+  switch(mode){
+    case 'upper':r=t.toUpperCase();break;
+    case 'lower':r=t.toLowerCase();break;
+    case 'title':r=t.replace(/\w\S*/g,function(w){return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()});break;
+    case 'sentence':r=t.toLowerCase().replace(/(^\s*|[.!?]\s+)(\w)/gm,function(m,p,c){return p+c.toUpperCase()});break;
+    case 'camel':{var w=splitWords(t);r=w.map(function(s,i){return i===0?s.toLowerCase():s.charAt(0).toUpperCase()+s.slice(1).toLowerCase()}).join('');break}
+    case 'pascal':{var w2=splitWords(t);r=w2.map(function(s){return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase()}).join('');break}
+    case 'snake':r=splitWords(t).map(function(s){return s.toLowerCase()}).join('_');break;
+    case 'kebab':r=splitWords(t).map(function(s){return s.toLowerCase()}).join('-');break;
+    case 'constant':r=splitWords(t).map(function(s){return s.toUpperCase()}).join('_');break;
+    case 'dot':r=splitWords(t).map(function(s){return s.toLowerCase()}).join('.');break;
+  }
+  resultText.textContent=r;
+}
+
+function copyResult(){
+  var t=resultText.textContent;
+  if(!t)return;
+  navigator.clipboard.writeText(t).then(function(){
+    copyBtn.textContent='';
+    var icon=document.createElement('i');
+    icon.setAttribute('data-lucide','check');
+    copyBtn.appendChild(icon);
+    copyBtn.appendChild(document.createTextNode(' Đã chép!'));
+    lucide.createIcons();
+    setTimeout(function(){
+      copyBtn.textContent='';
+      var icon2=document.createElement('i');
+      icon2.setAttribute('data-lucide','copy');
+      copyBtn.appendChild(icon2);
+      copyBtn.appendChild(document.createTextNode(' Sao chép'));
+      lucide.createIcons();
+    },1500);
+  });
+}
+
+lucide.createIcons();
+</script>
+</body>
+</html>

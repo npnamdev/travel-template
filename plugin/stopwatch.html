@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bấm Giờ — Stopwatch</title>
+<meta name="description" content="Đồng hồ bấm giờ chính xác đến mili giây. Hỗ trợ ghi lại vòng, hiển thị vòng nhanh nhất và chậm nhất.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white'%3E⏱%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#eff6ff;--surface:#fff;--surface2:#eff6ff;--surface3:#dbeafe;
+  --border:#bfdbfe;--border2:#3b82f6;
+  --text:#1e293b;--text2:#2563eb;--text3:#3b82f6;--text-muted:#64748b;
+  --primary:#2563eb;--primary-hover:#1d4ed8;--primary-light:#93c5fd;
+  --accent:#8b5cf6;--neon:#06b6d4;--neon-glow:rgba(6,182,212,.3);
+  --best:#22c55e;--worst:#ef4444;
+  --r:12px;--r2:16px;--r3:24px;
+  --shadow:0 1px 3px rgba(37,99,235,.08),0 4px 16px rgba(37,99,235,.06);
+  --shadow2:0 4px 24px rgba(37,99,235,.12);
+  --font:'Sora',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+
+.dark{
+  --bg:#0a1628;--surface:#111d33;--surface2:#0a1628;--surface3:#1a2d4e;
+  --border:#1e3a5f;--border2:#3b82f6;
+  --text:#e2e8f0;--text2:#93c5fd;--text3:#60a5fa;--text-muted:#94a3b8;
+  --primary:#3b82f6;--primary-hover:#2563eb;--primary-light:#1e3a5f;
+  --accent:#a78bfa;--neon:#22d3ee;--neon-glow:rgba(34,211,238,.2);
+  --best:#4ade80;--worst:#f87171;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  --shadow2:0 4px 24px rgba(0,0,0,.3);
+}
+
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;transition:background .3s,color .3s}
+
+.theme-toggle{
+  position:fixed;top:16px;right:16px;z-index:100;
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);transition:all .3s;color:var(--text)
+}
+.theme-toggle:hover{background:var(--surface2);border-color:var(--border2);transform:scale(1.05)}
+.theme-toggle svg{width:20px;height:20px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+
+.card{
+  width:100%;max-width:480px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r3);padding:32px;
+  box-shadow:var(--shadow2);
+}
+
+.header{text-align:center;margin-bottom:28px}
+.header-icon{
+  width:56px;height:56px;border-radius:16px;
+  background:linear-gradient(135deg,var(--primary),var(--neon));
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:12px;box-shadow:0 4px 16px rgba(37,99,235,.3);
+}
+.header-icon svg{width:28px;height:28px;color:#fff}
+.header h1{font-size:1.4rem;font-weight:800;color:var(--text);letter-spacing:-.3px}
+.header p{font-size:.85rem;color:var(--text-muted);margin-top:4px}
+
+/* Timer display */
+.timer-display{
+  text-align:center;margin-bottom:28px;padding:32px 16px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);
+  position:relative;overflow:hidden;
+}
+.timer-display::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--primary),var(--neon),var(--accent));
+}
+.time-main{
+  font-family:var(--mono);font-size:4rem;font-weight:700;color:var(--text);
+  line-height:1;letter-spacing:2px;
+  text-shadow:0 0 30px var(--neon-glow);
+}
+.time-ms{
+  font-family:var(--mono);font-size:2rem;font-weight:500;color:var(--neon);
+  vertical-align:baseline;margin-left:4px;
+}
+.time-hint{font-size:.72rem;color:var(--text-muted);margin-top:8px;font-weight:500}
+
+/* Controls */
+.controls{display:flex;gap:10px;justify-content:center;margin-bottom:24px;flex-wrap:wrap}
+.btn{
+  padding:12px 20px;border:none;border-radius:var(--r);cursor:pointer;
+  font-family:var(--font);font-size:.85rem;font-weight:700;
+  transition:all .2s;display:flex;align-items:center;gap:8px;
+}
+.btn svg{width:18px;height:18px}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 2px 12px rgba(37,99,235,.3)}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px)}
+.btn-stop{background:#ef4444;color:#fff;box-shadow:0 2px 12px rgba(239,68,68,.3)}
+.btn-stop:hover{background:#dc2626;transform:translateY(-1px)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--surface3);border-color:var(--border2)}
+.btn-accent{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(139,92,246,.3)}
+.btn-accent:hover{opacity:.9;transform:translateY(-1px)}
+
+/* Laps */
+.laps-section{display:none}
+.laps-section.show{display:block}
+.laps-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:12px;padding:0 4px;
+}
+.laps-title{font-size:.85rem;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:6px}
+.laps-title svg{width:16px;height:16px}
+.laps-count{font-size:.75rem;color:var(--text-muted);font-weight:600}
+
+.laps-list{max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);background:var(--surface2)}
+.lap-item{
+  display:grid;grid-template-columns:48px 1fr 1fr;gap:8px;align-items:center;
+  padding:10px 14px;border-bottom:1px solid var(--border);font-size:.82rem;
+  transition:background .15s;
+}
+.lap-item:last-child{border-bottom:none}
+.lap-item:hover{background:var(--surface3)}
+.lap-num{font-family:var(--mono);font-weight:700;color:var(--text-muted)}
+.lap-time{font-family:var(--mono);font-weight:600;color:var(--text);text-align:center}
+.lap-diff{font-family:var(--mono);font-weight:500;color:var(--text-muted);text-align:right;font-size:.75rem}
+.lap-item.best .lap-time{color:var(--best)}
+.lap-item.best .lap-num{color:var(--best)}
+.lap-item.worst .lap-time{color:var(--worst)}
+.lap-item.worst .lap-num{color:var(--worst)}
+
+.best-badge,.worst-badge{
+  display:inline-block;font-size:.6rem;font-weight:700;padding:2px 6px;
+  border-radius:6px;margin-left:6px;vertical-align:middle;
+}
+.best-badge{background:rgba(34,197,94,.15);color:var(--best)}
+.worst-badge{background:rgba(239,68,68,.15);color:var(--worst)}
+
+/* Keyboard hint */
+.kbd-hints{
+  display:flex;gap:12px;justify-content:center;margin-top:16px;flex-wrap:wrap;
+}
+.kbd{
+  display:flex;align-items:center;gap:4px;font-size:.7rem;color:var(--text-muted);
+}
+.kbd-key{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:24px;height:22px;padding:0 6px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:5px;
+  font-family:var(--mono);font-size:.65rem;font-weight:600;color:var(--text);
+}
+
+@keyframes pulse{
+  0%,100%{opacity:1}
+  50%{opacity:.5}
+}
+.running .time-main{animation:pulse 1.5s ease-in-out infinite}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleDark()" aria-label="Đổi giao diện">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+
+<div class="card">
+  <div class="header">
+    <div class="header-icon"><i data-lucide="timer"></i></div>
+    <h1>Bấm Giờ</h1>
+    <p>Đồng hồ bấm giờ chính xác cao</p>
+  </div>
+
+  <div class="timer-display" id="timerDisplay">
+    <div>
+      <span class="time-main" id="timeMain">00:00</span><span class="time-ms" id="timeMs">.00</span>
+    </div>
+    <div class="time-hint">phút : giây . mili giây</div>
+  </div>
+
+  <div class="controls" id="controls">
+    <button class="btn btn-primary" id="btnStart" onclick="startStop()">
+      <i data-lucide="play" id="startIcon"></i> <span id="startText">Bắt đầu</span>
+    </button>
+    <button class="btn btn-accent" id="btnLap" onclick="recordLap()" style="display:none">
+      <i data-lucide="flag"></i> Vòng
+    </button>
+    <button class="btn btn-secondary" id="btnReset" onclick="resetTimer()" style="display:none">
+      <i data-lucide="rotate-ccw"></i> Đặt lại
+    </button>
+  </div>
+
+  <div class="laps-section" id="lapsSection">
+    <div class="laps-header">
+      <span class="laps-title"><i data-lucide="list"></i> Danh sách vòng</span>
+      <span class="laps-count" id="lapsCount">0 vòng</span>
+    </div>
+    <div class="laps-list" id="lapsList"></div>
+  </div>
+
+  <div class="kbd-hints">
+    <div class="kbd"><span class="kbd-key">Space</span> Bắt đầu/Dừng</div>
+    <div class="kbd"><span class="kbd-key">L</span> Ghi vòng</div>
+    <div class="kbd"><span class="kbd-key">R</span> Đặt lại</div>
+  </div>
+</div>
+
+<script>
+var startTime = 0;
+var elapsed = 0;
+var running = false;
+var rafId = null;
+var laps = [];
+var lapStartTime = 0;
+
+var timeMainEl = document.getElementById('timeMain');
+var timeMsEl = document.getElementById('timeMs');
+var btnStart = document.getElementById('btnStart');
+var startIcon = document.getElementById('startIcon');
+var startText = document.getElementById('startText');
+var btnLap = document.getElementById('btnLap');
+var btnReset = document.getElementById('btnReset');
+var timerDisplay = document.getElementById('timerDisplay');
+
+function formatMs(ms){
+  var totalSec = Math.floor(ms / 1000);
+  var min = Math.floor(totalSec / 60);
+  var sec = totalSec % 60;
+  var centis = Math.floor((ms % 1000) / 10);
+  return {
+    main: String(min).padStart(2,'0') + ':' + String(sec).padStart(2,'0'),
+    ms: '.' + String(centis).padStart(2,'0')
+  };
+}
+
+function formatFull(ms){
+  var t = formatMs(ms);
+  return t.main + t.ms;
+}
+
+function updateDisplay(){
+  var now = running ? (performance.now() - startTime + elapsed) : elapsed;
+  var t = formatMs(now);
+  timeMainEl.textContent = t.main;
+  timeMsEl.textContent = t.ms;
+  if(running) rafId = requestAnimationFrame(updateDisplay);
+}
+
+function startStop(){
+  if(running){
+    // Stop
+    elapsed += performance.now() - startTime;
+    running = false;
+    cancelAnimationFrame(rafId);
+    timerDisplay.classList.remove('running');
+    startIcon.setAttribute('data-lucide', 'play');
+    startText.textContent = 'Tiếp tục';
+    btnStart.className = 'btn btn-primary';
+    lucide.createIcons();
+  } else {
+    // Start
+    startTime = performance.now();
+    if(elapsed === 0) lapStartTime = 0;
+    running = true;
+    timerDisplay.classList.add('running');
+    startIcon.setAttribute('data-lucide', 'pause');
+    startText.textContent = 'Dừng';
+    btnStart.className = 'btn btn-stop';
+    btnLap.style.display = 'flex';
+    btnReset.style.display = 'flex';
+    lucide.createIcons();
+    updateDisplay();
+  }
+}
+
+function recordLap(){
+  if(!running && elapsed === 0) return;
+  var currentTotal = running ? (performance.now() - startTime + elapsed) : elapsed;
+  var lapTime = currentTotal - lapStartTime;
+  lapStartTime = currentTotal;
+
+  laps.unshift({
+    num: laps.length + 1,
+    total: currentTotal,
+    lap: lapTime
+  });
+
+  renderLaps();
+}
+
+function resetTimer(){
+  if(running){
+    cancelAnimationFrame(rafId);
+    running = false;
+    timerDisplay.classList.remove('running');
+  }
+  elapsed = 0;
+  lapStartTime = 0;
+  laps = [];
+  timeMainEl.textContent = '00:00';
+  timeMsEl.textContent = '.00';
+  startIcon.setAttribute('data-lucide', 'play');
+  startText.textContent = 'Bắt đầu';
+  btnStart.className = 'btn btn-primary';
+  btnLap.style.display = 'none';
+  btnReset.style.display = 'none';
+  document.getElementById('lapsSection').classList.remove('show');
+  lucide.createIcons();
+}
+
+function renderLaps(){
+  var section = document.getElementById('lapsSection');
+  var list = document.getElementById('lapsList');
+  section.classList.add('show');
+  document.getElementById('lapsCount').textContent = laps.length + ' vòng';
+
+  // Find best/worst
+  var bestIdx = -1, worstIdx = -1;
+  if(laps.length >= 2){
+    var minLap = Infinity, maxLap = 0;
+    laps.forEach(function(l, i){
+      if(l.lap < minLap){ minLap = l.lap; bestIdx = i; }
+      if(l.lap > maxLap){ maxLap = l.lap; worstIdx = i; }
+    });
+  }
+
+  while(list.firstChild) list.removeChild(list.firstChild);
+
+  laps.forEach(function(l, i){
+    var item = document.createElement('div');
+    item.className = 'lap-item';
+    if(i === bestIdx && laps.length >= 2) item.classList.add('best');
+    if(i === worstIdx && laps.length >= 2) item.classList.add('worst');
+
+    var numEl = document.createElement('span');
+    numEl.className = 'lap-num';
+    numEl.textContent = '#' + l.num;
+    if(i === bestIdx && laps.length >= 2){
+      var badge = document.createElement('span');
+      badge.className = 'best-badge';
+      badge.textContent = 'Nhanh';
+      numEl.appendChild(badge);
+    }
+    if(i === worstIdx && laps.length >= 2){
+      var badge2 = document.createElement('span');
+      badge2.className = 'worst-badge';
+      badge2.textContent = 'Chậm';
+      numEl.appendChild(badge2);
+    }
+
+    var timeEl = document.createElement('span');
+    timeEl.className = 'lap-time';
+    timeEl.textContent = formatFull(l.lap);
+
+    var diffEl = document.createElement('span');
+    diffEl.className = 'lap-diff';
+    diffEl.textContent = formatFull(l.total);
+
+    item.appendChild(numEl);
+    item.appendChild(timeEl);
+    item.appendChild(diffEl);
+    list.appendChild(item);
+  });
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e){
+  if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if(e.code === 'Space'){ e.preventDefault(); startStop(); }
+  else if(e.key === 'l' || e.key === 'L') recordLap();
+  else if(e.key === 'r' || e.key === 'R') resetTimer();
+});
+
+function toggleDark(){
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('math-dark', document.documentElement.classList.contains('dark'));
+}
+if(localStorage.getItem('math-dark')==='true') document.documentElement.classList.add('dark');
+
+lucide.createIcons();
+</script>
+</body>
+</html>

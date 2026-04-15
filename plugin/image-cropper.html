@@ -756,7 +756,7 @@ body{font-family:'General Sans',sans-serif;background:var(--bg);color:var(--t1);
       </div>
       <div class="zoom-row" style="margin-top:10px">
         <button class="zoom-btn" onclick="zoomChange(-1)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
-        <input type="range" class="zoom-slider" id="zoomSlider" min="25" max="100" step="25" value="100" oninput="zoomTo(this.value)">
+        <input type="range" class="zoom-slider" id="zoomSlider" min="25" max="200" step="25" value="100" oninput="zoomTo(this.value)">
         <button class="zoom-btn" onclick="zoomChange(1)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
         <span class="zoom-label" id="zoomLabel">100%</span>
       </div>
@@ -844,7 +844,7 @@ sampleImages.forEach(function(sample) {
 var img = null, fName = 'screenshot', loadId = 0;
 var cL = .1, cT = .1, cR = .9, cB = .9;
 var zoomLevel = 100;
-var ZOOM_STEPS = [25, 50, 75, 100];
+var ZOOM_STEPS = [25, 50, 75, 100, 125, 150, 175, 200];
 var cropRatio = null; // null = free
 var adjustments = {brightness:100, contrast:100, saturation:100, sharpen:0};
 var exportFormat = 'png';
@@ -1122,6 +1122,30 @@ document.addEventListener('keydown', function(e) {
     e.preventDefault();
     zoomLevel = 100;
     applyZoom();
+  }
+  // Arrow keys to move crop area
+  if (!img) return;
+  var step = e.shiftKey ? 0.05 : 0.01;
+  var mw = cR - cL, mh = cB - cT;
+  if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    var nl = Math.max(0, cL - step);
+    cL = nl; cR = nl + mw; drawCrop();
+  }
+  if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    var nr = Math.min(1, cR + step);
+    cR = nr; cL = nr - mw; drawCrop();
+  }
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    var nt = Math.max(0, cT - step);
+    cT = nt; cB = nt + mh; drawCrop();
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    var nb = Math.min(1, cB + step);
+    cB = nb; cT = nb - mh; drawCrop();
   }
 });
 

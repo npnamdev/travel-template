@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dong Ho The Gioi — World Clock</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        :root {
+            --cyan: #0891b2;
+            --cyan-light: #22d3ee;
+            --cyan-dark: #0e7490;
+            --cyan-50: #ecfeff;
+            --cyan-100: #cffafe;
+            --bg: #f0fdfa;
+            --bg-card: #ffffff;
+            --text: #0f172a;
+            --text-secondary: #64748b;
+            --border: #a5f3fc;
+            --shadow: 0 4px 24px rgba(8, 145, 178, 0.08);
+            --shadow-lg: 0 12px 40px rgba(8, 145, 178, 0.15);
+            --clock-face: #ffffff;
+            --clock-border: #0891b2;
+            --clock-tick: #334155;
+            --clock-hour: #0f172a;
+            --clock-minute: #0891b2;
+            --clock-second: #ef4444;
+            --night-bg: #1e293b;
+            --day-bg: #fef9c3;
+        }
+        .dark {
+            --bg: #0a0f14;
+            --bg-card: #111827;
+            --text: #e2e8f0;
+            --text-secondary: #67e8f9;
+            --border: #164e63;
+            --shadow: 0 4px 24px rgba(8, 145, 178, 0.15);
+            --shadow-lg: 0 12px 40px rgba(8, 145, 178, 0.25);
+            --cyan-50: #0a1620;
+            --cyan-100: #0c1e2a;
+            --clock-face: #1e293b;
+            --clock-border: #22d3ee;
+            --clock-tick: #94a3b8;
+            --clock-hour: #e2e8f0;
+            --clock-minute: #22d3ee;
+            --clock-second: #f87171;
+            --night-bg: #0f172a;
+            --day-bg: #422006;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--cyan), var(--cyan-dark));
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(8, 145, 178, 0.3);
+        }
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .header-actions { display: flex; gap: 0.5rem; }
+        .dark-toggle, .add-btn-header {
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: #fff;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .dark-toggle:hover, .add-btn-header:hover { background: rgba(255,255,255,0.25); }
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem; }
+
+        /* Add city modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 50;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 440px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+        .modal h3 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--cyan);
+            margin-bottom: 1rem;
+        }
+        .modal-search {
+            font-family: 'Sora', sans-serif;
+            font-size: 1rem;
+            padding: 0.7rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--cyan-50);
+            color: var(--text);
+            width: 100%;
+            outline: none;
+            margin-bottom: 1rem;
+        }
+        .modal-search:focus { border-color: var(--cyan); }
+        .city-option {
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .city-option:hover { background: var(--cyan-100); color: var(--cyan); }
+        .city-option-tz { font-size: 0.8rem; color: var(--text-secondary); font-family: 'DM Mono', monospace; }
+        .modal-close {
+            margin-top: 1rem;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            padding: 0.6rem 1.5rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--cyan-50);
+            color: var(--cyan);
+            cursor: pointer;
+            width: 100%;
+        }
+        .modal-close:hover { background: var(--cyan); color: #fff; }
+
+        /* Clock grid */
+        .clock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+        .clock-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        .clock-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+        .clock-remove {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+            padding: 4px;
+        }
+        .clock-card:hover .clock-remove { opacity: 1; }
+        .clock-remove:hover { color: #ef4444; }
+        .clock-city {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .clock-date {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        .day-night-indicator {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+        .is-day {
+            background: var(--day-bg);
+            color: #a16207;
+        }
+        .dark .is-day { color: #fbbf24; }
+        .is-night {
+            background: var(--night-bg);
+            color: #93c5fd;
+        }
+        .analog-clock {
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 1rem;
+        }
+        .digital-time {
+            font-family: 'DM Mono', monospace;
+            font-size: 1.6rem;
+            font-weight: 500;
+            color: var(--cyan);
+            letter-spacing: 0.05em;
+        }
+
+        @media (max-width: 600px) {
+            .header-title { font-size: 1.3rem; }
+            .clock-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+            .analog-clock { width: 130px; height: 130px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-title">
+            <i data-lucide="globe" style="width:28px;height:28px"></i>
+            Dong Ho The Gioi
+        </div>
+        <div class="header-actions">
+            <button class="add-btn-header" onclick="openModal()" title="Them thanh pho">
+                <i data-lucide="plus" style="width:20px;height:20px"></i>
+            </button>
+            <button class="dark-toggle" onclick="toggleDark()" title="Che do toi">
+                <i data-lucide="moon" style="width:20px;height:20px"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="clock-grid" id="clockGrid"></div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <h3>Them thanh pho</h3>
+            <input type="text" class="modal-search" id="citySearch" placeholder="Tim kiem thanh pho..." oninput="filterCities()">
+            <div id="cityList"></div>
+            <button class="modal-close" onclick="closeModal()">Dong</button>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode
+        function toggleDark() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+        }
+        if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+
+        // Available cities
+        var allCities = [
+            { name: 'Ha Noi', tz: 'Asia/Ho_Chi_Minh', flag: 'VN' },
+            { name: 'Ho Chi Minh', tz: 'Asia/Ho_Chi_Minh', flag: 'VN' },
+            { name: 'Tokyo', tz: 'Asia/Tokyo', flag: 'JP' },
+            { name: 'New York', tz: 'America/New_York', flag: 'US' },
+            { name: 'London', tz: 'Europe/London', flag: 'GB' },
+            { name: 'Sydney', tz: 'Australia/Sydney', flag: 'AU' },
+            { name: 'Seoul', tz: 'Asia/Seoul', flag: 'KR' },
+            { name: 'Singapore', tz: 'Asia/Singapore', flag: 'SG' },
+            { name: 'Dubai', tz: 'Asia/Dubai', flag: 'AE' },
+            { name: 'Paris', tz: 'Europe/Paris', flag: 'FR' },
+            { name: 'Berlin', tz: 'Europe/Berlin', flag: 'DE' },
+            { name: 'Moscow', tz: 'Europe/Moscow', flag: 'RU' },
+            { name: 'Bangkok', tz: 'Asia/Bangkok', flag: 'TH' },
+            { name: 'Mumbai', tz: 'Asia/Kolkata', flag: 'IN' },
+            { name: 'Los Angeles', tz: 'America/Los_Angeles', flag: 'US' },
+            { name: 'Chicago', tz: 'America/Chicago', flag: 'US' },
+            { name: 'Toronto', tz: 'America/Toronto', flag: 'CA' },
+            { name: 'Sao Paulo', tz: 'America/Sao_Paulo', flag: 'BR' },
+            { name: 'Cairo', tz: 'Africa/Cairo', flag: 'EG' },
+            { name: 'Jakarta', tz: 'Asia/Jakarta', flag: 'ID' },
+            { name: 'Taipei', tz: 'Asia/Taipei', flag: 'TW' },
+            { name: 'Hong Kong', tz: 'Asia/Hong_Kong', flag: 'HK' },
+            { name: 'Auckland', tz: 'Pacific/Auckland', flag: 'NZ' },
+            { name: 'Beijing', tz: 'Asia/Shanghai', flag: 'CN' }
+        ];
+
+        var defaultCityNames = ['Ha Noi', 'Tokyo', 'New York', 'London', 'Sydney', 'Seoul', 'Singapore', 'Dubai'];
+
+        var STORAGE_KEY = 'world-clock-cities';
+
+        function loadSelectedCities() {
+            try {
+                var stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                if (stored && stored.length > 0) return stored;
+            } catch(e) {}
+            return defaultCityNames;
+        }
+
+        function saveSelectedCities(names) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(names));
+        }
+
+        function getCityData(name) {
+            for (var i = 0; i < allCities.length; i++) {
+                if (allCities[i].name === name) return allCities[i];
+            }
+            return null;
+        }
+
+        // Modal
+        function openModal() {
+            document.getElementById('modalOverlay').classList.add('show');
+            document.getElementById('citySearch').value = '';
+            filterCities();
+        }
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('show');
+        }
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        function filterCities() {
+            var query = document.getElementById('citySearch').value.toLowerCase();
+            var selected = loadSelectedCities();
+            var container = document.getElementById('cityList');
+            container.textContent = '';
+
+            var filtered = allCities.filter(function(c) {
+                return c.name.toLowerCase().indexOf(query) !== -1;
+            });
+
+            filtered.forEach(function(city) {
+                var isSelected = selected.indexOf(city.name) !== -1;
+                var option = document.createElement('div');
+                option.className = 'city-option';
+                if (isSelected) option.style.opacity = '0.4';
+
+                var nameSpan = document.createElement('span');
+                nameSpan.textContent = city.name;
+
+                var tzSpan = document.createElement('span');
+                tzSpan.className = 'city-option-tz';
+                tzSpan.textContent = city.tz;
+
+                option.appendChild(nameSpan);
+                option.appendChild(tzSpan);
+
+                if (!isSelected) {
+                    option.addEventListener('click', function() {
+                        var cities = loadSelectedCities();
+                        cities.push(city.name);
+                        saveSelectedCities(cities);
+                        renderClocks();
+                        closeModal();
+                    });
+                }
+                container.appendChild(option);
+            });
+        }
+
+        function removeCity(name) {
+            var cities = loadSelectedCities().filter(function(c) { return c !== name; });
+            saveSelectedCities(cities);
+            renderClocks();
+        }
+
+        function createSVGClock(hours, minutes, seconds) {
+            var ns = 'http://www.w3.org/2000/svg';
+            var svg = document.createElementNS(ns, 'svg');
+            svg.setAttribute('viewBox', '0 0 200 200');
+            svg.setAttribute('class', 'analog-clock');
+
+            // Clock face
+            var face = document.createElementNS(ns, 'circle');
+            face.setAttribute('cx', '100');
+            face.setAttribute('cy', '100');
+            face.setAttribute('r', '90');
+            face.setAttribute('fill', 'var(--clock-face)');
+            face.setAttribute('stroke', 'var(--clock-border)');
+            face.setAttribute('stroke-width', '4');
+            svg.appendChild(face);
+
+            // Inner ring
+            var inner = document.createElementNS(ns, 'circle');
+            inner.setAttribute('cx', '100');
+            inner.setAttribute('cy', '100');
+            inner.setAttribute('r', '85');
+            inner.setAttribute('fill', 'none');
+            inner.setAttribute('stroke', 'var(--border)');
+            inner.setAttribute('stroke-width', '1');
+            svg.appendChild(inner);
+
+            // Hour markers
+            for (var i = 0; i < 12; i++) {
+                var angle = (i * 30) * Math.PI / 180;
+                var isMain = i % 3 === 0;
+                var r1 = isMain ? 70 : 75;
+                var r2 = 82;
+                var line = document.createElementNS(ns, 'line');
+                line.setAttribute('x1', 100 + r1 * Math.sin(angle));
+                line.setAttribute('y1', 100 - r1 * Math.cos(angle));
+                line.setAttribute('x2', 100 + r2 * Math.sin(angle));
+                line.setAttribute('y2', 100 - r2 * Math.cos(angle));
+                line.setAttribute('stroke', 'var(--clock-tick)');
+                line.setAttribute('stroke-width', isMain ? '3' : '1.5');
+                line.setAttribute('stroke-linecap', 'round');
+                svg.appendChild(line);
+            }
+
+            // Minute ticks
+            for (var j = 0; j < 60; j++) {
+                if (j % 5 === 0) continue;
+                var mAngle = (j * 6) * Math.PI / 180;
+                var dot = document.createElementNS(ns, 'circle');
+                dot.setAttribute('cx', 100 + 80 * Math.sin(mAngle));
+                dot.setAttribute('cy', 100 - 80 * Math.cos(mAngle));
+                dot.setAttribute('r', '1');
+                dot.setAttribute('fill', 'var(--clock-tick)');
+                dot.setAttribute('opacity', '0.4');
+                svg.appendChild(dot);
+            }
+
+            // Hour hand
+            var hAngle = ((hours % 12) * 30 + minutes * 0.5) * Math.PI / 180;
+            var hourHand = document.createElementNS(ns, 'line');
+            hourHand.setAttribute('x1', '100');
+            hourHand.setAttribute('y1', '100');
+            hourHand.setAttribute('x2', 100 + 45 * Math.sin(hAngle));
+            hourHand.setAttribute('y2', 100 - 45 * Math.cos(hAngle));
+            hourHand.setAttribute('stroke', 'var(--clock-hour)');
+            hourHand.setAttribute('stroke-width', '5');
+            hourHand.setAttribute('stroke-linecap', 'round');
+            svg.appendChild(hourHand);
+
+            // Minute hand
+            var mAngle2 = (minutes * 6 + seconds * 0.1) * Math.PI / 180;
+            var minHand = document.createElementNS(ns, 'line');
+            minHand.setAttribute('x1', '100');
+            minHand.setAttribute('y1', '100');
+            minHand.setAttribute('x2', 100 + 62 * Math.sin(mAngle2));
+            minHand.setAttribute('y2', 100 - 62 * Math.cos(mAngle2));
+            minHand.setAttribute('stroke', 'var(--clock-minute)');
+            minHand.setAttribute('stroke-width', '3');
+            minHand.setAttribute('stroke-linecap', 'round');
+            svg.appendChild(minHand);
+
+            // Second hand
+            var sAngle = (seconds * 6) * Math.PI / 180;
+            var secHand = document.createElementNS(ns, 'line');
+            secHand.setAttribute('x1', 100 - 15 * Math.sin(sAngle));
+            secHand.setAttribute('y1', 100 + 15 * Math.cos(sAngle));
+            secHand.setAttribute('x2', 100 + 70 * Math.sin(sAngle));
+            secHand.setAttribute('y2', 100 - 70 * Math.cos(sAngle));
+            secHand.setAttribute('stroke', 'var(--clock-second)');
+            secHand.setAttribute('stroke-width', '1.5');
+            secHand.setAttribute('stroke-linecap', 'round');
+            svg.appendChild(secHand);
+
+            // Center dot
+            var center = document.createElementNS(ns, 'circle');
+            center.setAttribute('cx', '100');
+            center.setAttribute('cy', '100');
+            center.setAttribute('r', '4');
+            center.setAttribute('fill', 'var(--clock-second)');
+            svg.appendChild(center);
+
+            var centerInner = document.createElementNS(ns, 'circle');
+            centerInner.setAttribute('cx', '100');
+            centerInner.setAttribute('cy', '100');
+            centerInner.setAttribute('r', '2');
+            centerInner.setAttribute('fill', '#fff');
+            svg.appendChild(centerInner);
+
+            return svg;
+        }
+
+        function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+        function getTimeInTZ(tz) {
+            var now = new Date();
+            var options = { timeZone: tz, hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false };
+            var parts = new Intl.DateTimeFormat('en-GB', options).formatToParts(now);
+            var h = 0, m = 0, s = 0;
+            parts.forEach(function(p) {
+                if (p.type === 'hour') h = parseInt(p.value);
+                if (p.type === 'minute') m = parseInt(p.value);
+                if (p.type === 'second') s = parseInt(p.value);
+            });
+            // Handle hour=24 edge case
+            if (h === 24) h = 0;
+            return { hours: h, minutes: m, seconds: s };
+        }
+
+        function getDateInTZ(tz) {
+            var now = new Date();
+            return new Intl.DateTimeFormat('vi-VN', {
+                timeZone: tz,
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }).format(now);
+        }
+
+        function getUTCOffsetLabel(tz) {
+            var now = new Date();
+            var str = new Intl.DateTimeFormat('en', {
+                timeZone: tz,
+                timeZoneName: 'shortOffset'
+            }).format(now);
+            var match = str.match(/GMT([+-]\d+:?\d*)/);
+            return match ? 'UTC' + match[1] : '';
+        }
+
+        function isDaytime(hours) {
+            return hours >= 6 && hours < 18;
+        }
+
+        function renderClocks() {
+            var grid = document.getElementById('clockGrid');
+            grid.textContent = '';
+            var cities = loadSelectedCities();
+
+            cities.forEach(function(cityName) {
+                var city = getCityData(cityName);
+                if (!city) return;
+
+                var time = getTimeInTZ(city.tz);
+                var isDay = isDaytime(time.hours);
+
+                var card = document.createElement('div');
+                card.className = 'clock-card';
+                card.setAttribute('data-city', city.name);
+                card.setAttribute('data-tz', city.tz);
+
+                // Remove button
+                var removeBtn = document.createElement('button');
+                removeBtn.className = 'clock-remove';
+                removeBtn.title = 'Xoa';
+                var removeIcon = document.createElement('i');
+                removeIcon.setAttribute('data-lucide', 'x');
+                removeIcon.style.width = '16px';
+                removeIcon.style.height = '16px';
+                removeBtn.appendChild(removeIcon);
+                removeBtn.addEventListener('click', (function(n) {
+                    return function() { removeCity(n); };
+                })(city.name));
+
+                // City name
+                var cityEl = document.createElement('div');
+                cityEl.className = 'clock-city';
+                cityEl.textContent = city.name;
+
+                // Date
+                var dateEl = document.createElement('div');
+                dateEl.className = 'clock-date';
+                dateEl.textContent = getDateInTZ(city.tz);
+
+                // Day/night
+                var dnIndicator = document.createElement('div');
+                dnIndicator.className = 'day-night-indicator ' + (isDay ? 'is-day' : 'is-night');
+                var dnIcon = document.createElement('i');
+                dnIcon.setAttribute('data-lucide', isDay ? 'sun' : 'moon');
+                dnIcon.style.width = '14px';
+                dnIcon.style.height = '14px';
+                dnIcon.style.verticalAlign = 'middle';
+                dnIcon.style.marginRight = '4px';
+                dnIndicator.appendChild(dnIcon);
+                dnIndicator.appendChild(document.createTextNode(isDay ? ' Ban ngay' : ' Ban dem'));
+
+                // Analog clock
+                var clockSvg = createSVGClock(time.hours, time.minutes, time.seconds);
+
+                // Digital time
+                var digitalEl = document.createElement('div');
+                digitalEl.className = 'digital-time';
+                digitalEl.textContent = pad(time.hours) + ':' + pad(time.minutes) + ':' + pad(time.seconds);
+
+                // UTC offset
+                var offsetEl = document.createElement('div');
+                offsetEl.style.cssText = 'font-size:0.75rem;color:var(--text-secondary);margin-top:0.25rem;font-family:DM Mono,monospace;';
+                offsetEl.textContent = getUTCOffsetLabel(city.tz);
+
+                card.appendChild(removeBtn);
+                card.appendChild(cityEl);
+                card.appendChild(dateEl);
+                card.appendChild(dnIndicator);
+                card.appendChild(clockSvg);
+                card.appendChild(digitalEl);
+                card.appendChild(offsetEl);
+                grid.appendChild(card);
+            });
+
+            lucide.createIcons();
+        }
+
+        function updateClocks() {
+            var cards = document.querySelectorAll('.clock-card');
+            cards.forEach(function(card) {
+                var tz = card.getAttribute('data-tz');
+                if (!tz) return;
+                var time = getTimeInTZ(tz);
+                var isDay = isDaytime(time.hours);
+
+                // Update SVG clock
+                var oldSvg = card.querySelector('.analog-clock');
+                if (oldSvg) {
+                    var newSvg = createSVGClock(time.hours, time.minutes, time.seconds);
+                    oldSvg.parentNode.replaceChild(newSvg, oldSvg);
+                }
+
+                // Update digital time
+                var digital = card.querySelector('.digital-time');
+                if (digital) {
+                    digital.textContent = pad(time.hours) + ':' + pad(time.minutes) + ':' + pad(time.seconds);
+                }
+
+                // Update day/night
+                var dnEl = card.querySelector('.day-night-indicator');
+                if (dnEl) {
+                    dnEl.className = 'day-night-indicator ' + (isDay ? 'is-day' : 'is-night');
+                    // Keep same content structure, just update text
+                    var iconEl = dnEl.querySelector('i');
+                    if (iconEl) {
+                        iconEl.setAttribute('data-lucide', isDay ? 'sun' : 'moon');
+                    }
+                    // Update text node
+                    var textNodes = [];
+                    dnEl.childNodes.forEach(function(n) {
+                        if (n.nodeType === 3) textNodes.push(n);
+                    });
+                    if (textNodes.length > 0) {
+                        textNodes[0].textContent = isDay ? ' Ban ngay' : ' Ban dem';
+                    }
+                }
+
+                // Update date
+                var dateEl = card.querySelector('.clock-date');
+                if (dateEl) {
+                    dateEl.textContent = getDateInTZ(tz);
+                }
+            });
+        }
+
+        // Init
+        renderClocks();
+        setInterval(updateClocks, 1000);
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>

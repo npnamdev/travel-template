@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tính Tiền Tip — Tip Calculator</title>
+<meta name="description" content="Công cụ tính tiền tip nhanh chóng. Hỗ trợ chia bill cho nhiều người, tùy chỉnh phần trăm tip, hiển thị VND và USD.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23d97706'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white'%3E🍽%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#fffbeb;--surface:#ffffff;--surface2:#fef3c7;--surface3:#fde68a;
+  --border:#fcd34d;--border2:#d97706;
+  --text:#451a03;--text2:#92400e;--text3:#d97706;--text-muted:#78716c;
+  --primary:#d97706;--primary-hover:#b45309;--primary-light:#fef3c7;
+  --accent:#f59e0b;--accent2:#eab308;
+  --r:12px;--r2:16px;--r3:24px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --shadow2:0 4px 24px rgba(0,0,0,.08);
+  --font:'Sora',sans-serif;
+  --mono:'DM Mono',monospace;
+}
+
+.dark{
+  --bg:#451a03;--surface:#78350f;--surface2:#451a03;--surface3:#92400e;
+  --border:#92400e;--border2:#fbbf24;
+  --text:#fffbeb;--text2:#fde68a;--text3:#fbbf24;--text-muted:#fcd34d;
+  --primary:#fbbf24;--primary-hover:#f59e0b;--primary-light:#78350f;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+  --shadow2:0 4px 24px rgba(0,0,0,.4);
+}
+
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;transition:background .3s,color .3s}
+
+.theme-toggle{
+  position:fixed;top:16px;right:16px;z-index:100;
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);transition:all .3s;color:var(--text)
+}
+.theme-toggle:hover{background:var(--surface3);border-color:var(--border2);transform:scale(1.05)}
+.theme-toggle svg{width:20px;height:20px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+
+.card{
+  width:100%;max-width:440px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r3);padding:28px;
+  box-shadow:var(--shadow2);
+}
+
+.header{text-align:center;margin-bottom:24px}
+.header-icon{
+  width:56px;height:56px;border-radius:16px;
+  background:linear-gradient(135deg,var(--primary),var(--accent2));
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:12px;box-shadow:0 4px 16px rgba(217,119,6,.3);
+}
+.header-icon svg{width:28px;height:28px;color:#fff}
+.header h1{font-size:1.4rem;font-weight:800;color:var(--text)}
+.header p{font-size:.82rem;color:var(--text-muted);margin-top:4px}
+
+.currency-toggle{
+  display:flex;gap:4px;background:var(--surface2);border-radius:var(--r);padding:4px;margin-bottom:20px
+}
+.cur-btn{
+  flex:1;padding:8px;border:none;border-radius:8px;
+  background:transparent;color:var(--text-muted);font-family:var(--font);
+  font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center
+}
+.cur-btn.active{background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(217,119,6,.3)}
+
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:.78rem;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+
+.input-wrapper{position:relative}
+.input-wrapper .prefix{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-family:var(--mono);font-size:.95rem;color:var(--text-muted);font-weight:500
+}
+.input-wrapper input{
+  width:100%;padding:14px 14px 14px 50px;border:2px solid var(--border);
+  border-radius:var(--r);background:var(--surface2);color:var(--text);
+  font-family:var(--mono);font-size:1.2rem;font-weight:600;transition:border-color .2s;outline:none
+}
+.input-wrapper input:focus{border-color:var(--primary)}
+
+.tip-buttons{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:4px}
+.tip-btn{
+  padding:12px 4px;border:2px solid var(--border);border-radius:var(--r);
+  background:var(--surface2);color:var(--text);font-family:var(--font);
+  font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;text-align:center
+}
+.tip-btn:hover{border-color:var(--primary);background:var(--primary-light)}
+.tip-btn.active{border-color:var(--primary);background:var(--primary);color:#fff;transform:scale(1.05);box-shadow:0 2px 12px rgba(217,119,6,.3)}
+
+.custom-tip{margin-top:8px}
+.custom-tip input{
+  width:100%;padding:10px 14px;border:2px solid var(--border);
+  border-radius:var(--r);background:var(--surface2);color:var(--text);
+  font-family:var(--mono);font-size:.9rem;transition:border-color .2s;outline:none;text-align:center
+}
+.custom-tip input:focus{border-color:var(--primary)}
+
+.people-control{display:flex;align-items:center;gap:12px}
+.people-btn{
+  width:44px;height:44px;border:2px solid var(--border);border-radius:50%;
+  background:var(--surface2);color:var(--text);font-size:1.2rem;font-weight:700;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font)
+}
+.people-btn:hover{border-color:var(--primary);background:var(--primary-light)}
+.people-btn:active{transform:scale(.95)}
+.people-count{
+  flex:1;text-align:center;font-family:var(--mono);font-size:1.8rem;font-weight:700;color:var(--text)
+}
+
+.divider{height:1px;background:var(--border);margin:24px 0}
+
+.results{display:flex;flex-direction:column;gap:12px}
+.result-row{display:flex;justify-content:space-between;align-items:center}
+.result-label{font-size:.82rem;color:var(--text-muted);font-weight:500}
+.result-value{font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--text3);transition:all .3s}
+
+.result-main{
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  border-radius:var(--r2);padding:20px;text-align:center;margin-top:4px
+}
+.result-main .result-label{color:rgba(255,255,255,.8);font-size:.82rem}
+.result-main .result-value{color:#fff;font-size:2rem;font-weight:800;display:block;margin-top:4px}
+
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+.pop{animation:pop .25s ease}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Chuyển giao diện">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+
+<div class="card">
+  <div class="header">
+    <div class="header-icon"><i data-lucide="utensils-crossed"></i></div>
+    <h1>Tính Tiền Tip</h1>
+    <p>Tính tip & chia bill nhanh chóng</p>
+  </div>
+
+  <div class="currency-toggle">
+    <button class="cur-btn active" onclick="setCurrency('VND',this)">VND</button>
+    <button class="cur-btn" onclick="setCurrency('USD',this)">USD</button>
+  </div>
+
+  <div class="form-group">
+    <label>Tổng hóa đơn</label>
+    <div class="input-wrapper">
+      <span class="prefix" id="currPrefix">VND</span>
+      <input type="text" id="billAmount" value="500.000" oninput="onBillInput(this)" placeholder="0">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Phần trăm tip</label>
+    <div class="tip-buttons">
+      <button class="tip-btn" onclick="setTip(5,this)">5%</button>
+      <button class="tip-btn active" onclick="setTip(10,this)">10%</button>
+      <button class="tip-btn" onclick="setTip(15,this)">15%</button>
+      <button class="tip-btn" onclick="setTip(20,this)">20%</button>
+      <button class="tip-btn" onclick="setTip(25,this)">25%</button>
+    </div>
+    <div class="custom-tip">
+      <input type="number" id="customTip" placeholder="Tùy chỉnh %" min="0" max="100" oninput="setCustomTip()">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Số người chia</label>
+    <div class="people-control">
+      <button class="people-btn" onclick="changePeople(-1)">-</button>
+      <div class="people-count" id="peopleCount">1</div>
+      <button class="people-btn" onclick="changePeople(1)">+</button>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="results">
+    <div class="result-row">
+      <span class="result-label">Tiền tip</span>
+      <span class="result-value" id="tipAmount">0</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">Tổng cộng (gồm tip)</span>
+      <span class="result-value" id="totalBill">0</span>
+    </div>
+    <div class="result-main">
+      <span class="result-label">Mỗi người trả</span>
+      <span class="result-value" id="perPerson">0</span>
+    </div>
+  </div>
+</div>
+
+<script>
+var currency = 'VND';
+var tipPercent = 10;
+var people = 1;
+
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+  lucide.createIcons();
+}
+
+if(localStorage.getItem('math-dark')==='true') document.body.classList.add('dark');
+
+function setCurrency(cur, btn){
+  currency = cur;
+  document.querySelectorAll('.cur-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  document.getElementById('currPrefix').textContent = cur;
+  var input = document.getElementById('billAmount');
+  if(cur === 'VND'){
+    input.value = '500.000';
+  } else {
+    input.value = '50.00';
+  }
+  recalculate();
+}
+
+function formatNum(n){
+  if(currency === 'VND'){
+    return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' VND';
+  } else {
+    return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+}
+
+function parseBill(){
+  var v = document.getElementById('billAmount').value;
+  if(currency === 'VND'){
+    return parseInt(v.replace(/\./g,'').replace(/[^\d]/g,'')) || 0;
+  } else {
+    return parseFloat(v.replace(/,/g,'').replace(/[^\d.]/g,'')) || 0;
+  }
+}
+
+function onBillInput(el){
+  if(currency === 'VND'){
+    var v = el.value.replace(/\./g,'').replace(/[^\d]/g,'');
+    if(v) el.value = parseInt(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+  recalculate();
+}
+
+function setTip(pct, btn){
+  tipPercent = pct;
+  document.querySelectorAll('.tip-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  document.getElementById('customTip').value = '';
+  recalculate();
+}
+
+function setCustomTip(){
+  var v = parseFloat(document.getElementById('customTip').value);
+  if(!isNaN(v) && v >= 0){
+    tipPercent = v;
+    document.querySelectorAll('.tip-btn').forEach(function(b){b.classList.remove('active')});
+    recalculate();
+  }
+}
+
+function changePeople(delta){
+  people = Math.max(1, people + delta);
+  document.getElementById('peopleCount').textContent = people;
+  animatePop(document.getElementById('peopleCount'));
+  recalculate();
+}
+
+function animatePop(el){
+  el.classList.remove('pop');
+  void el.offsetWidth;
+  el.classList.add('pop');
+}
+
+function recalculate(){
+  var bill = parseBill();
+  var tip = bill * (tipPercent / 100);
+  var total = bill + tip;
+  var perP = total / people;
+
+  var tipEl = document.getElementById('tipAmount');
+  var totalEl = document.getElementById('totalBill');
+  var perEl = document.getElementById('perPerson');
+
+  tipEl.textContent = formatNum(tip);
+  totalEl.textContent = formatNum(total);
+  perEl.textContent = formatNum(perP);
+
+  animatePop(tipEl);
+  animatePop(totalEl);
+  animatePop(perEl);
+}
+
+window.addEventListener('DOMContentLoaded', function(){
+  lucide.createIcons();
+  recalculate();
+});
+</script>
+</body>
+</html>

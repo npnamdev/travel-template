@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quét Mã QR — QR Scanner</title>
+<meta name="description" content="Quét mã QR bằng camera hoặc tải ảnh lên. Nhận diện và giải mã mã QR nhanh chóng, hỗ trợ lưu lịch sử quét.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2316a34a'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white'%3E📷%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#f0fdf4;--surface:#ffffff;--surface2:#f0fdf4;--surface3:#dcfce7;
+  --border:#bbf7d0;--border2:#16a34a;
+  --text:#14532d;--text2:#166534;--text3:#15803d;--text-muted:#6b7280;
+  --primary:#16a34a;--primary-hover:#15803d;--primary-light:#dcfce7;
+  --accent:#059669;--accent2:#10b981;
+  --r:12px;--r2:16px;--r3:24px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.05);
+  --shadow2:0 4px 24px rgba(0,0,0,.08);
+  --font:'Space Grotesk',sans-serif;
+}
+
+.dark{
+  --bg:#052e16;--surface:#14532d;--surface2:#052e16;--surface3:#166534;
+  --border:#166534;--border2:#22c55e;
+  --text:#f0fdf4;--text2:#bbf7d0;--text3:#86efac;--text-muted:#6ee7b7;
+  --primary:#22c55e;--primary-hover:#16a34a;--primary-light:#14532d;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+  --shadow2:0 4px 24px rgba(0,0,0,.4);
+}
+
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px;transition:background .3s,color .3s}
+
+.theme-toggle{
+  position:fixed;top:16px;right:16px;z-index:100;
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);transition:all .3s;color:var(--text)
+}
+.theme-toggle:hover{background:var(--surface3);border-color:var(--border2);transform:scale(1.05)}
+.theme-toggle svg{width:20px;height:20px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+
+.card{
+  width:100%;max-width:520px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r3);padding:28px;
+  box-shadow:var(--shadow2);margin-top:20px;
+}
+
+.header{text-align:center;margin-bottom:24px}
+.header-icon{
+  width:56px;height:56px;border-radius:16px;
+  background:linear-gradient(135deg,var(--primary),var(--accent2));
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:12px;box-shadow:0 4px 16px rgba(22,163,74,.3);
+}
+.header-icon svg{width:28px;height:28px;color:#fff}
+.header h1{font-size:1.4rem;font-weight:700;color:var(--text)}
+.header p{font-size:.82rem;color:var(--text-muted);margin-top:4px}
+
+.tabs{display:flex;gap:6px;margin-bottom:20px;background:var(--surface2);border-radius:var(--r);padding:4px;border:1px solid var(--border)}
+.tab{flex:1;padding:10px;border:none;background:transparent;color:var(--text-muted);font-family:var(--font);font-size:.85rem;font-weight:600;cursor:pointer;border-radius:10px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.tab.active{background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(22,163,74,.3)}
+.tab:not(.active):hover{background:var(--surface3);color:var(--text)}
+.tab svg{width:16px;height:16px}
+
+.camera-area{position:relative;border-radius:var(--r2);overflow:hidden;background:#000;margin-bottom:16px;aspect-ratio:1;display:none}
+.camera-area.visible{display:block}
+.camera-area video{width:100%;height:100%;object-fit:cover}
+.camera-area canvas{display:none}
+
+.viewfinder{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center}
+.viewfinder-box{width:65%;height:65%;position:relative}
+.viewfinder-box::before,.viewfinder-box::after,
+.vf-bl::before,.vf-br::before{
+  content:'';position:absolute;width:30px;height:30px;border-color:var(--primary);border-style:solid;border-width:0;
+}
+.viewfinder-box::before{top:0;left:0;border-top-width:3px;border-left-width:3px;border-radius:4px 0 0 0}
+.viewfinder-box::after{top:0;right:0;border-top-width:3px;border-right-width:3px;border-radius:0 4px 0 0}
+.vf-bl::before{bottom:0;left:0;border-bottom-width:3px;border-left-width:3px;border-radius:0 0 0 4px}
+.vf-br::before{bottom:0;right:0;border-bottom-width:3px;border-right-width:3px;border-radius:0 0 4px 0}
+.vf-bl,.vf-br{position:absolute;inset:0}
+
+.scan-line{
+  position:absolute;left:18%;right:18%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--primary),transparent);
+  box-shadow:0 0 12px var(--primary);
+  animation:scanMove 2s ease-in-out infinite;
+  top:18%;
+}
+@keyframes scanMove{0%,100%{top:18%}50%{top:78%}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.upload-area{display:none;margin-bottom:16px}
+.upload-area.visible{display:block}
+.upload-zone{
+  border:2px dashed var(--border2);border-radius:var(--r2);
+  padding:40px 20px;text-align:center;cursor:pointer;
+  transition:all .2s;background:var(--surface2);
+}
+.upload-zone:hover{background:var(--primary-light);border-color:var(--primary)}
+.upload-zone svg{width:40px;height:40px;color:var(--primary);margin-bottom:8px}
+.upload-zone p{font-size:.85rem;color:var(--text-muted)}
+.upload-zone input{display:none}
+.upload-preview{margin-top:12px;border-radius:var(--r);overflow:hidden;display:none;max-height:300px}
+.upload-preview img{width:100%;display:block;object-fit:contain;max-height:300px}
+
+.controls{display:flex;gap:8px;margin-bottom:16px}
+.btn{padding:12px 20px;border:none;border-radius:var(--r);font-family:var(--font);font-weight:600;font-size:.85rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;flex:1}
+.btn svg{width:16px;height:16px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--border2);background:var(--surface3)}
+
+.result-box{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:16px}
+.result-box.visible{display:block}
+.result-label{font-size:.75rem;font-weight:600;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.result-text{font-size:.95rem;color:var(--text);word-break:break-all;line-height:1.5}
+.result-text a{color:var(--primary);text-decoration:underline}
+.result-actions{display:flex;gap:8px;margin-top:12px}
+.result-actions .btn{flex:none;padding:8px 14px;font-size:.8rem}
+
+.history{margin-top:16px}
+.history-title{font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.history-title svg{width:16px;height:16px;color:var(--primary)}
+.history-list{max-height:250px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.history-item{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+  padding:10px 12px;font-size:.82rem;color:var(--text);
+  display:flex;align-items:center;gap:8px;cursor:pointer;transition:all .2s;
+}
+.history-item:hover{border-color:var(--border2);background:var(--surface3)}
+.history-item svg{width:14px;height:14px;color:var(--primary);flex-shrink:0}
+.history-item span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-item small{color:var(--text-muted);font-size:.7rem;flex-shrink:0}
+.history-empty{font-size:.8rem;color:var(--text-muted);text-align:center;padding:16px}
+.history-clear{margin-top:8px;text-align:right}
+.history-clear button{background:none;border:none;color:var(--text-muted);font-size:.75rem;cursor:pointer;font-family:var(--font);text-decoration:underline}
+.history-clear button:hover{color:var(--primary)}
+
+.status{font-size:.8rem;color:var(--text-muted);text-align:center;margin-bottom:12px;min-height:20px;display:flex;align-items:center;justify-content:center;gap:6px}
+.status svg{width:14px;height:14px}
+.status.success{color:var(--primary)}
+.status.error{color:#ef4444}
+
+@media(max-width:480px){
+  body{padding:12px}
+  .card{padding:18px;border-radius:var(--r2)}
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Chuyển giao diện">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+
+<div class="card">
+  <div class="header">
+    <div class="header-icon"><i data-lucide="scan-line"></i></div>
+    <h1>Quét Mã QR</h1>
+    <p>Quét bằng camera hoặc tải ảnh lên</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('camera')"><i data-lucide="camera"></i> Camera</button>
+    <button class="tab" onclick="switchTab('upload')"><i data-lucide="upload"></i> Tải ảnh</button>
+  </div>
+
+  <div class="camera-area visible" id="cameraArea">
+    <video id="video" autoplay playsinline></video>
+    <canvas id="cameraCanvas"></canvas>
+    <div class="viewfinder">
+      <div class="viewfinder-box">
+        <div class="vf-bl"></div>
+        <div class="vf-br"></div>
+      </div>
+      <div class="scan-line"></div>
+    </div>
+  </div>
+
+  <div class="controls" id="cameraControls">
+    <button class="btn btn-primary" id="btnStartCamera" onclick="startCamera()"><i data-lucide="video"></i> Bật Camera</button>
+    <button class="btn btn-secondary" id="btnStopCamera" onclick="stopCamera()" style="display:none"><i data-lucide="video-off"></i> Tắt</button>
+  </div>
+
+  <div class="upload-area" id="uploadArea">
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <i data-lucide="image-plus"></i>
+      <p>Nhấn để chọn ảnh chứa mã QR</p>
+      <input type="file" id="fileInput" accept="image/*" onchange="handleFileUpload(event)">
+    </div>
+    <div class="upload-preview" id="uploadPreview">
+      <img id="previewImg" alt="Preview">
+    </div>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="result-box" id="resultBox">
+    <div class="result-label">Kết quả quét</div>
+    <div class="result-text" id="resultText"></div>
+    <div class="result-actions">
+      <button class="btn btn-primary" onclick="copyResult()"><i data-lucide="copy"></i> Sao chép</button>
+      <button class="btn btn-secondary" id="btnOpenLink" onclick="openLink()" style="display:none"><i data-lucide="external-link"></i> Mở liên kết</button>
+    </div>
+  </div>
+
+  <div class="history">
+    <div class="history-title"><i data-lucide="history"></i> Lịch sử quét</div>
+    <div class="history-list" id="historyList">
+      <div class="history-empty">Chưa có mã nào được quét</div>
+    </div>
+    <div class="history-clear" id="historyClear" style="display:none">
+      <button onclick="clearHistory()">Xoá lịch sử</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="uploadCanvas" style="display:none"></canvas>
+
+<script>
+// Theme
+function toggleTheme(){
+  document.documentElement.classList.toggle('dark');
+  localStorage.setItem('math-dark', document.documentElement.classList.contains('dark'));
+  lucide.createIcons();
+}
+if(localStorage.getItem('math-dark')==='true') document.documentElement.classList.add('dark');
+
+// State
+let stream = null;
+let scanning = false;
+let animFrame = null;
+let currentResult = '';
+let history = JSON.parse(localStorage.getItem('qr-history')||'[]');
+
+const video = document.getElementById('video');
+const cameraCanvas = document.getElementById('cameraCanvas');
+const ctx = cameraCanvas.getContext('2d', {willReadFrequently: true});
+const uploadCanvas = document.getElementById('uploadCanvas');
+const uctx = uploadCanvas.getContext('2d', {willReadFrequently: true});
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(function(t,i){
+    t.classList.toggle('active', (tab==='camera'&&i===0)||(tab==='upload'&&i===1));
+  });
+  document.getElementById('cameraArea').classList.toggle('visible', tab==='camera');
+  document.getElementById('cameraControls').style.display = tab==='camera'?'flex':'none';
+  document.getElementById('uploadArea').classList.toggle('visible', tab==='upload');
+  if(tab==='upload') stopCamera();
+  setStatus('');
+  lucide.createIcons();
+}
+
+function setStatus(msg, type){
+  var el = document.getElementById('status');
+  el.className = 'status'+(type?' '+type:'');
+  el.textContent = msg;
+}
+
+// Camera
+async function startCamera(){
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    video.srcObject = stream;
+    await video.play();
+    document.getElementById('btnStartCamera').style.display='none';
+    document.getElementById('btnStopCamera').style.display='flex';
+    scanning = true;
+    setStatus('Đang quét...', '');
+    scanFrame();
+  }catch(e){
+    setStatus('Không thể truy cập camera: '+e.message, 'error');
+  }
+}
+
+function stopCamera(){
+  scanning = false;
+  if(animFrame) cancelAnimationFrame(animFrame);
+  if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null;}
+  video.srcObject = null;
+  document.getElementById('btnStartCamera').style.display='flex';
+  document.getElementById('btnStopCamera').style.display='none';
+  setStatus('');
+  lucide.createIcons();
+}
+
+function scanFrame(){
+  if(!scanning) return;
+  if(video.readyState === video.HAVE_ENOUGH_DATA){
+    cameraCanvas.width = video.videoWidth;
+    cameraCanvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0);
+    var imageData = ctx.getImageData(0, 0, cameraCanvas.width, cameraCanvas.height);
+    var code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts:'dontInvert'});
+    if(code){
+      showResult(code.data);
+      stopCamera();
+      return;
+    }
+  }
+  animFrame = requestAnimationFrame(scanFrame);
+}
+
+// Upload
+function handleFileUpload(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    var img = new Image();
+    img.onload = function(){
+      document.getElementById('uploadPreview').style.display='block';
+      document.getElementById('previewImg').src = ev.target.result;
+      uploadCanvas.width = img.width;
+      uploadCanvas.height = img.height;
+      uctx.drawImage(img, 0, 0);
+      var imageData = uctx.getImageData(0, 0, img.width, img.height);
+      var code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts:'attemptBoth'});
+      if(code){
+        showResult(code.data);
+      } else {
+        setStatus('Không tìm thấy mã QR trong ảnh', 'error');
+      }
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// Result
+function showResult(data){
+  currentResult = data;
+  document.getElementById('resultBox').classList.add('visible');
+  var resultEl = document.getElementById('resultText');
+  var isUrl = /^https?:\/\//i.test(data);
+  // Clear previous content
+  while(resultEl.firstChild) resultEl.removeChild(resultEl.firstChild);
+  if(isUrl){
+    var link = document.createElement('a');
+    link.href = data;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = data;
+    resultEl.appendChild(link);
+  } else {
+    resultEl.textContent = data;
+  }
+  document.getElementById('btnOpenLink').style.display = isUrl?'flex':'none';
+  setStatus('Quét thành công!', 'success');
+  addToHistory(data);
+  lucide.createIcons();
+}
+
+function copyResult(){
+  navigator.clipboard.writeText(currentResult).then(function(){
+    setStatus('Đã sao chép!', 'success');
+    setTimeout(function(){setStatus('')},1500);
+  });
+}
+
+function openLink(){
+  if(currentResult) window.open(currentResult, '_blank');
+}
+
+// History
+function addToHistory(data){
+  var item = {text: data, time: new Date().toLocaleString('vi-VN')};
+  history.unshift(item);
+  if(history.length > 50) history.pop();
+  localStorage.setItem('qr-history', JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory(){
+  var list = document.getElementById('historyList');
+  // Clear previous content
+  while(list.firstChild) list.removeChild(list.firstChild);
+
+  if(history.length === 0){
+    var emptyEl = document.createElement('div');
+    emptyEl.className = 'history-empty';
+    emptyEl.textContent = 'Chưa có mã nào được quét';
+    list.appendChild(emptyEl);
+    document.getElementById('historyClear').style.display='none';
+    return;
+  }
+  document.getElementById('historyClear').style.display='block';
+  history.forEach(function(h){
+    var isUrl = /^https?:\/\//i.test(h.text);
+    var div = document.createElement('div');
+    div.className = 'history-item';
+    div.setAttribute('data-text', h.text);
+    div.addEventListener('click', function(){
+      navigator.clipboard.writeText(h.text);
+      setStatus('Đã sao chép!', 'success');
+      setTimeout(function(){setStatus('')},1500);
+    });
+
+    var icon = document.createElement('i');
+    icon.setAttribute('data-lucide', isUrl?'link':'text');
+    div.appendChild(icon);
+
+    var span = document.createElement('span');
+    span.textContent = h.text;
+    div.appendChild(span);
+
+    var small = document.createElement('small');
+    small.textContent = h.time;
+    div.appendChild(small);
+
+    list.appendChild(div);
+  });
+  lucide.createIcons();
+}
+
+function clearHistory(){
+  history=[];
+  localStorage.removeItem('qr-history');
+  renderHistory();
+}
+
+// Init
+renderHistory();
+lucide.createIcons();
+</script>
+</body>
+</html>

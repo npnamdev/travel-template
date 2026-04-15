@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Giải Mã JWT — JWT Decoder</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #fffbeb;
+      --bg-card: #fff;
+      --text: #451a03;
+      --text-sub: #92700a;
+      --primary: #d97706;
+      --primary-light: rgba(217,119,6,0.08);
+      --primary-glow: rgba(217,119,6,0.15);
+      --border: rgba(217,119,6,0.1);
+      --shadow: 0 1px 3px rgba(217,119,6,0.04), 0 8px 32px rgba(217,119,6,0.06);
+      --header-color: #2563eb;
+      --payload-color: #9333ea;
+      --sig-color: #16a34a;
+      --error: #ef4444;
+    }
+    body.dark {
+      --bg: #1a1000;
+      --bg-card: #261a05;
+      --text: #fef3c7;
+      --text-sub: #b8940f;
+      --primary: #fbbf24;
+      --primary-light: rgba(251,191,36,0.1);
+      --primary-glow: rgba(251,191,36,0.15);
+      --border: rgba(251,191,36,0.08);
+      --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.3);
+      --header-color: #60a5fa;
+      --payload-color: #c084fc;
+      --sig-color: #4ade80;
+      --error: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Sora', system-ui, sans-serif;
+      background: var(--bg); min-height: 100vh;
+      color: var(--text); transition: background 0.4s, color 0.4s;
+    }
+    body::before {
+      content: ''; position: fixed; top: -200px; right: -100px;
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(217,119,6,0.07) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; position: relative; z-index: 1; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .header h1 { font-size: 1.8rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+    .header h1 i { color: var(--primary); }
+    .header p { color: var(--text-sub); margin-top: 0.25rem; font-size: 0.95rem; }
+    .dark-toggle {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+      width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text); box-shadow: var(--shadow); transition: all 0.3s;
+    }
+    .dark-toggle:hover { transform: scale(1.1); }
+    .card {
+      background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border);
+      box-shadow: var(--shadow); overflow: hidden; margin-bottom: 1.5rem;
+    }
+    .card-label {
+      padding: 0.75rem 1rem; font-weight: 600; font-size: 0.9rem;
+      border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem;
+    }
+    .card-label.clr-header { color: var(--header-color); }
+    .card-label.clr-payload { color: var(--payload-color); }
+    .card-label.clr-sig { color: var(--sig-color); }
+    .card-label.clr-primary { color: var(--primary); }
+    textarea {
+      width: 100%; min-height: 100px; padding: 1rem; border: none; background: transparent;
+      color: var(--text); font-family: 'Sora', monospace; font-size: 0.85rem;
+      resize: vertical; outline: none; word-break: break-all;
+    }
+    textarea::placeholder { color: var(--text-sub); opacity: 0.6; }
+    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 1.5rem; border-radius: 12px; border: none;
+      font-family: inherit; font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 16px rgba(217,119,6,0.3); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(217,119,6,0.4); }
+    .btn-secondary { background: var(--primary-light); color: var(--primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--primary-glow); }
+    .jwt-colored {
+      padding: 1rem; font-family: 'Sora', monospace; font-size: 0.85rem;
+      word-break: break-all; line-height: 1.6;
+    }
+    .jwt-colored .jwt-header-part { color: var(--header-color); font-weight: 600; }
+    .jwt-colored .jwt-payload-part { color: var(--payload-color); font-weight: 600; }
+    .jwt-colored .jwt-sig-part { color: var(--sig-color); font-weight: 600; }
+    .jwt-colored .jwt-dot { color: var(--text-sub); font-weight: 800; font-size: 1.1rem; }
+    pre {
+      padding: 1rem; font-family: 'Sora', monospace; font-size: 0.85rem;
+      white-space: pre-wrap; word-break: break-word; line-height: 1.5;
+      color: var(--text);
+    }
+    .validity-info {
+      padding: 1rem; display: flex; flex-wrap: wrap; gap: 1rem;
+    }
+    .validity-badge {
+      padding: 0.5rem 1rem; border-radius: 10px; font-weight: 600; font-size: 0.85rem;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .validity-badge.valid { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .validity-badge.expired { background: rgba(239,68,68,0.12); color: var(--error); }
+    .validity-badge.info { background: var(--primary-light); color: var(--primary); }
+    .error-msg {
+      padding: 1rem; color: var(--error); font-weight: 600; font-size: 0.9rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    @media (max-width: 768px) {
+      .header h1 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1><i data-lucide="key-round"></i> Giải Mã JWT</h1>
+        <p>JWT Decoder -- Phân tích và giải mã JSON Web Token</p>
+      </div>
+      <button class="dark-toggle" onclick="toggleDark()" title="Chuyển giao diện">
+        <i data-lucide="moon"></i>
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-label clr-primary"><i data-lucide="text-cursor-input" style="width:16px;height:16px"></i> Dán JWT Token</div>
+      <textarea id="jwtInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"></textarea>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" onclick="decodeJWT()"><i data-lucide="scan" style="width:18px;height:18px"></i> Giải Mã</button>
+      <button class="btn btn-secondary" onclick="clearAll()"><i data-lucide="trash-2" style="width:18px;height:18px"></i> Xoá</button>
+      <button class="btn btn-secondary" onclick="loadSample()"><i data-lucide="file-code" style="width:18px;height:18px"></i> Ví dụ</button>
+    </div>
+
+    <div id="results" style="display:none">
+      <div class="card">
+        <div class="card-label clr-primary"><i data-lucide="palette" style="width:16px;height:16px"></i> Token màu</div>
+        <div class="jwt-colored" id="jwtColored"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label clr-header"><i data-lucide="settings" style="width:16px;height:16px"></i> Header (JOSE Header)</div>
+        <pre id="headerJson"></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-label clr-payload"><i data-lucide="database" style="width:16px;height:16px"></i> Payload (Claims)</div>
+        <pre id="payloadJson"></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-label clr-sig"><i data-lucide="shield-check" style="width:16px;height:16px"></i> Signature</div>
+        <pre id="sigText"></pre>
+      </div>
+
+      <div class="card" id="validityCard" style="display:none">
+        <div class="card-label clr-primary"><i data-lucide="clock" style="width:16px;height:16px"></i> Thông tin thời gian</div>
+        <div class="validity-info" id="validityInfo"></div>
+      </div>
+    </div>
+
+    <div class="card" id="errorCard" style="display:none">
+      <div class="error-msg" id="errorMsg"><i data-lucide="alert-circle" style="width:18px;height:18px"></i> <span></span></div>
+    </div>
+  </div>
+
+  <script>
+    function toggleDark() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+      lucide.createIcons();
+    }
+    if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+
+    function b64decode(str) {
+      str = str.replace(/-/g, '+').replace(/_/g, '/');
+      while (str.length % 4) str += '=';
+      return decodeURIComponent(atob(str).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+    }
+
+    function decodeJWT() {
+      var token = document.getElementById('jwtInput').value.trim();
+      var errorCard = document.getElementById('errorCard');
+      var results = document.getElementById('results');
+      errorCard.style.display = 'none';
+      results.style.display = 'none';
+
+      var parts = token.split('.');
+      if (parts.length !== 3) {
+        errorCard.style.display = 'block';
+        errorCard.querySelector('span').textContent = 'JWT không hợp lệ. Token phải có 3 phần được phân cách bằng dấu chấm.';
+        lucide.createIcons();
+        return;
+      }
+
+      try {
+        var header = JSON.parse(b64decode(parts[0]));
+        var payload = JSON.parse(b64decode(parts[1]));
+
+        // Color display
+        var colored = document.getElementById('jwtColored');
+        colored.textContent = '';
+        var s1 = document.createElement('span');
+        s1.className = 'jwt-header-part';
+        s1.textContent = parts[0];
+        var dot1 = document.createElement('span');
+        dot1.className = 'jwt-dot';
+        dot1.textContent = '.';
+        var s2 = document.createElement('span');
+        s2.className = 'jwt-payload-part';
+        s2.textContent = parts[1];
+        var dot2 = document.createElement('span');
+        dot2.className = 'jwt-dot';
+        dot2.textContent = '.';
+        var s3 = document.createElement('span');
+        s3.className = 'jwt-sig-part';
+        s3.textContent = parts[2];
+        colored.appendChild(s1);
+        colored.appendChild(dot1);
+        colored.appendChild(s2);
+        colored.appendChild(dot2);
+        colored.appendChild(s3);
+
+        document.getElementById('headerJson').textContent = JSON.stringify(header, null, 2);
+        document.getElementById('payloadJson').textContent = JSON.stringify(payload, null, 2);
+        document.getElementById('sigText').textContent = parts[2];
+
+        // Validity
+        var validityCard = document.getElementById('validityCard');
+        var validityInfo = document.getElementById('validityInfo');
+        validityInfo.textContent = '';
+
+        var hasTime = false;
+        if (payload.iat) {
+          hasTime = true;
+          addBadge(validityInfo, 'info', 'Phát hành: ' + new Date(payload.iat * 1000).toLocaleString('vi-VN'));
+        }
+        if (payload.exp) {
+          hasTime = true;
+          var expDate = new Date(payload.exp * 1000);
+          var now = new Date();
+          var isExpired = now > expDate;
+          addBadge(validityInfo, 'info', 'Hết hạn: ' + expDate.toLocaleString('vi-VN'));
+          if (isExpired) {
+            addBadge(validityInfo, 'expired', 'Đã hết hạn!');
+          } else {
+            var diff = payload.exp * 1000 - Date.now();
+            var hours = Math.floor(diff / 3600000);
+            var mins = Math.floor((diff % 3600000) / 60000);
+            addBadge(validityInfo, 'valid', 'Còn hiệu lực: ' + hours + 'h ' + mins + 'm');
+          }
+        }
+        if (payload.nbf) {
+          hasTime = true;
+          addBadge(validityInfo, 'info', 'Không trước: ' + new Date(payload.nbf * 1000).toLocaleString('vi-VN'));
+        }
+        validityCard.style.display = hasTime ? 'block' : 'none';
+
+        results.style.display = 'block';
+      } catch(e) {
+        errorCard.style.display = 'block';
+        errorCard.querySelector('span').textContent = 'Không thể giải mã: ' + e.message;
+      }
+      lucide.createIcons();
+    }
+
+    function addBadge(container, cls, text) {
+      var badge = document.createElement('div');
+      badge.className = 'validity-badge ' + cls;
+      badge.textContent = text;
+      container.appendChild(badge);
+    }
+
+    function clearAll() {
+      document.getElementById('jwtInput').value = '';
+      document.getElementById('results').style.display = 'none';
+      document.getElementById('errorCard').style.display = 'none';
+    }
+
+    function loadSample() {
+      document.getElementById('jwtInput').value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ik5ndXnhu4VuIFbEg24gQSIsImlhdCI6MTcxNjAwMDAwMCwiZXhwIjoxODE2MDAwMDAwfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+      decodeJWT();
+    }
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>

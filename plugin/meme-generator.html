@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tạo Meme — Meme Generator</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <style>
+    :root {
+      --bg: #fffbeb;
+      --bg-card: #ffffff;
+      --bg-card-hover: #fffef5;
+      --text: #451a03;
+      --text-sub: #92730a;
+      --primary: #f59e0b;
+      --primary-dark: #d97706;
+      --primary-light: rgba(245,158,11,0.08);
+      --primary-glow: rgba(245,158,11,0.15);
+      --border: rgba(245,158,11,0.12);
+      --shadow: 0 1px 3px rgba(245,158,11,0.04), 0 8px 32px rgba(245,158,11,0.06);
+      --shadow-hover: 0 4px 12px rgba(245,158,11,0.1), 0 16px 48px rgba(245,158,11,0.14);
+    }
+
+    body.dark {
+      --bg: #120d00;
+      --bg-card: #1c1500;
+      --bg-card-hover: #261e04;
+      --text: #fef3c7;
+      --text-sub: #c4a229;
+      --primary: #fbbf24;
+      --primary-dark: #f59e0b;
+      --primary-light: rgba(251,191,36,0.1);
+      --primary-glow: rgba(251,191,36,0.12);
+      --border: rgba(251,191,36,0.1);
+      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 32px rgba(0,0,0,0.4);
+      --shadow-hover: 0 4px 12px rgba(245,158,11,0.2), 0 16px 48px rgba(0,0,0,0.5);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -150px;
+      right: -150px;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,158,11,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #451a03;
+      box-shadow: 0 4px 16px rgba(245,158,11,0.3);
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary-dark), #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header p { font-size: 0.85rem; color: var(--text-sub); }
+
+    .dark-toggle {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+    .dark-toggle:hover { background: var(--primary-light); }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 800px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title i { color: var(--primary); }
+
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 32px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 16px;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .upload-zone i { color: var(--primary); }
+    .upload-zone p { color: var(--text-sub); font-size: 0.85rem; margin-top: 6px; }
+
+    input[type="file"] { display: none; }
+
+    .canvas-wrapper {
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid var(--border);
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+    }
+    .canvas-wrapper canvas {
+      max-width: 100%;
+      max-height: 500px;
+      display: block;
+    }
+
+    .control-group {
+      margin-bottom: 14px;
+    }
+    .control-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-sub);
+    }
+
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+    input[type="text"]:focus, input[type="number"]:focus, select:focus {
+      border-color: var(--primary);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary);
+    }
+
+    .color-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .color-row input[type="color"] {
+      width: 42px;
+      height: 36px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      background: none;
+      padding: 2px;
+    }
+    .color-row span {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s;
+      width: 100%;
+      justify-content: center;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+      color: #451a03;
+      box-shadow: 0 4px 16px rgba(245,158,11,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(245,158,11,0.4); }
+
+    .btn-success {
+      background: linear-gradient(135deg, #22c55e, #4ade80);
+      color: white;
+      margin-top: 10px;
+    }
+    .btn-success:hover { transform: translateY(-2px); }
+
+    .templates {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .template-btn {
+      padding: 10px;
+      border-radius: 8px;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .template-btn:hover, .template-btn.active {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <div class="logo"><i data-lucide="smile" style="width:24px;height:24px"></i></div>
+        <div>
+          <h1>Tạo Meme</h1>
+          <p>Tạo ảnh meme vui nhộn trong tích tắc</p>
+        </div>
+      </div>
+      <button class="dark-toggle" onclick="toggleDark()" title="Chế độ tối">
+        <i data-lucide="moon" style="width:20px;height:20px"></i>
+      </button>
+    </div>
+
+    <div class="main-grid">
+      <div>
+        <div class="card">
+          <div class="card-title"><i data-lucide="image" style="width:20px;height:20px"></i> Xem trước</div>
+          <div class="canvas-wrapper">
+            <canvas id="memeCanvas" width="600" height="500"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-title"><i data-lucide="upload" style="width:20px;height:20px"></i> Ảnh nền</div>
+
+          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+            <i data-lucide="image-plus" style="width:32px;height:32px"></i>
+            <p>Tải ảnh lên hoặc chọn mẫu bên dưới</p>
+          </div>
+          <input type="file" id="fileInput" accept="image/*" />
+
+          <div class="templates">
+            <button class="template-btn" onclick="setBlank('#ffffff','Trắng')">Trắng</button>
+            <button class="template-btn" onclick="setBlank('#000000','Đen')">Đen</button>
+            <button class="template-btn" onclick="setBlank('#1e40af','Xanh dương')">Xanh dương</button>
+            <button class="template-btn" onclick="setBlank('#dc2626','Đỏ')">Đỏ</button>
+            <button class="template-btn" onclick="setBlank('#16a34a','Xanh lá')">Xanh lá</button>
+            <button class="template-btn" onclick="setBlank('#7c3aed','Tím')">Tím</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><i data-lucide="type" style="width:20px;height:20px"></i> Nội dung</div>
+
+          <div class="control-group">
+            <label>Chữ phía trên</label>
+            <input type="text" id="topText" placeholder="DÒNG CHỮ TRÊN..." oninput="drawMeme()" />
+          </div>
+
+          <div class="control-group">
+            <label>Chữ phía dưới</label>
+            <input type="text" id="bottomText" placeholder="DÒNG CHỮ DƯỚI..." oninput="drawMeme()" />
+          </div>
+
+          <div class="row-2">
+            <div class="control-group">
+              <label>Cỡ chữ: <span id="fontSizeVal">48</span>px</label>
+              <input type="range" id="fontSize" min="16" max="120" value="48" oninput="document.getElementById('fontSizeVal').textContent=this.value;drawMeme()" />
+            </div>
+            <div class="control-group">
+              <label>Viền chữ: <span id="strokeVal">3</span>px</label>
+              <input type="range" id="strokeWidth" min="0" max="12" value="3" oninput="document.getElementById('strokeVal').textContent=this.value;drawMeme()" />
+            </div>
+          </div>
+
+          <div class="row-2">
+            <div class="control-group">
+              <label>Màu chữ</label>
+              <div class="color-row">
+                <input type="color" id="textColor" value="#ffffff" oninput="drawMeme()" />
+                <span>Chữ</span>
+              </div>
+            </div>
+            <div class="control-group">
+              <label>Màu viền</label>
+              <div class="color-row">
+                <input type="color" id="strokeColor" value="#000000" oninput="drawMeme()" />
+                <span>Viền</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row-2">
+            <div class="control-group">
+              <label>Vị trí trên: <span id="topPosVal">10</span>%</label>
+              <input type="range" id="topPos" min="5" max="50" value="10" oninput="document.getElementById('topPosVal').textContent=this.value;drawMeme()" />
+            </div>
+            <div class="control-group">
+              <label>Vị trí dưới: <span id="bottomPosVal">90</span>%</label>
+              <input type="range" id="bottomPos" min="50" max="98" value="90" oninput="document.getElementById('bottomPosVal').textContent=this.value;drawMeme()" />
+            </div>
+          </div>
+
+          <button class="btn btn-success" onclick="downloadMeme()">
+            <i data-lucide="download" style="width:18px;height:18px"></i> Tải meme
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleDark() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+      lucide.createIcons();
+    }
+    if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+
+    var canvas = document.getElementById('memeCanvas');
+    var ctx = canvas.getContext('2d');
+    var bgImage = null;
+    var bgColor = '#333333';
+
+    // Init with dark bg
+    drawMeme();
+
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      if (e.target.files[0]) loadBgImage(e.target.files[0]);
+    });
+
+    var uploadZone = document.getElementById('uploadZone');
+    uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); uploadZone.classList.add('dragover'); });
+    uploadZone.addEventListener('dragleave', function() { uploadZone.classList.remove('dragover'); });
+    uploadZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      if (e.dataTransfer.files[0]) loadBgImage(e.dataTransfer.files[0]);
+    });
+
+    function loadBgImage(file) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var img = new Image();
+        img.onload = function() {
+          bgImage = img;
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          drawMeme();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function setBlank(color, label) {
+      bgImage = null;
+      bgColor = color;
+      canvas.width = 600;
+      canvas.height = 500;
+      // Highlight active template
+      var btns = document.querySelectorAll('.template-btn');
+      btns.forEach(function(b) { b.classList.remove('active'); });
+      event.target.classList.add('active');
+      drawMeme();
+    }
+
+    function drawMeme() {
+      var w = canvas.width;
+      var h = canvas.height;
+
+      // Draw background
+      if (bgImage) {
+        ctx.drawImage(bgImage, 0, 0, w, h);
+      } else {
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      var topText = document.getElementById('topText').value.toUpperCase();
+      var bottomText = document.getElementById('bottomText').value.toUpperCase();
+      var fontSize = parseInt(document.getElementById('fontSize').value);
+      var strokeWidth = parseInt(document.getElementById('strokeWidth').value);
+      var textColor = document.getElementById('textColor').value;
+      var strokeColor = document.getElementById('strokeColor').value;
+      var topPos = parseInt(document.getElementById('topPos').value) / 100;
+      var bottomPos = parseInt(document.getElementById('bottomPos').value) / 100;
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '900 ' + fontSize + 'px "Outfit", Impact, sans-serif';
+      ctx.lineJoin = 'round';
+      ctx.miterLimit = 2;
+
+      function drawText(text, x, y) {
+        if (!text) return;
+        // Word wrap
+        var words = text.split(' ');
+        var lines = [];
+        var currentLine = words[0] || '';
+
+        for (var i = 1; i < words.length; i++) {
+          var testLine = currentLine + ' ' + words[i];
+          if (ctx.measureText(testLine).width < w * 0.9) {
+            currentLine = testLine;
+          } else {
+            lines.push(currentLine);
+            currentLine = words[i];
+          }
+        }
+        lines.push(currentLine);
+
+        var lineHeight = fontSize * 1.2;
+        var startY = y - ((lines.length - 1) * lineHeight) / 2;
+
+        lines.forEach(function(line, idx) {
+          var ly = startY + idx * lineHeight;
+          if (strokeWidth > 0) {
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = strokeWidth * 2;
+            ctx.strokeText(line, x, ly);
+          }
+          ctx.fillStyle = textColor;
+          ctx.fillText(line, x, ly);
+        });
+      }
+
+      drawText(topText, w / 2, h * topPos);
+      drawText(bottomText, w / 2, h * bottomPos);
+    }
+
+    function downloadMeme() {
+      var a = document.createElement('a');
+      a.download = 'meme.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>

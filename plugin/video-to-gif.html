@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video sang GIF — Video to GIF</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+
+  <style>
+    :root {
+      --bg: #fef2f2;
+      --bg-card: #fff;
+      --bg-card-hover: #fff5f5;
+      --text: #1c1917;
+      --text-sub: #78716c;
+      --primary: #dc2626;
+      --primary-light: rgba(220,38,38,0.08);
+      --primary-glow: rgba(220,38,38,0.15);
+      --border: rgba(220,38,38,0.1);
+      --shadow: 0 1px 3px rgba(220,38,38,0.04), 0 8px 32px rgba(220,38,38,0.06);
+      --shadow-hover: 0 4px 12px rgba(220,38,38,0.1), 0 16px 48px rgba(220,38,38,0.14);
+      --accent: #ea580c;
+      --accent-light: rgba(234,88,12,0.08);
+    }
+
+    body.dark {
+      --bg: #0c0a09;
+      --bg-card: #1c1917;
+      --bg-card-hover: #292524;
+      --text: #fef2f2;
+      --text-sub: #a8a29e;
+      --primary: #ef4444;
+      --primary-light: rgba(239,68,68,0.1);
+      --primary-glow: rgba(239,68,68,0.15);
+      --border: rgba(239,68,68,0.08);
+      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 32px rgba(0,0,0,0.4);
+      --shadow-hover: 0 4px 12px rgba(239,68,68,0.15), 0 16px 48px rgba(0,0,0,0.5);
+      --accent: #f97316;
+      --accent-light: rgba(249,115,22,0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background 0.4s, color 0.4s;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(220,38,38,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -300px;
+      left: -200px;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(234,88,12,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(220,38,38,0.3);
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .header p {
+      color: var(--text-sub);
+      font-size: 0.85rem;
+      margin-top: 2px;
+    }
+
+    .dark-toggle {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .dark-toggle:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+      transition: all 0.3s;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+    }
+
+    .card-title i { color: var(--primary); }
+
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: var(--primary-light);
+    }
+
+    .upload-zone:hover {
+      border-color: var(--primary);
+      background: var(--primary-glow);
+    }
+
+    .upload-zone i { color: var(--primary); margin-bottom: 12px; }
+    .upload-zone p { color: var(--text-sub); font-size: 0.9rem; }
+    .upload-zone .hint { font-size: 0.8rem; margin-top: 8px; opacity: 0.6; }
+
+    input[type="file"] { display: none; }
+
+    .video-preview {
+      width: 100%;
+      max-height: 400px;
+      border-radius: 12px;
+      background: #000;
+      display: none;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: end;
+    }
+
+    .control-group {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .control-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .control-group input,
+    .control-group select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: border 0.3s;
+    }
+
+    .control-group input:focus,
+    .control-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: none;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(220,38,38,0.3);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 6px 24px rgba(220,38,38,0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--bg);
+      overflow: hidden;
+      margin: 16px 0;
+      display: none;
+    }
+
+    .progress-bar .fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.3s;
+      width: 0%;
+    }
+
+    .progress-text {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      text-align: center;
+      display: none;
+    }
+
+    .time-range {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .time-range .time-display {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      padding: 6px 12px;
+      background: var(--primary-light);
+      border-radius: 8px;
+      font-weight: 500;
+    }
+
+    .result-area {
+      text-align: center;
+      display: none;
+    }
+
+    .result-area img {
+      max-width: 100%;
+      max-height: 400px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .info-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      background: var(--primary-light);
+      color: var(--primary);
+      margin: 4px;
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 16px 12px; }
+      .header h1 { font-size: 1.2rem; }
+      .controls-row { flex-direction: column; }
+      .control-group { min-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <div class="header-icon">
+          <i data-lucide="film" style="width:24px;height:24px"></i>
+        </div>
+        <div>
+          <h1>Video sang GIF</h1>
+          <p>Chuyển đổi video thành ảnh GIF động</p>
+        </div>
+      </div>
+      <button class="dark-toggle" onclick="toggleDark()" title="Chế độ tối">
+        <i data-lucide="moon" style="width:20px;height:20px"></i>
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i data-lucide="upload" style="width:18px;height:18px"></i> Tải Video Lên</div>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+        <i data-lucide="video" style="width:48px;height:48px"></i>
+        <p>Nhấn để chọn hoặc kéo thả video vào đây</p>
+        <p class="hint">Hỗ trợ: MP4, WebM (tối đa 200MB)</p>
+      </div>
+      <input type="file" id="fileInput" accept="video/mp4,video/webm,.mp4,.webm" />
+      <video id="videoPreview" class="video-preview" controls></video>
+    </div>
+
+    <div class="card" id="settingsCard" style="display:none">
+      <div class="card-title"><i data-lucide="settings" style="width:18px;height:18px"></i> Cài Đặt</div>
+
+      <div class="time-range" style="margin-bottom:16px">
+        <div>
+          <span style="font-size:0.8rem;color:var(--text-sub);font-weight:600">THỜI GIAN BẮT ĐẦU</span>
+          <div class="time-display" id="startDisplay">0.00s</div>
+        </div>
+        <div>
+          <span style="font-size:0.8rem;color:var(--text-sub);font-weight:600">THỜI GIAN KẾT THÚC</span>
+          <div class="time-display" id="endDisplay">0.00s</div>
+        </div>
+        <div>
+          <span style="font-size:0.8rem;color:var(--text-sub);font-weight:600">THỜI LƯỢNG GIF</span>
+          <div class="time-display" id="durationDisplay">0.00s</div>
+        </div>
+      </div>
+
+      <div class="controls-row" style="margin-bottom:16px">
+        <div class="control-group">
+          <label>Thời gian bắt đầu (giây)</label>
+          <input type="number" id="startTime" value="0" min="0" step="0.1" />
+        </div>
+        <div class="control-group">
+          <label>Thời gian kết thúc (giây)</label>
+          <input type="number" id="endTime" value="3" min="0" step="0.1" />
+        </div>
+      </div>
+
+      <div class="controls-row">
+        <div class="control-group">
+          <label>Tốc độ khung hình (FPS)</label>
+          <select id="fps">
+            <option value="5">5 FPS</option>
+            <option value="8">8 FPS</option>
+            <option value="10" selected>10 FPS</option>
+            <option value="12">12 FPS</option>
+            <option value="15">15 FPS</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Chiều rộng (px)</label>
+          <input type="number" id="gifWidth" value="480" min="100" max="1920" step="10" />
+        </div>
+        <div class="control-group">
+          <label>Chất lượng</label>
+          <select id="quality">
+            <option value="1">Cao nhất</option>
+            <option value="5">Cao</option>
+            <option value="10" selected>Trung bình</option>
+            <option value="15">Thấp (nhỏ gọn)</option>
+            <option value="20">Thấp nhất</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="previewClip()">
+          <i data-lucide="play" style="width:16px;height:16px"></i> Xem trước đoạn cắt
+        </button>
+        <button class="btn btn-primary" id="convertBtn" onclick="startConversion()">
+          <i data-lucide="wand-2" style="width:16px;height:16px"></i> Chuyển đổi sang GIF
+        </button>
+      </div>
+
+      <div class="progress-bar" id="progressBar">
+        <div class="fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText"></div>
+    </div>
+
+    <div class="card" id="resultCard" style="display:none">
+      <div class="card-title"><i data-lucide="image" style="width:18px;height:18px"></i> Kết Quả GIF</div>
+      <div class="result-area" id="resultArea">
+        <img id="gifResult" />
+        <div id="gifInfo"></div>
+        <div class="actions-row">
+          <button class="btn btn-primary" id="downloadBtn" onclick="downloadGif()">
+            <i data-lucide="download" style="width:16px;height:16px"></i> Tải GIF Xuống
+          </button>
+          <button class="btn btn-secondary" onclick="resetAll()">
+            <i data-lucide="rotate-ccw" style="width:16px;height:16px"></i> Làm lại
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Dark mode
+    function toggleDark() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+      lucide.createIcons();
+    }
+    if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+
+    const fileInput = document.getElementById('fileInput');
+    const video = document.getElementById('videoPreview');
+    const uploadZone = document.getElementById('uploadZone');
+    const settingsCard = document.getElementById('settingsCard');
+    const startTimeInput = document.getElementById('startTime');
+    const endTimeInput = document.getElementById('endTime');
+    const startDisplay = document.getElementById('startDisplay');
+    const endDisplay = document.getElementById('endDisplay');
+    const durationDisplay = document.getElementById('durationDisplay');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const resultCard = document.getElementById('resultCard');
+    const resultArea = document.getElementById('resultArea');
+    const gifResult = document.getElementById('gifResult');
+    const gifInfo = document.getElementById('gifInfo');
+    const convertBtn = document.getElementById('convertBtn');
+
+    let gifBlob = null;
+
+    // Drag and drop
+    uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); uploadZone.style.borderColor = 'var(--primary)'; });
+    uploadZone.addEventListener('dragleave', function() { uploadZone.style.borderColor = ''; });
+    uploadZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      uploadZone.style.borderColor = '';
+      var f = e.dataTransfer.files[0];
+      if (f && f.type.startsWith('video/')) handleFile(f);
+    });
+
+    fileInput.addEventListener('change', function() {
+      if (fileInput.files[0]) handleFile(fileInput.files[0]);
+    });
+
+    function handleFile(file) {
+      var url = URL.createObjectURL(file);
+      video.src = url;
+      video.style.display = 'block';
+      uploadZone.style.display = 'none';
+
+      video.addEventListener('loadedmetadata', function() {
+        var dur = video.duration;
+        endTimeInput.value = Math.min(dur, 5).toFixed(1);
+        endTimeInput.max = dur;
+        startTimeInput.max = dur;
+        settingsCard.style.display = 'block';
+        updateTimeDisplays();
+      }, { once: true });
+    }
+
+    function updateTimeDisplays() {
+      var s = parseFloat(startTimeInput.value) || 0;
+      var e = parseFloat(endTimeInput.value) || 0;
+      startDisplay.textContent = s.toFixed(2) + 's';
+      endDisplay.textContent = e.toFixed(2) + 's';
+      durationDisplay.textContent = Math.max(0, e - s).toFixed(2) + 's';
+    }
+
+    startTimeInput.addEventListener('input', updateTimeDisplays);
+    endTimeInput.addEventListener('input', updateTimeDisplays);
+
+    function previewClip() {
+      var s = parseFloat(startTimeInput.value) || 0;
+      video.currentTime = s;
+      video.play();
+      var e = parseFloat(endTimeInput.value) || 3;
+      var checkEnd = function() {
+        if (video.currentTime >= e) {
+          video.pause();
+          video.removeEventListener('timeupdate', checkEnd);
+        }
+      };
+      video.addEventListener('timeupdate', checkEnd);
+    }
+
+    function startConversion() {
+      var startT = parseFloat(startTimeInput.value) || 0;
+      var endT = parseFloat(endTimeInput.value) || 3;
+      var fps = parseInt(document.getElementById('fps').value);
+      var gifWidth = parseInt(document.getElementById('gifWidth').value);
+      var qualityVal = parseInt(document.getElementById('quality').value);
+
+      if (endT <= startT) {
+        alert('Thời gian kết thúc phải lớn hơn thời gian bắt đầu!');
+        return;
+      }
+
+      convertBtn.disabled = true;
+      progressBar.style.display = 'block';
+      progressText.style.display = 'block';
+      progressFill.style.width = '0%';
+      progressText.textContent = 'Đang chuẩn bị...';
+
+      var ratio = video.videoHeight / video.videoWidth;
+      var gifHeight = Math.round(gifWidth * ratio);
+
+      var canvas = document.createElement('canvas');
+      canvas.width = gifWidth;
+      canvas.height = gifHeight;
+      var ctx = canvas.getContext('2d');
+
+      var gif = new GIF({
+        workers: 2,
+        quality: qualityVal,
+        width: gifWidth,
+        height: gifHeight,
+        workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
+      });
+
+      var frameDelay = 1000 / fps;
+      var totalFrames = Math.ceil((endT - startT) * fps);
+      var currentFrame = 0;
+
+      video.currentTime = startT;
+      video.pause();
+
+      function captureFrame() {
+        if (currentFrame >= totalFrames) {
+          progressText.textContent = 'Đang mã hóa GIF...';
+          gif.render();
+          return;
+        }
+        var t = startT + (currentFrame / fps);
+        video.currentTime = t;
+      }
+
+      video.onseeked = function() {
+        if (currentFrame >= totalFrames) return;
+        ctx.drawImage(video, 0, 0, gifWidth, gifHeight);
+        gif.addFrame(ctx, { copy: true, delay: frameDelay });
+        currentFrame++;
+        var pct = Math.round((currentFrame / totalFrames) * 80);
+        progressFill.style.width = pct + '%';
+        progressText.textContent = 'Đang chụp khung hình ' + currentFrame + '/' + totalFrames + '...';
+        captureFrame();
+      };
+
+      gif.on('progress', function(p) {
+        var pct = 80 + Math.round(p * 20);
+        progressFill.style.width = pct + '%';
+        progressText.textContent = 'Đang mã hóa GIF... ' + Math.round(p * 100) + '%';
+      });
+
+      gif.on('finished', function(blob) {
+        gifBlob = blob;
+        var url = URL.createObjectURL(blob);
+        gifResult.src = url;
+        resultArea.style.display = 'block';
+        resultCard.style.display = 'block';
+
+        var sizeMB = (blob.size / 1024 / 1024).toFixed(2);
+        var sizeKB = (blob.size / 1024).toFixed(0);
+        var sizeLabel = blob.size > 1024 * 1024 ? sizeMB + ' MB' : sizeKB + ' KB';
+
+        // Build info badges using DOM methods
+        gifInfo.textContent = '';
+        var badges = [
+          { icon: 'hard-drive', text: sizeLabel },
+          { icon: 'maximize', text: gifWidth + 'x' + gifHeight + 'px' },
+          { icon: 'clock', text: (endT - startT).toFixed(1) + 's' },
+          { icon: 'zap', text: fps + ' FPS' }
+        ];
+        badges.forEach(function(b) {
+          var span = document.createElement('span');
+          span.className = 'info-badge';
+          var icon = document.createElement('i');
+          icon.setAttribute('data-lucide', b.icon);
+          icon.style.width = '14px';
+          icon.style.height = '14px';
+          span.appendChild(icon);
+          span.appendChild(document.createTextNode(' ' + b.text));
+          gifInfo.appendChild(span);
+        });
+        lucide.createIcons();
+
+        progressBar.style.display = 'none';
+        progressText.style.display = 'none';
+        progressFill.style.width = '100%';
+        convertBtn.disabled = false;
+      });
+
+      captureFrame();
+    }
+
+    function downloadGif() {
+      if (!gifBlob) return;
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(gifBlob);
+      a.download = 'video-to-gif-' + Date.now() + '.gif';
+      a.click();
+    }
+
+    function resetAll() {
+      video.src = '';
+      video.style.display = 'none';
+      uploadZone.style.display = '';
+      settingsCard.style.display = 'none';
+      resultCard.style.display = 'none';
+      resultArea.style.display = 'none';
+      progressBar.style.display = 'none';
+      progressText.style.display = 'none';
+      fileInput.value = '';
+      gifBlob = null;
+    }
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>

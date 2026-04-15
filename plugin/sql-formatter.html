@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Format SQL — SQL Formatter</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #fff7ed;
+      --bg-card: #fff;
+      --text: #431407;
+      --text-sub: #9a5c2e;
+      --primary: #ea580c;
+      --primary-light: rgba(234,88,12,0.08);
+      --primary-glow: rgba(234,88,12,0.15);
+      --border: rgba(234,88,12,0.1);
+      --shadow: 0 1px 3px rgba(234,88,12,0.04), 0 8px 32px rgba(234,88,12,0.06);
+      --keyword: #ea580c;
+      --string: #16a34a;
+      --number: #2563eb;
+      --comment: #9ca3af;
+    }
+    body.dark {
+      --bg: #1a0e05;
+      --bg-card: #291808;
+      --text: #fed7aa;
+      --text-sub: #c2854a;
+      --primary: #fb923c;
+      --primary-light: rgba(251,146,60,0.1);
+      --primary-glow: rgba(251,146,60,0.15);
+      --border: rgba(251,146,60,0.08);
+      --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.3);
+      --keyword: #fb923c;
+      --string: #4ade80;
+      --number: #60a5fa;
+      --comment: #6b7280;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg); min-height: 100vh;
+      color: var(--text); transition: background 0.4s, color 0.4s;
+    }
+    body::before {
+      content: ''; position: fixed; top: -150px; right: -150px;
+      width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(234,88,12,0.07) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; position: relative; z-index: 1; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .header h1 { font-size: 1.8rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+    .header h1 i { color: var(--primary); }
+    .header p { color: var(--text-sub); margin-top: 0.25rem; font-size: 0.95rem; }
+    .dark-toggle {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+      width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text); box-shadow: var(--shadow); transition: all 0.3s;
+    }
+    .dark-toggle:hover { transform: scale(1.1); }
+    .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    @media (max-width: 768px) {
+      .panels { grid-template-columns: 1fr; }
+      .header h1 { font-size: 1.4rem; }
+    }
+    .card {
+      background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border);
+      box-shadow: var(--shadow); overflow: hidden;
+    }
+    .card-label {
+      padding: 0.75rem 1rem; font-weight: 600; font-size: 0.9rem;
+      border-bottom: 1px solid var(--border); color: var(--primary);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    textarea {
+      width: 100%; min-height: 300px; padding: 1rem; border: none; background: transparent;
+      color: var(--text); font-family: 'DM Sans', monospace; font-size: 0.85rem;
+      resize: vertical; outline: none; line-height: 1.6;
+    }
+    textarea::placeholder { color: var(--text-sub); opacity: 0.6; }
+    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 1.5rem; border-radius: 12px; border: none;
+      font-family: inherit; font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 16px rgba(234,88,12,0.3); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(234,88,12,0.4); }
+    .btn-secondary { background: var(--primary-light); color: var(--primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--primary-glow); }
+    .highlighted-output {
+      padding: 1rem; font-family: 'DM Sans', monospace; font-size: 0.85rem;
+      line-height: 1.6; white-space: pre-wrap; word-break: break-word;
+      min-height: 300px; overflow: auto;
+    }
+    .highlighted-output .kw { color: var(--keyword); font-weight: 700; }
+    .highlighted-output .str { color: var(--string); }
+    .highlighted-output .num { color: var(--number); }
+    .highlighted-output .cmt { color: var(--comment); font-style: italic; }
+    .toast {
+      position: fixed; bottom: 2rem; right: 2rem;
+      background: var(--primary); color: #fff;
+      padding: 0.75rem 1.5rem; border-radius: 12px;
+      font-weight: 600; font-size: 0.9rem;
+      box-shadow: 0 8px 32px rgba(234,88,12,0.3);
+      transform: translateY(100px); opacity: 0; transition: all 0.4s; z-index: 100;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1><i data-lucide="database"></i> Format SQL</h1>
+        <p>SQL Formatter -- Định dạng và làm đẹp truy vấn SQL</p>
+      </div>
+      <button class="dark-toggle" onclick="toggleDark()" title="Chuyển giao diện">
+        <i data-lucide="moon"></i>
+      </button>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" onclick="formatSQL()"><i data-lucide="sparkles" style="width:18px;height:18px"></i> Format SQL</button>
+      <button class="btn btn-secondary" onclick="copyResult()"><i data-lucide="copy" style="width:18px;height:18px"></i> Sao chép</button>
+      <button class="btn btn-secondary" onclick="loadSample()"><i data-lucide="file-code" style="width:18px;height:18px"></i> Ví dụ</button>
+      <button class="btn btn-secondary" onclick="clearAll()"><i data-lucide="trash-2" style="width:18px;height:18px"></i> Xoá</button>
+    </div>
+
+    <div class="panels">
+      <div class="card">
+        <div class="card-label"><i data-lucide="code" style="width:16px;height:16px"></i> SQL gốc</div>
+        <textarea id="sqlInput" placeholder="Dán truy vấn SQL vào đây..."></textarea>
+      </div>
+      <div class="card">
+        <div class="card-label"><i data-lucide="check-circle" style="width:16px;height:16px"></i> SQL đã format</div>
+        <div class="highlighted-output" id="sqlOutput"></div>
+        <textarea id="sqlPlain" style="display:none"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    function toggleDark() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+      lucide.createIcons();
+    }
+    if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+
+    var SQL_KEYWORDS = [
+      'SELECT','DISTINCT','FROM','WHERE','AND','OR','NOT','IN','EXISTS','BETWEEN',
+      'LIKE','IS','NULL','AS','ON','JOIN','INNER','LEFT','RIGHT','FULL','OUTER','CROSS',
+      'GROUP BY','ORDER BY','HAVING','LIMIT','OFFSET','UNION','ALL','INSERT','INTO',
+      'VALUES','UPDATE','SET','DELETE','CREATE','TABLE','ALTER','DROP','INDEX',
+      'PRIMARY','KEY','FOREIGN','REFERENCES','CONSTRAINT','DEFAULT','CHECK',
+      'CASE','WHEN','THEN','ELSE','END','ASC','DESC','COUNT','SUM','AVG','MIN','MAX',
+      'DISTINCT','TOP','WITH','RECURSIVE','OVER','PARTITION BY','ROW_NUMBER','RANK',
+      'DENSE_RANK','COALESCE','CAST','CONVERT','IF','IFNULL','NULLIF','GRANT','REVOKE'
+    ];
+
+    var NEWLINE_BEFORE = ['SELECT','FROM','WHERE','JOIN','INNER JOIN','LEFT JOIN','RIGHT JOIN',
+      'FULL JOIN','FULL OUTER JOIN','CROSS JOIN','ORDER BY','GROUP BY','HAVING','LIMIT',
+      'UNION','UNION ALL','INSERT INTO','UPDATE','SET','DELETE','VALUES','ON'];
+
+    function formatSQL() {
+      var input = document.getElementById('sqlInput').value.trim();
+      if (!input) return;
+
+      // Preserve strings
+      var strings = [];
+      var preserved = input.replace(/'([^']*?)'/g, function(m) {
+        strings.push(m);
+        return '___STR' + (strings.length - 1) + '___';
+      });
+
+      // Uppercase keywords (longer first to handle multi-word)
+      var sortedKW = SQL_KEYWORDS.slice().sort(function(a,b) { return b.length - a.length; });
+      for (var i = 0; i < sortedKW.length; i++) {
+        var kw = sortedKW[i];
+        var regex = new RegExp('\\b' + kw.replace(/ /g, '\\s+') + '\\b', 'gi');
+        preserved = preserved.replace(regex, kw);
+      }
+
+      // Remove extra whitespace
+      preserved = preserved.replace(/\s+/g, ' ').trim();
+
+      // Add newlines before major clauses
+      var sortedNL = NEWLINE_BEFORE.slice().sort(function(a,b) { return b.length - a.length; });
+      for (var i = 0; i < sortedNL.length; i++) {
+        var kw = sortedNL[i];
+        var regex = new RegExp('\\s+(' + kw.replace(/ /g, '\\s+') + ')\\b', 'gi');
+        preserved = preserved.replace(regex, '\n' + kw);
+      }
+
+      // Indent after SELECT, handle commas
+      var lines = preserved.split('\n');
+      var formatted = [];
+      var indent = 0;
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (!line) continue;
+
+        // Decrease indent for certain keywords
+        if (/^\)/.test(line)) indent = Math.max(0, indent - 1);
+
+        var prefix = '';
+        for (var j = 0; j < indent; j++) prefix += '  ';
+        formatted.push(prefix + line);
+
+        if (/\(\s*$/.test(line) || /\(SELECT/i.test(line)) indent++;
+      }
+
+      var result = formatted.join('\n');
+
+      // Restore strings
+      for (var i = 0; i < strings.length; i++) {
+        result = result.replace('___STR' + i + '___', strings[i]);
+      }
+
+      document.getElementById('sqlPlain').value = result;
+      highlightSQL(result);
+    }
+
+    function highlightSQL(sql) {
+      var output = document.getElementById('sqlOutput');
+      output.textContent = '';
+
+      // Tokenize and highlight
+      var tokens = sql.split(/(\b(?:SELECT|DISTINCT|FROM|WHERE|AND|OR|NOT|IN|EXISTS|BETWEEN|LIKE|IS|NULL|AS|ON|JOIN|INNER|LEFT|RIGHT|FULL|OUTER|CROSS|GROUP BY|ORDER BY|HAVING|LIMIT|OFFSET|UNION|ALL|INSERT|INTO|VALUES|UPDATE|SET|DELETE|CREATE|TABLE|ALTER|DROP|INDEX|PRIMARY|KEY|FOREIGN|REFERENCES|CONSTRAINT|DEFAULT|CHECK|CASE|WHEN|THEN|ELSE|END|ASC|DESC|COUNT|SUM|AVG|MIN|MAX|TOP|WITH|RECURSIVE|OVER|PARTITION BY|ROW_NUMBER|RANK|DENSE_RANK|COALESCE|CAST|CONVERT|IF|IFNULL|NULLIF|GRANT|REVOKE)\b|'[^']*'|\b\d+\.?\d*\b|--[^\n]*)/g);
+
+      var kwSet = {};
+      for (var i = 0; i < SQL_KEYWORDS.length; i++) kwSet[SQL_KEYWORDS[i]] = true;
+
+      for (var i = 0; i < tokens.length; i++) {
+        var t = tokens[i];
+        if (!t) continue;
+        var span = document.createElement('span');
+        if (kwSet[t]) {
+          span.className = 'kw';
+        } else if (/^'/.test(t)) {
+          span.className = 'str';
+        } else if (/^\d+\.?\d*$/.test(t)) {
+          span.className = 'num';
+        } else if (/^--/.test(t)) {
+          span.className = 'cmt';
+        }
+        span.textContent = t;
+        output.appendChild(span);
+      }
+    }
+
+    function copyResult() {
+      var text = document.getElementById('sqlPlain').value;
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(function() { showToast('Đã sao chép!'); });
+    }
+
+    function clearAll() {
+      document.getElementById('sqlInput').value = '';
+      document.getElementById('sqlOutput').textContent = '';
+      document.getElementById('sqlPlain').value = '';
+    }
+
+    function loadSample() {
+      document.getElementById('sqlInput').value = "select u.id, u.name, u.email, o.total, o.created_at from users u inner join orders o on u.id = o.user_id where u.status = 'active' and o.total > 100 group by u.id, u.name, u.email order by o.total desc limit 50";
+      formatSQL();
+    }
+
+    function showToast(msg) {
+      var t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(function() { t.classList.remove('show'); }, 2000);
+    }
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>

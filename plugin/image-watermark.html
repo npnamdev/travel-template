@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thêm Watermark — Image Watermark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+:root {
+  --bg: #eff6ff;
+  --bg-card: #ffffff;
+  --bg-alt: #dbeafe;
+  --text: #1e3a5f;
+  --text-sub: #64748b;
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: rgba(37,99,235,0.08);
+  --primary-glow: rgba(37,99,235,0.18);
+  --border: rgba(37,99,235,0.1);
+  --shadow: 0 2px 8px rgba(37,99,235,0.05), 0 12px 36px rgba(37,99,235,0.07);
+  --shadow-hover: 0 8px 24px rgba(37,99,235,0.12), 0 20px 56px rgba(37,99,235,0.15);
+  --accent: #3b82f6;
+  --radius: 16px;
+}
+body.dark {
+  --bg: #020617;
+  --bg-card: #0f172a;
+  --bg-alt: #1e293b;
+  --text: #e2e8f0;
+  --text-sub: #94a3b8;
+  --primary: #3b82f6;
+  --primary-dark: #60a5fa;
+  --primary-light: rgba(59,130,246,0.1);
+  --primary-glow: rgba(59,130,246,0.15);
+  --border: rgba(59,130,246,0.1);
+  --shadow: 0 2px 8px rgba(0,0,0,0.3), 0 12px 36px rgba(0,0,0,0.4);
+  --shadow-hover: 0 8px 24px rgba(59,130,246,0.12), 0 20px 56px rgba(0,0,0,0.5);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Instrument Sans', sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  color: var(--text);
+  transition: background 0.4s, color 0.4s;
+}
+body::before {
+  content: '';
+  position: fixed;
+  top: -120px; right: -120px;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -250px; left: -150px;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+.top-bar {
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(20px);
+  background: rgba(239,246,255,0.85);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.4s;
+}
+body.dark .top-bar { background: rgba(2,6,23,0.88); }
+.top-bar h1 {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.2rem; font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--bg-card);
+  color: var(--text); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s;
+}
+.icon-btn:hover { background: var(--primary-light); border-color: var(--primary); transform: translateY(-1px); }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 28px 20px; position: relative; z-index: 1; }
+
+.upload-zone {
+  border: 2px dashed var(--border); border-radius: var(--radius);
+  padding: 48px 20px; text-align: center; cursor: pointer;
+  transition: all 0.3s; background: var(--bg-card);
+}
+.upload-zone:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+.upload-zone.dragover { border-color: var(--primary); background: var(--primary-light); }
+.upload-zone i { color: var(--primary); margin-bottom: 10px; }
+.upload-zone .title { font-family: 'Sora', sans-serif; font-weight: 600; font-size: 1.05rem; }
+.upload-zone p { color: var(--text-sub); font-size: 0.9rem; margin-top: 6px; }
+.upload-zone input { display: none; }
+
+.editor { display: none; margin-top: 20px; }
+.editor.active { display: grid; grid-template-columns: 1fr 300px; gap: 20px; animation: fadeIn 0.4s ease-out; }
+@media (max-width: 800px) { .editor.active { grid-template-columns: 1fr; } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.canvas-wrap {
+  background: var(--bg-card); border-radius: var(--radius);
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  overflow: hidden;
+}
+.canvas-header {
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Sora', sans-serif; font-weight: 600; font-size: 0.95rem;
+}
+.canvas-header i { color: var(--primary); }
+.canvas-body {
+  padding: 20px; display: flex; justify-content: center; align-items: center;
+  min-height: 300px;
+  background: repeating-conic-gradient(var(--bg-alt) 0% 25%, transparent 0% 50%) 50%/16px 16px;
+}
+.canvas-body canvas { max-width: 100%; max-height: 500px; border-radius: 4px; }
+
+.controls {
+  background: var(--bg-card); border-radius: var(--radius);
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  padding: 20px; display: flex; flex-direction: column; gap: 16px;
+  height: fit-content;
+}
+.ctrl-title {
+  font-family: 'Sora', sans-serif; font-weight: 600; font-size: 0.95rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.ctrl-title i { color: var(--primary); }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 0.82rem; font-weight: 500; color: var(--text-sub); }
+.field input[type="text"], .field input[type="number"], .field select {
+  padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text);
+  font-family: 'Instrument Sans', sans-serif; font-size: 0.9rem;
+  transition: border 0.2s;
+}
+.field input:focus, .field select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+
+.color-row { display: flex; gap: 8px; align-items: center; }
+.color-row input[type="color"] {
+  width: 40px; height: 40px; border: 2px solid var(--border);
+  border-radius: 10px; cursor: pointer; padding: 2px; background: var(--bg);
+}
+
+.range-row { display: flex; align-items: center; gap: 10px; }
+.range-row input[type="range"] {
+  flex: 1; accent-color: var(--primary);
+  height: 6px; -webkit-appearance: none; appearance: none;
+  border-radius: 3px; background: var(--border);
+}
+.range-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px;
+  border-radius: 50%; background: var(--primary); cursor: pointer;
+  box-shadow: 0 2px 6px rgba(37,99,235,0.3);
+}
+.range-row .val { font-family: 'Sora', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--primary); min-width: 36px; text-align: right; }
+
+.pos-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+}
+.pos-btn {
+  aspect-ratio: 1; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg);
+  cursor: pointer; transition: all 0.2s; position: relative;
+}
+.pos-btn::after {
+  content: ''; position: absolute;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--text-sub);
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  transition: background 0.2s;
+}
+.pos-btn.active { background: var(--primary-light); border-color: var(--primary); }
+.pos-btn.active::after { background: var(--primary); }
+.pos-btn:hover { border-color: var(--accent); }
+
+.btn-primary {
+  padding: 12px 24px; border-radius: 12px; border: none;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: white; font-family: 'Sora', sans-serif; font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; transition: all 0.3s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37,99,235,0.3); }
+.btn-secondary {
+  padding: 10px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--text); font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: var(--primary); background: var(--primary-light); }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1><i data-lucide="stamp" style="width:22px;height:22px"></i> Thêm Watermark</h1>
+  <div style="display:flex;gap:8px">
+    <button class="icon-btn" onclick="resetAll()" title="Làm mới"><i data-lucide="rotate-ccw" style="width:18px;height:18px"></i></button>
+    <button class="icon-btn" id="darkToggle" title="Chế độ tối"><i data-lucide="moon" style="width:18px;height:18px"></i></button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="upload-zone" id="uploadZone">
+    <i data-lucide="image-plus" style="width:48px;height:48px"></i>
+    <p class="title">Kéo thả ảnh vào đây</p>
+    <p>hoặc nhấn để chọn file</p>
+    <input type="file" id="fileInput" accept="image/*">
+  </div>
+
+  <div class="editor" id="editor">
+    <div class="canvas-wrap">
+      <div class="canvas-header"><i data-lucide="eye" style="width:18px;height:18px"></i> Xem trước</div>
+      <div class="canvas-body">
+        <canvas id="canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="ctrl-title"><i data-lucide="settings-2" style="width:18px;height:18px"></i> Cài đặt Watermark</div>
+
+      <div class="field">
+        <label>Nội dung</label>
+        <input type="text" id="wmText" value="Watermark" oninput="renderPreview()">
+      </div>
+
+      <div class="field">
+        <label>Cỡ chữ (px)</label>
+        <div class="range-row">
+          <input type="range" id="wmSize" min="10" max="200" value="48" oninput="renderPreview();document.getElementById('wmSizeVal').textContent=this.value">
+          <span class="val" id="wmSizeVal">48</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Màu chữ</label>
+        <div class="color-row">
+          <input type="color" id="wmColor" value="#ffffff" oninput="renderPreview()">
+          <span style="font-size:0.82rem;color:var(--text-sub)" id="wmColorVal">#ffffff</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Độ mờ</label>
+        <div class="range-row">
+          <input type="range" id="wmOpacity" min="0" max="100" value="50" oninput="renderPreview();document.getElementById('wmOpVal').textContent=this.value+'%'">
+          <span class="val" id="wmOpVal">50%</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Góc xoay</label>
+        <div class="range-row">
+          <input type="range" id="wmRotation" min="-180" max="180" value="-30" oninput="renderPreview();document.getElementById('wmRotVal').textContent=this.value+'°'">
+          <span class="val" id="wmRotVal">-30°</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Vị trí</label>
+        <div class="pos-grid" id="posGrid">
+          <button class="pos-btn" data-pos="top-left" onclick="setPos(this)"></button>
+          <button class="pos-btn" data-pos="top-center" onclick="setPos(this)"></button>
+          <button class="pos-btn" data-pos="top-right" onclick="setPos(this)"></button>
+          <button class="pos-btn" data-pos="middle-left" onclick="setPos(this)"></button>
+          <button class="pos-btn active" data-pos="middle-center" onclick="setPos(this)"></button>
+          <button class="pos-btn" data-pos="middle-right" onclick="setPos(this)"></button>
+          <button class="pos-btn" data-pos="bottom-left" onclick="setPos(this)"></button>
+          <button class="pos-btn" data-pos="bottom-center" onclick="setPos(this)"></button>
+          <button class="pos-btn" data-pos="bottom-right" onclick="setPos(this)"></button>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="downloadResult()">
+        <i data-lucide="download" style="width:18px;height:18px"></i> Tải ảnh có watermark
+      </button>
+      <button class="btn-secondary" onclick="resetAll()">Chọn ảnh khác</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let originalImg = null;
+let wmPosition = 'middle-center';
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+const editorEl = document.getElementById('editor');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+document.getElementById('wmColor').addEventListener('input', function() {
+  document.getElementById('wmColorVal').textContent = this.value;
+});
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      originalImg = img;
+      uploadZone.style.display = 'none';
+      editorEl.classList.add('active');
+      renderPreview();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function setPos(btn) {
+  document.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  wmPosition = btn.dataset.pos;
+  renderPreview();
+}
+
+function renderPreview() {
+  if (!originalImg) return;
+  canvas.width = originalImg.width;
+  canvas.height = originalImg.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(originalImg, 0, 0);
+
+  const text = document.getElementById('wmText').value || 'Watermark';
+  const size = parseInt(document.getElementById('wmSize').value);
+  const color = document.getElementById('wmColor').value;
+  const opacity = parseInt(document.getElementById('wmOpacity').value) / 100;
+  const rotation = parseInt(document.getElementById('wmRotation').value) * Math.PI / 180;
+
+  ctx.save();
+  ctx.globalAlpha = opacity;
+  ctx.font = `bold ${size}px 'Sora', sans-serif`;
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  const metrics = ctx.measureText(text);
+  let x, y;
+  const pad = size * 0.8;
+  const [vPos, hPos] = wmPosition.split('-');
+
+  if (hPos === 'left') x = pad + metrics.width / 2;
+  else if (hPos === 'right') x = canvas.width - pad - metrics.width / 2;
+  else x = canvas.width / 2;
+
+  if (vPos === 'top') y = pad + size / 2;
+  else if (vPos === 'bottom') y = canvas.height - pad - size / 2;
+  else y = canvas.height / 2;
+
+  ctx.translate(x, y);
+  ctx.rotate(rotation);
+  ctx.fillText(text, 0, 0);
+  ctx.restore();
+}
+
+function downloadResult() {
+  if (!originalImg) return;
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'watermarked.png';
+    a.click(); URL.revokeObjectURL(url);
+  }, 'image/png');
+}
+
+function resetAll() {
+  originalImg = null;
+  uploadZone.style.display = '';
+  editorEl.classList.remove('active');
+  fileInput.value = '';
+}
+
+// Dark mode
+if (localStorage.getItem('math-dark') === 'true') document.body.classList.add('dark');
+document.getElementById('darkToggle').addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('math-dark', document.body.classList.contains('dark'));
+});
+
+lucide.createIcons();
+</script>
+</body>
+</html>

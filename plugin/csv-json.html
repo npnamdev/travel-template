@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSV ↔ JSON — CSV JSON Converter</title>
+<meta name="description" content="Chuyển đổi hai chiều giữa CSV và JSON. Tự động nhận diện định dạng, hỗ trợ nhiều dấu phân cách.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23059669'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='14' fill='white'%3E⇄%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#ecfdf5;--surface:#fff;--surface2:#ecfdf5;--surface3:#d1fae5;
+  --border:#a7f3d0;--border2:#059669;
+  --text:#064e3b;--text2:#047857;--text3:#059669;--text-muted:#6b7280;
+  --primary:#059669;--primary-hover:#047857;--primary-light:#d1fae5;
+  --accent:#0ea5e9;
+  --r:12px;--r2:16px;--r3:24px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.05);
+  --shadow2:0 4px 24px rgba(0,0,0,.1);
+  --font:'DM Sans',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+.dark{
+  --bg:#021a12;--surface:#052e21;--surface2:#021a12;--surface3:#0a4030;
+  --border:#065f46;--border2:#10b981;
+  --text:#d1fae5;--text2:#6ee7b7;--text3:#34d399;--text-muted:#9ca3af;
+  --primary:#10b981;--primary-hover:#059669;--primary-light:#064e3b;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3);
+  --shadow2:0 4px 24px rgba(0,0,0,.4);
+}
+html{-webkit-font-smoothing:antialiased;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding:24px;transition:background .3s,color .3s}
+
+.theme-toggle{
+  position:fixed;top:16px;right:16px;z-index:100;
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow);transition:all .3s;color:var(--text)
+}
+.theme-toggle:hover{background:var(--surface3);border-color:var(--border2);transform:scale(1.05)}
+.theme-toggle svg{width:20px;height:20px}
+.dark .theme-toggle .icon-sun{display:none}
+:not(.dark) .theme-toggle .icon-moon{display:none}
+
+.container{max-width:1000px;margin:0 auto}
+.header{text-align:center;margin-bottom:28px;padding-top:20px}
+.header-icon{
+  width:60px;height:60px;border-radius:16px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:12px;box-shadow:0 4px 20px rgba(5,150,105,.3);
+}
+.header-icon svg{width:28px;height:28px;color:#fff}
+.header h1{font-size:1.6rem;font-weight:800}
+.header p{font-size:.85rem;color:var(--text-muted);margin-top:4px}
+
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r3);padding:24px;
+  box-shadow:var(--shadow2);margin-bottom:20px;
+}
+
+.mode-tabs{
+  display:flex;gap:4px;padding:4px;background:var(--surface2);
+  border-radius:var(--r);margin-bottom:20px;border:1px solid var(--border);
+}
+.mode-tab{
+  flex:1;padding:10px;border:none;border-radius:10px;
+  background:transparent;color:var(--text-muted);cursor:pointer;
+  font-family:var(--font);font-weight:600;font-size:.9rem;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.mode-tab.active{background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(5,150,105,.3)}
+.mode-tab:hover:not(.active){color:var(--text)}
+.mode-tab svg{width:18px;height:18px}
+
+.editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.editor-col{display:flex;flex-direction:column}
+.editor-label{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:8px;
+}
+.editor-label h3{font-size:.9rem;font-weight:700}
+.editor-label .tag{
+  font-size:.7rem;font-weight:600;padding:3px 8px;border-radius:6px;
+  background:var(--primary-light);color:var(--primary);
+}
+
+textarea{
+  width:100%;min-height:300px;padding:14px;border:1px solid var(--border);
+  border-radius:var(--r);background:var(--surface2);color:var(--text);
+  font-family:var(--mono);font-size:.82rem;line-height:1.6;resize:vertical;
+  transition:border-color .2s;
+}
+textarea:focus{outline:none;border-color:var(--primary)}
+
+.options-bar{
+  display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px;
+}
+.options-bar label{font-size:.8rem;font-weight:600;color:var(--text-muted)}
+.options-bar select{
+  padding:8px 12px;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-family:var(--font);font-size:.85rem;
+}
+
+.btn{
+  padding:10px 20px;border:none;border-radius:var(--r);font-family:var(--font);
+  font-weight:600;font-size:.85rem;cursor:pointer;transition:all .2s;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.btn svg{width:16px;height:16px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px)}
+.btn-secondary{background:var(--surface3);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--primary)}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+
+.table-wrap{
+  overflow-x:auto;margin-top:16px;border:1px solid var(--border);
+  border-radius:var(--r);max-height:300px;overflow-y:auto;
+}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{
+  background:var(--primary);color:#fff;padding:10px 12px;
+  text-align:left;font-weight:600;position:sticky;top:0;
+}
+td{padding:8px 12px;border-bottom:1px solid var(--border)}
+tr:hover td{background:var(--primary-light)}
+
+.detect-badge{
+  display:inline-block;padding:4px 10px;border-radius:6px;font-size:.75rem;
+  font-weight:600;margin-left:8px;
+}
+.detect-csv{background:#fef3c7;color:#92400e}
+.detect-json{background:#dbeafe;color:#1e40af}
+
+.status-msg{font-size:.82rem;color:var(--text-muted);margin-top:8px}
+.hidden{display:none}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease}
+
+@media(max-width:700px){
+  .editor-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()">
+  <i data-lucide="sun" class="icon-sun"></i>
+  <i data-lucide="moon" class="icon-moon"></i>
+</button>
+
+<div class="container">
+  <div class="header">
+    <div class="header-icon"><i data-lucide="repeat"></i></div>
+    <h1>CSV ↔ JSON</h1>
+    <p>Chuyển đổi hai chiều giữa CSV và JSON</p>
+  </div>
+
+  <div class="card">
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="tabCsvJson" onclick="setMode('csv2json')">
+        <i data-lucide="file-spreadsheet"></i> CSV → JSON
+      </button>
+      <button class="mode-tab" id="tabJsonCsv" onclick="setMode('json2csv')">
+        <i data-lucide="braces"></i> JSON → CSV
+      </button>
+      <button class="mode-tab" id="tabAuto" onclick="setMode('auto')">
+        <i data-lucide="wand-2"></i> Tự động
+      </button>
+    </div>
+
+    <div class="options-bar">
+      <label>Dấu phân cách CSV:</label>
+      <select id="delimiter">
+        <option value=",">Dấu phẩy (,)</option>
+        <option value=";">Chấm phẩy (;)</option>
+        <option value="\t">Tab</option>
+      </select>
+      <span id="detectedFormat" style="margin-left:auto"></span>
+    </div>
+
+    <div class="editor-grid">
+      <div class="editor-col">
+        <div class="editor-label">
+          <h3 id="inputLabel">Đầu vào (CSV)</h3>
+        </div>
+        <textarea id="inputArea" placeholder="Dán dữ liệu CSV hoặc JSON vào đây..."></textarea>
+      </div>
+      <div class="editor-col">
+        <div class="editor-label">
+          <h3 id="outputLabel">Kết quả (JSON)</h3>
+        </div>
+        <textarea id="outputArea" readonly placeholder="Kết quả sẽ hiển thị ở đây..."></textarea>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="convert()">
+        <i data-lucide="refresh-cw"></i> Chuyển đổi
+      </button>
+      <button class="btn btn-secondary" onclick="copyOutput()">
+        <i data-lucide="copy"></i> Sao chép
+      </button>
+      <button class="btn btn-secondary" onclick="downloadOutput()">
+        <i data-lucide="download"></i> Tải xuống
+      </button>
+      <button class="btn btn-secondary" onclick="swapInputOutput()">
+        <i data-lucide="arrow-left-right"></i> Đổi chiều
+      </button>
+      <button class="btn btn-secondary" onclick="clearAll()">
+        <i data-lucide="trash-2"></i> Xóa
+      </button>
+    </div>
+
+    <p id="statusMsg" class="status-msg"></p>
+  </div>
+
+  <div class="card hidden" id="previewCard">
+    <h3 style="margin-bottom:12px">Xem trước dữ liệu</h3>
+    <div class="table-wrap" id="tableWrap"></div>
+  </div>
+</div>
+
+<script>
+var mode='csv2json';
+
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  localStorage.setItem('math-dark',document.body.classList.contains('dark'));
+  lucide.createIcons();
+}
+if(localStorage.getItem('math-dark')==='true') document.body.classList.add('dark');
+
+function setMode(m){
+  mode=m;
+  document.getElementById('tabCsvJson').classList.toggle('active',m==='csv2json');
+  document.getElementById('tabJsonCsv').classList.toggle('active',m==='json2csv');
+  document.getElementById('tabAuto').classList.toggle('active',m==='auto');
+  if(m==='csv2json'){
+    document.getElementById('inputLabel').textContent='Đầu vào (CSV)';
+    document.getElementById('outputLabel').textContent='Kết quả (JSON)';
+  }else if(m==='json2csv'){
+    document.getElementById('inputLabel').textContent='Đầu vào (JSON)';
+    document.getElementById('outputLabel').textContent='Kết quả (CSV)';
+  }else{
+    document.getElementById('inputLabel').textContent='Đầu vào (tự động)';
+    document.getElementById('outputLabel').textContent='Kết quả';
+  }
+  lucide.createIcons();
+}
+
+function detectFormat(text){
+  text=text.trim();
+  if(!text) return null;
+  if(text[0]==='['||text[0]==='{') return 'json';
+  return 'csv';
+}
+
+function parseCSV(text,delim){
+  var lines=[];
+  var current='';
+  var inQuote=false;
+  var rows=[];
+  var row=[];
+
+  for(var i=0;i<text.length;i++){
+    var ch=text[i];
+    if(inQuote){
+      if(ch==='"'){
+        if(i+1<text.length&&text[i+1]==='"'){
+          current+='"';i++;
+        }else{
+          inQuote=false;
+        }
+      }else{
+        current+=ch;
+      }
+    }else{
+      if(ch==='"'){
+        inQuote=true;
+      }else if(ch===delim){
+        row.push(current);current='';
+      }else if(ch==='\n'||(ch==='\r'&&text[i+1]==='\n')){
+        row.push(current);current='';
+        if(ch==='\r') i++;
+        if(row.length>0 && !(row.length===1 && row[0]==='')) rows.push(row);
+        row=[];
+      }else{
+        current+=ch;
+      }
+    }
+  }
+  row.push(current);
+  if(row.length>0 && !(row.length===1 && row[0]==='')) rows.push(row);
+  return rows;
+}
+
+function csvToJson(text,delim){
+  var rows=parseCSV(text,delim);
+  if(rows.length<2) return {json:[],data:[]};
+  var headers=rows[0].map(function(h){return h.trim()});
+  var data=[];
+  for(var i=1;i<rows.length;i++){
+    var obj={};
+    for(var j=0;j<headers.length;j++){
+      obj[headers[j]]=rows[i][j]!==undefined?rows[i][j].trim():'';
+    }
+    data.push(obj);
+  }
+  return {json:data,headers:headers};
+}
+
+function flattenObj(obj,prefix){
+  var result={};
+  prefix=prefix||'';
+  for(var key in obj){
+    if(!obj.hasOwnProperty(key)) continue;
+    var newKey=prefix?prefix+'.'+key:key;
+    if(typeof obj[key]==='object'&&obj[key]!==null&&!Array.isArray(obj[key])){
+      var flat=flattenObj(obj[key],newKey);
+      for(var fk in flat) result[fk]=flat[fk];
+    }else{
+      result[newKey]=obj[key];
+    }
+  }
+  return result;
+}
+
+function jsonToCsv(text,delim){
+  var parsed=JSON.parse(text);
+  if(!Array.isArray(parsed)){
+    if(typeof parsed==='object') parsed=[parsed];
+    else throw new Error('JSON phải là mảng hoặc đối tượng');
+  }
+  var flatData=parsed.map(function(item){return flattenObj(item)});
+  var headersSet={};
+  flatData.forEach(function(item){
+    for(var k in item) headersSet[k]=true;
+  });
+  var headers=Object.keys(headersSet);
+  var lines=[headers.join(delim)];
+  flatData.forEach(function(item){
+    var row=headers.map(function(h){
+      var val=item[h]!==undefined?String(item[h]):'';
+      if(val.indexOf(delim)!==-1||val.indexOf('"')!==-1||val.indexOf('\n')!==-1){
+        val='"'+val.replace(/"/g,'""')+'"';
+      }
+      return val;
+    });
+    lines.push(row.join(delim));
+  });
+  return {csv:lines.join('\n'),headers:headers,data:flatData};
+}
+
+function convert(){
+  var input=document.getElementById('inputArea').value.trim();
+  if(!input){
+    showStatus('Vui lòng nhập dữ liệu!','');return;
+  }
+
+  var delim=document.getElementById('delimiter').value;
+  if(delim==='\\t') delim='\t';
+
+  var actualMode=mode;
+  if(actualMode==='auto'){
+    var detected=detectFormat(input);
+    actualMode=detected==='json'?'json2csv':'csv2json';
+    var badge=document.getElementById('detectedFormat');
+    if(detected==='json'){
+      badge.textContent='Phát hiện: JSON';
+      badge.className='detect-badge detect-json';
+    }else{
+      badge.textContent='Phát hiện: CSV';
+      badge.className='detect-badge detect-csv';
+    }
+  }
+
+  try{
+    if(actualMode==='csv2json'){
+      var result=csvToJson(input,delim);
+      document.getElementById('outputArea').value=JSON.stringify(result.json,null,2);
+      showPreviewTable(result.headers,result.json);
+      showStatus('Chuyển đổi thành công! '+result.json.length+' dòng dữ liệu.');
+    }else{
+      var result2=jsonToCsv(input,delim);
+      document.getElementById('outputArea').value=result2.csv;
+      showPreviewTable(result2.headers,result2.data);
+      showStatus('Chuyển đổi thành công! '+result2.data.length+' dòng dữ liệu.');
+    }
+  }catch(err){
+    showStatus('Lỗi: '+err.message);
+    document.getElementById('previewCard').classList.add('hidden');
+  }
+}
+
+function showPreviewTable(headers,data){
+  var card=document.getElementById('previewCard');
+  card.classList.remove('hidden');
+  var wrap=document.getElementById('tableWrap');
+  wrap.textContent='';
+
+  var table=document.createElement('table');
+  var thead=document.createElement('thead');
+  var headRow=document.createElement('tr');
+  headers.forEach(function(h){
+    var th=document.createElement('th');
+    th.textContent=h;
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+
+  var tbody=document.createElement('tbody');
+  var maxRows=Math.min(data.length,100);
+  for(var i=0;i<maxRows;i++){
+    var tr=document.createElement('tr');
+    headers.forEach(function(h){
+      var td=document.createElement('td');
+      var val=data[i][h];
+      td.textContent=val!==undefined&&val!==null?String(val):'';
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+}
+
+function showStatus(msg){
+  document.getElementById('statusMsg').textContent=msg;
+}
+
+function copyOutput(){
+  var output=document.getElementById('outputArea').value;
+  if(!output){showStatus('Không có kết quả để sao chép!');return}
+  navigator.clipboard.writeText(output).then(function(){
+    showStatus('Đã sao chép vào clipboard!');
+  });
+}
+
+function downloadOutput(){
+  var output=document.getElementById('outputArea').value;
+  if(!output){showStatus('Không có kết quả để tải!');return}
+  var ext=mode==='json2csv'?'csv':'json';
+  if(mode==='auto'){
+    ext=detectFormat(document.getElementById('inputArea').value)==='json'?'csv':'json';
+  }
+  var blob=new Blob([output],{type:'text/plain;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='converted.'+ext;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function swapInputOutput(){
+  var inp=document.getElementById('inputArea');
+  var out=document.getElementById('outputArea');
+  var temp=inp.value;
+  inp.value=out.value;
+  out.value=temp;
+  if(mode==='csv2json') setMode('json2csv');
+  else if(mode==='json2csv') setMode('csv2json');
+}
+
+function clearAll(){
+  document.getElementById('inputArea').value='';
+  document.getElementById('outputArea').value='';
+  document.getElementById('previewCard').classList.add('hidden');
+  document.getElementById('detectedFormat').textContent='';
+  document.getElementById('statusMsg').textContent='';
+}
+
+lucide.createIcons();
+</script>
+</body>
+</html>
